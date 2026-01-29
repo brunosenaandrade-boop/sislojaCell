@@ -66,6 +66,7 @@ import { toast } from 'sonner'
 import type { StatusOS } from '@/types/database'
 import { CupomOS } from '@/components/print/CupomOS'
 import { useAuthStore } from '@/store/useStore'
+import { PatternLock } from '@/components/ui/pattern-lock'
 
 // Configurações de status
 const statusConfig: Record<StatusOS, { label: string; color: string; icon: React.ReactNode }> = {
@@ -104,8 +105,10 @@ const mockOSDetalhada = {
   modelo: 'iPhone 13',
   cor: 'Azul',
   imei: '123456789012345',
-  senha_aparelho: '1234',
-  senha_aparelho_masked: '●●●●',
+  tipo_desbloqueio: 'padrao' as 'sem_senha' | 'padrao' | 'pin' | 'senha',
+  padrao_desbloqueio: [1, 4, 7, 8, 9, 6, 3] as number[] | undefined,
+  pin_desbloqueio: undefined as string | undefined,
+  senha_aparelho: undefined as string | undefined,
   condicao_entrada: 'Aparelho com tela quebrada no canto superior direito. Pequenos arranhoes na traseira.',
   acessórios: 'Carregador original, capa silicone preta',
   problema_relatado: 'Cliente relata que a tela quebrou apos queda. O aparelho liga mas o touch não funciona na parte de cima.',
@@ -452,38 +455,63 @@ export default function VisualizarOSPage() {
                     </div>
                   )}
 
-                  {/* Senha do Aparelho */}
-                  {os.senha_aparelho && (
+                  {/* Desbloqueio do Aparelho */}
+                  {os.tipo_desbloqueio && os.tipo_desbloqueio !== 'sem_senha' && (
                     <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-orange-700">
                           <Lock className="h-5 w-5" />
-                          <span className="font-medium">Senha do Aparelho</span>
+                          <span className="font-medium">
+                            Desbloqueio do Aparelho
+                            <span className="ml-2 text-xs font-normal opacity-75">
+                              ({os.tipo_desbloqueio === 'padrao' ? 'Padrão de Desenho' : os.tipo_desbloqueio === 'pin' ? 'PIN Numérico' : 'Senha'})
+                            </span>
+                          </span>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowSenha(!showSenha)}
-                          className="text-orange-700"
-                        >
-                          {showSenha ? (
-                            <>
-                              <EyeOff className="mr-2 h-4 w-4" />
-                              Ocultar
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Mostrar
-                            </>
-                          )}
-                        </Button>
+                        {(os.tipo_desbloqueio === 'pin' || os.tipo_desbloqueio === 'senha') && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowSenha(!showSenha)}
+                            className="text-orange-700"
+                          >
+                            {showSenha ? (
+                              <><EyeOff className="mr-2 h-4 w-4" /> Ocultar</>
+                            ) : (
+                              <><Eye className="mr-2 h-4 w-4" /> Mostrar</>
+                            )}
+                          </Button>
+                        )}
                       </div>
-                      <div className="mt-2 flex items-center gap-4">
-                        <code className="rounded bg-orange-100 px-3 py-2 text-lg text-orange-800 font-mono">
-                          {showSenha ? os.senha_aparelho : os.senha_aparelho_masked}
-                        </code>
-                      </div>
+
+                      {/* Padrão de Desenho */}
+                      {os.tipo_desbloqueio === 'padrao' && os.padrao_desbloqueio && (
+                        <div className="mt-3 flex justify-center">
+                          <PatternLock
+                            value={os.padrao_desbloqueio}
+                            readOnly
+                            size={180}
+                          />
+                        </div>
+                      )}
+
+                      {/* PIN */}
+                      {os.tipo_desbloqueio === 'pin' && os.pin_desbloqueio && (
+                        <div className="mt-2">
+                          <code className="rounded bg-orange-100 px-3 py-2 text-lg text-orange-800 font-mono tracking-[0.3em]">
+                            {showSenha ? os.pin_desbloqueio : '●'.repeat(os.pin_desbloqueio.length)}
+                          </code>
+                        </div>
+                      )}
+
+                      {/* Senha */}
+                      {os.tipo_desbloqueio === 'senha' && os.senha_aparelho && (
+                        <div className="mt-2">
+                          <code className="rounded bg-orange-100 px-3 py-2 text-lg text-orange-800 font-mono">
+                            {showSenha ? os.senha_aparelho : '●'.repeat(os.senha_aparelho.length)}
+                          </code>
+                        </div>
+                      )}
                     </div>
                   )}
 

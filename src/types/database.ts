@@ -145,6 +145,9 @@ export interface OrdemServico {
   numero_serie?: string
   senha_aparelho?: string
   senha_aparelho_masked?: string
+  tipo_desbloqueio?: 'sem_senha' | 'padrao' | 'pin' | 'senha'
+  padrao_desbloqueio?: number[]
+  pin_desbloqueio?: string
   condicao_entrada?: string
   acessorios?: string
   problema_relatado: string

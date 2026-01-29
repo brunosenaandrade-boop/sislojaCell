@@ -47,9 +47,14 @@ import {
   Eye,
   EyeOff,
   Lock,
+  Grid3x3,
+  Hash,
+  KeyRound,
+  ShieldOff,
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { PatternLock } from '@/components/ui/pattern-lock'
 
 // Tipos de aparelho
 const tiposAparelho = [
@@ -119,6 +124,9 @@ export default function NovaOSPage() {
   const [cor, setCor] = useState('')
   const [imei, setImei] = useState('')
   const [númeroSerie, setNúmeroSerie] = useState('')
+  const [tipoDesbloqueio, setTipoDesbloqueio] = useState<string>('sem_senha')
+  const [padraoDesbloqueio, setPadraoDesbloqueio] = useState<number[]>([])
+  const [pinDesbloqueio, setPinDesbloqueio] = useState('')
   const [senhaAparelho, setSenhaAparelho] = useState('')
   const [condicaoEntrada, setCondicaoEntrada] = useState('')
   const [acessórios, setAcessórios] = useState('')
@@ -131,9 +139,6 @@ export default function NovaOSPage() {
   const [itensOS, setItensOS] = useState<ItemOS[]>([])
   const [dialogServiçoOpen, setDialogServiçoOpen] = useState(false)
   const [dialogProdutoOpen, setDialogProdutoOpen] = useState(false)
-
-  // Gerar senha mascarada
-  const senhaMascarada = senhaAparelho ? '●'.repeat(senhaAparelho.length) : ''
 
   // Calcular totais
   const totalServiços = itensOS
@@ -229,8 +234,10 @@ export default function NovaOSPage() {
         cor,
         imei,
         número_serie: númeroSerie,
-        senha_aparelho: senhaAparelho,
-        senha_aparelho_masked: senhaMascarada,
+        tipo_desbloqueio: tipoDesbloqueio,
+        senha_aparelho: tipoDesbloqueio === 'senha' ? senhaAparelho : undefined,
+        pin_desbloqueio: tipoDesbloqueio === 'pin' ? pinDesbloqueio : undefined,
+        padrao_desbloqueio: tipoDesbloqueio === 'padrao' ? padraoDesbloqueio : undefined,
         condicao_entrada: condicaoEntrada,
         acessórios,
         problema_relatado: problemaRelatado,
@@ -449,42 +456,89 @@ export default function NovaOSPage() {
 
                 <Separator />
 
-                {/* Senha do Aparelho - IMPORTANTE */}
-                <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 space-y-3">
+                {/* Desbloqueio do Aparelho - IMPORTANTE */}
+                <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 space-y-4">
                   <div className="flex items-center gap-2 text-orange-700">
                     <Lock className="h-5 w-5" />
                     <Label className="text-orange-700 font-medium">
-                      Senha do Aparelho
+                      Desbloqueio do Aparelho
                     </Label>
                   </div>
                   <p className="text-sm text-orange-600">
-                    Importante: Anote a senha para acesso durante o reparo
+                    Registre a forma de desbloqueio para o técnico acessar durante o reparo
                   </p>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Input
-                        type={showSenha ? 'text' : 'password'}
-                        placeholder="Digite a senha do aparelho"
-                        value={senhaAparelho}
-                        onChange={(e) => setSenhaAparelho(e.target.value)}
-                      />
+
+                  {/* Seletor de tipo de desbloqueio */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { value: 'sem_senha', label: 'Sem Senha', icon: ShieldOff },
+                      { value: 'padrao', label: 'Padrão', icon: Grid3x3 },
+                      { value: 'pin', label: 'PIN', icon: Hash },
+                      { value: 'senha', label: 'Senha', icon: KeyRound },
+                    ].map(tipo => (
                       <Button
+                        key={tipo.value}
                         type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                        onClick={() => setShowSenha(!showSenha)}
+                        variant={tipoDesbloqueio === tipo.value ? 'default' : 'outline'}
+                        className={`flex-col h-auto py-3 gap-1 ${tipoDesbloqueio === tipo.value ? '' : 'bg-white/80'}`}
+                        onClick={() => setTipoDesbloqueio(tipo.value)}
                       >
-                        {showSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        <tipo.icon className="h-5 w-5" />
+                        <span className="text-xs">{tipo.label}</span>
                       </Button>
-                    </div>
+                    ))}
                   </div>
-                  {senhaAparelho && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-muted-foreground">Senha mascarada:</span>
-                      <code className="rounded bg-orange-100 px-2 py-1 text-orange-800">
-                        {senhaMascarada}
-                      </code>
+
+                  {/* Campo condicional baseado no tipo */}
+                  {tipoDesbloqueio === 'padrao' && (
+                    <div className="flex flex-col items-center gap-2 pt-2">
+                      <p className="text-sm text-orange-700 font-medium">
+                        Clique nos pontos na ordem do padrão de desbloqueio
+                      </p>
+                      <PatternLock
+                        value={padraoDesbloqueio}
+                        onChange={setPadraoDesbloqueio}
+                        size={220}
+                      />
+                    </div>
+                  )}
+
+                  {tipoDesbloqueio === 'pin' && (
+                    <div className="space-y-2">
+                      <Label className="text-orange-700">PIN Numérico</Label>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={8}
+                        placeholder="Ex: 1234"
+                        value={pinDesbloqueio}
+                        onChange={(e) => setPinDesbloqueio(e.target.value.replace(/\D/g, ''))}
+                        className="bg-white/80 text-center text-lg tracking-[0.5em] font-mono"
+                      />
+                    </div>
+                  )}
+
+                  {tipoDesbloqueio === 'senha' && (
+                    <div className="space-y-2">
+                      <Label className="text-orange-700">Senha</Label>
+                      <div className="relative">
+                        <Input
+                          type={showSenha ? 'text' : 'password'}
+                          placeholder="Digite a senha do aparelho"
+                          value={senhaAparelho}
+                          onChange={(e) => setSenhaAparelho(e.target.value)}
+                          className="bg-white/80 pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                          onClick={() => setShowSenha(!showSenha)}
+                        >
+                          {showSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
