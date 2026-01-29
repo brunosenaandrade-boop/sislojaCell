@@ -1,26 +1,27 @@
 import { createBrowserClient } from '@supabase/ssr'
 
-export function createClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
+export function createClient() {
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error(
-      'Variáveis de ambiente NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY são obrigatórias'
-    )
+    // Durante o build ou sem env vars, retorna null
+    return null as unknown as ReturnType<typeof createBrowserClient>
   }
 
   return createBrowserClient(supabaseUrl, supabaseKey)
 }
 
 // Cliente singleton para uso no lado do cliente
-let client: ReturnType<typeof createClient> | null = null
+let client: ReturnType<typeof createBrowserClient> | null = null
 
 export function getClient() {
-  // Não cria cliente no servidor durante o build
+  if (!supabaseUrl || !supabaseKey) {
+    return null as unknown as ReturnType<typeof createBrowserClient>
+  }
+
+  // No servidor, sempre cria um novo
   if (typeof window === 'undefined') {
-    // No servidor, sempre cria um novo cliente (não usa singleton)
-    // Isso evita problemas durante o build
     return createClient()
   }
 
