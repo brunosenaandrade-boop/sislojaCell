@@ -62,6 +62,7 @@ CREATE TABLE clientes (
     cpf VARCHAR(14),
     email VARCHAR(255),
     telefone VARCHAR(20),
+    telefone2 VARCHAR(20), -- Telefone secundário
     whatsapp VARCHAR(20),
     endereco VARCHAR(255),
     numero VARCHAR(20),
@@ -147,7 +148,7 @@ CREATE TABLE servicos (
     nome VARCHAR(255) NOT NULL,
     descricao TEXT,
     tipo VARCHAR(20) DEFAULT 'basico', -- 'basico', 'avancado'
-    preco DECIMAL(10,2) NOT NULL DEFAULT 0,
+    preco_base DECIMAL(10,2) NOT NULL DEFAULT 0,
     tempo_estimado INTEGER, -- em minutos
     ativo BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -156,6 +157,7 @@ CREATE TABLE servicos (
 
 CREATE INDEX idx_servicos_empresa ON servicos(empresa_id);
 CREATE INDEX idx_servicos_categoria ON servicos(categoria_id);
+CREATE INDEX idx_servicos_nome ON servicos(empresa_id, nome);
 
 -- ============================================
 -- TABELA: ordens_servico

@@ -47,6 +47,7 @@ export interface Cliente {
   cpf?: string
   email?: string
   telefone?: string
+  telefone2?: string
   whatsapp?: string
   endereco?: string
   numero?: string
@@ -108,7 +109,7 @@ export interface Servico {
   nome: string
   descricao?: string
   tipo: 'basico' | 'avancado'
-  preco: number
+  preco_base: number
   tempo_estimado?: number
   ativo: boolean
   created_at: string
