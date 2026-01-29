@@ -163,7 +163,6 @@ export default function EditarClientePage() {
         observações: observações || null,
       }
 
-      console.log('Cliente atualizado:', cliente)
       await new Promise(resolve => setTimeout(resolve, 800))
 
       toast.success('Cliente atualizado com sucesso!')

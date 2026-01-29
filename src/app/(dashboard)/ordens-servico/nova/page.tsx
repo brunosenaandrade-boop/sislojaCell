@@ -248,8 +248,6 @@ export default function NovaOSPage() {
         itens: itensOS,
       }
 
-      console.log('OS Data:', osData)
-
       // Simular salvamento
       await new Promise(resolve => setTimeout(resolve, 1000))
 
@@ -257,7 +255,6 @@ export default function NovaOSPage() {
       router.push('/ordens-servico')
     } catch (error) {
       toast.error('Erro ao criar OS')
-      console.error(error)
     } finally {
       setIsLoading(false)
     }

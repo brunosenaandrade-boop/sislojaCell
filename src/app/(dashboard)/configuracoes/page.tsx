@@ -145,7 +145,7 @@ export default function ConfiguraçõesPage() {
         })))
       }
     } catch {
-      console.error('Erro ao buscar usuários')
+      // silenciar erro em produção
     }
   }, [empresa?.id, supabase])
 

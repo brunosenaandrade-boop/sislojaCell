@@ -26,7 +26,7 @@ interface CupomOSProps {
     padrao_desbloqueio?: number[]
     pin_desbloqueio?: string
     condicao_entrada?: string
-    acessórios?: string
+    acessorios?: string
     problema_relatado: string
     valor_serviços: number
     valor_produtos: number
@@ -218,10 +218,10 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
       )}
 
       {/* Acessórios */}
-      {tipo !== 'entrega' && os.acessórios && (
+      {tipo !== 'entrega' && os.acessorios && (
         <div className="mb-2">
           <p className="font-bold">ACESSÓRIOS:</p>
-          <p className="text-[10px]">{os.acessórios}</p>
+          <p className="text-[10px]">{os.acessorios}</p>
         </div>
       )}
 

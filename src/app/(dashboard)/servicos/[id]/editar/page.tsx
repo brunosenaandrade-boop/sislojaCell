@@ -135,7 +135,6 @@ export default function EditarServiçoPage() {
         ativo,
       }
 
-      console.log('Serviço atualizado:', serviço)
       await new Promise(resolve => setTimeout(resolve, 800))
 
       toast.success('Serviço atualizado com sucesso!')

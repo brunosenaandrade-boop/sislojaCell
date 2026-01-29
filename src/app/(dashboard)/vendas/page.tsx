@@ -207,7 +207,6 @@ export default function VendasPage() {
         data: new Date().toISOString(),
       }
 
-      console.log('Venda:', venda)
       await new Promise(resolve => setTimeout(resolve, 800))
 
       // Registrar no caixa se estiver aberto

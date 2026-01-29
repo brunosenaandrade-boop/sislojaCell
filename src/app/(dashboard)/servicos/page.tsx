@@ -73,7 +73,7 @@ const serviçosMock = [
   {
     id: '2',
     nome: 'Troca de Bateria',
-    descrição: 'Substituição da bateria por uma nova original ou compativel',
+    descrição: 'Substituição da bateria por uma nova original ou compatível',
     tipo: 'celular' as TipoServiço,
     nivel: 'básico' as NivelServiço,
     preço_base: 80.00,
@@ -117,7 +117,7 @@ const serviçosMock = [
   {
     id: '6',
     nome: 'Reparo de Placa',
-    descrição: 'Diagnóstico e reparo de componentes na placa-mae',
+    descrição: 'Diagnóstico e reparo de componentes na placa-mãe',
     tipo: 'videogame' as TipoServiço,
     nivel: 'avançado' as NivelServiço,
     preço_base: 250.00,

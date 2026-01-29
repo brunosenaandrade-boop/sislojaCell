@@ -173,7 +173,7 @@ export function TutorialCard() {
               htmlFor="tutorial-dont-show"
               className="text-xs text-muted-foreground cursor-pointer select-none"
             >
-              Nao mostrar novamente
+              Não mostrar novamente
             </label>
           </div>
 

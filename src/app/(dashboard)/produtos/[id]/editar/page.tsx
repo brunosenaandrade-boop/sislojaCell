@@ -138,7 +138,6 @@ export default function EditarProdutoPage() {
         ativo,
       }
 
-      console.log('Produto atualizado:', produto)
       await new Promise(resolve => setTimeout(resolve, 800))
 
       toast.success('Produto atualizado com sucesso!')

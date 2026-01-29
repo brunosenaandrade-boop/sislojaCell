@@ -115,7 +115,6 @@ export default function NovoProdutoPage() {
         unidade,
       }
 
-      console.log('Produto:', produto)
       await new Promise(resolve => setTimeout(resolve, 800))
 
       toast.success('Produto cadastrado com sucesso!')

@@ -121,7 +121,6 @@ export default function NovoClientePage() {
         observações: observações || null,
       }
 
-      console.log('Cliente:', cliente)
       await new Promise(resolve => setTimeout(resolve, 800))
 
       toast.success('Cliente cadastrado com sucesso!')

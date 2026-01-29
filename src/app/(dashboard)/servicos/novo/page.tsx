@@ -100,7 +100,6 @@ export default function NovoServiçoPage() {
         ativo: true,
       }
 
-      console.log('Serviço:', serviço)
       await new Promise(resolve => setTimeout(resolve, 800))
 
       toast.success('Serviço cadastrado com sucesso!')
