@@ -30,21 +30,21 @@ import {
   Zap,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { servicosService } from '@/services/servicos.service'
 
-export default function NovoServiçoPage() {
+export default function NovoServicoPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
   // Estados do formulario
   const [nome, setNome] = useState('')
-  const [descrição, setDescrição] = useState('')
+  const [descricao, setDescricao] = useState('')
   const [tipo, setTipo] = useState<string>('')
-  const [nivel, setNivel] = useState<string>('')
-  const [preçoBase, setPreçoBase] = useState('')
+  const [precoBase, setPrecoBase] = useState('')
   const [tempoEstimado, setTempoEstimado] = useState('')
 
   // Calculos
-  const preçoNum = parseFloat(preçoBase) || 0
+  const precoNum = parseFloat(precoBase) || 0
   const tempoNum = parseInt(tempoEstimado) || 0
 
   // Formatar moeda
@@ -74,11 +74,7 @@ export default function NovoServiçoPage() {
       toast.error('Selecione o tipo do serviço')
       return
     }
-    if (!nivel) {
-      toast.error('Selecione o nível do serviço')
-      return
-    }
-    if (preçoNum <= 0) {
+    if (precoNum <= 0) {
       toast.error('Informe o preço base')
       return
     }
@@ -90,21 +86,22 @@ export default function NovoServiçoPage() {
     setIsLoading(true)
 
     try {
-      const serviço = {
+      const { error } = await servicosService.criar({
         nome,
-        descrição,
-        tipo,
-        nivel,
-        preço_base: preçoNum,
+        descricao,
+        tipo: tipo as 'basico' | 'avancado',
+        preco_base: precoNum,
         tempo_estimado: tempoNum,
         ativo: true,
+      })
+
+      if (error) {
+        toast.error('Erro ao cadastrar serviço: ' + error)
+      } else {
+        toast.success('Serviço cadastrado com sucesso!')
+        router.push('/servicos')
       }
-
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      toast.success('Serviço cadastrado com sucesso!')
-      router.push('/servicos')
-    } catch (error) {
+    } catch {
       toast.error('Erro ao cadastrar serviço')
     } finally {
       setIsLoading(false)
@@ -156,12 +153,12 @@ export default function NovoServiçoPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="descrição">Descrição</Label>
+                  <Label htmlFor="descricao">Descrição</Label>
                   <Textarea
-                    id="descrição"
+                    id="descricao"
                     placeholder="Descreva o serviço em detalhes..."
-                    value={descrição}
-                    onChange={(e) => setDescrição(e.target.value)}
+                    value={descricao}
+                    onChange={(e) => setDescricao(e.target.value)}
                     rows={3}
                   />
                 </div>
@@ -174,39 +171,13 @@ export default function NovoServiçoPage() {
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="celular">
-                          <div className="flex items-center gap-2">
-                            <Smartphone className="h-4 w-4" />
-                            Celular
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="videogame">
-                          <div className="flex items-center gap-2">
-                            <Gamepad2 className="h-4 w-4" />
-                            Videogame
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      Categoria do aparelho atendido
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="nivel">Nível de Complexidade *</Label>
-                    <Select value={nivel} onValueChange={setNivel}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o nível" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="básico">
+                        <SelectItem value="basico">
                           <div className="flex items-center gap-2">
                             <Settings className="h-4 w-4" />
                             Básico
                           </div>
                         </SelectItem>
-                        <SelectItem value="avançado">
+                        <SelectItem value="avancado">
                           <div className="flex items-center gap-2">
                             <Zap className="h-4 w-4" />
                             Avançado
@@ -215,7 +186,7 @@ export default function NovoServiçoPage() {
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">
-                      Define o nível de habilidade necessário
+                      Define o nível de complexidade do serviço
                     </p>
                   </div>
                 </div>
@@ -236,19 +207,19 @@ export default function NovoServiçoPage() {
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="preço_base">Preço Base *</Label>
+                    <Label htmlFor="preco_base">Preço Base *</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         R$
                       </span>
                       <Input
-                        id="preço_base"
+                        id="preco_base"
                         type="number"
                         step="0.01"
                         min="0"
                         placeholder="0,00"
-                        value={preçoBase}
-                        onChange={(e) => setPreçoBase(e.target.value)}
+                        value={precoBase}
+                        onChange={(e) => setPrecoBase(e.target.value)}
                         className="pl-10"
                       />
                     </div>
@@ -342,25 +313,8 @@ export default function NovoServiçoPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Tipo</span>
                     {tipo ? (
-                      <Badge variant="outline" className="gap-1">
-                        {tipo === 'celular' ? (
-                          <><Smartphone className="h-3 w-3" /> Celular</>
-                        ) : (
-                          <><Gamepad2 className="h-3 w-3" /> Videogame</>
-                        )}
-                      </Badge>
-                    ) : (
-                      <span>-</span>
-                    )}
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Nível</span>
-                    {nivel ? (
-                      <Badge
-                        variant={nivel === 'básico' ? 'secondary' : 'default'}
-                        className={nivel === 'avançado' ? 'bg-orange-100 text-orange-700' : ''}
-                      >
-                        {nivel === 'básico' ? (
+                      <Badge variant={tipo === 'basico' ? 'secondary' : 'default'} className={tipo === 'avancado' ? 'bg-orange-100 text-orange-700' : ''}>
+                        {tipo === 'basico' ? (
                           <><Settings className="h-3 w-3 mr-1" /> Básico</>
                         ) : (
                           <><Zap className="h-3 w-3 mr-1" /> Avançado</>
@@ -378,7 +332,7 @@ export default function NovoServiçoPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Preço Base</span>
                     <span className="font-medium text-green-600">
-                      {preçoNum > 0 ? formatCurrency(preçoNum) : '-'}
+                      {precoNum > 0 ? formatCurrency(precoNum) : '-'}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">

@@ -32,97 +32,42 @@ import {
   Clock,
   FileText,
   ExternalLink,
+  Loader2,
 } from 'lucide-react'
-
-// Cliente mockado
-const clienteMock = {
-  id: '1',
-  nome: 'Maria Santos',
-  telefone: '(48) 99999-2222',
-  telefone2: '(48) 3333-4444',
-  email: 'maria@email.com',
-  cpf: '987.654.321-00',
-  data_nascimento: '1985-01-27',
-  cep: '88000-000',
-  endereço: 'Av. Brasil, 456',
-  número: '456',
-  complemento: 'Apto 302',
-  bairro: 'Centro',
-  cidade: 'Florianopolis',
-  estado: 'SC',
-  observações: 'Cliente VIP. Sempre paga em dia.',
-  created_at: '2023-06-15',
-  updated_at: '2024-01-20',
-}
-
-// Histórico de compras mockado
-const comprasMock = [
-  {
-    id: 'V001',
-    data: '2024-01-20',
-    produtos: ['Carregador USB-C', 'Cabo Lightning'],
-    valor_total: 89.90,
-    forma_pagamento: 'PIX',
-  },
-  {
-    id: 'V002',
-    data: '2024-01-10',
-    produtos: ['Película Galaxy S23', 'Capa Silicone'],
-    valor_total: 65.00,
-    forma_pagamento: 'Cartão Crédito',
-  },
-  {
-    id: 'V003',
-    data: '2023-12-15',
-    produtos: ['Fone Bluetooth TWS'],
-    valor_total: 120.00,
-    forma_pagamento: 'Dinheiro',
-  },
-]
-
-// Histórico de OS mockado
-const osMock = [
-  {
-    id: 'OS001',
-    data: '2024-01-18',
-    aparelho: 'iPhone 13',
-    serviço: 'Troca de Tela',
-    status: 'finalizada',
-    valor_total: 350.00,
-  },
-  {
-    id: 'OS002',
-    data: '2024-01-05',
-    aparelho: 'Samsung S22',
-    serviço: 'Troca de Bateria',
-    status: 'finalizada',
-    valor_total: 180.00,
-  },
-  {
-    id: 'OS003',
-    data: '2023-11-20',
-    aparelho: 'PS5',
-    serviço: 'Limpeza e Manutenção',
-    status: 'finalizada',
-    valor_total: 150.00,
-  },
-]
+import { toast } from 'sonner'
+import { clientesService } from '@/services/clientes.service'
+import type { Cliente } from '@/types/database'
 
 export default function ClienteDetalhePage() {
   const params = useParams()
-  const [cliente, setCliente] = useState(clienteMock)
-  const [compras] = useState(comprasMock)
-  const [ordens] = useState(osMock)
+  const [cliente, setCliente] = useState<Cliente | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Calcular estatísticas
-  const totalCompras = compras.reduce((acc, c) => acc + c.valor_total, 0)
-  const totalOS = ordens.reduce((acc, o) => acc + o.valor_total, 0)
-  const totalGeral = totalCompras + totalOS
+  // Load client data
+  useEffect(() => {
+    const carregar = async () => {
+      if (!params.id) return
+      setIsLoading(true)
+      try {
+        const { data, error } = await clientesService.buscarPorId(params.id as string)
+        if (error) {
+          toast.error('Erro ao carregar cliente: ' + error)
+          return
+        }
+        setCliente(data)
+      } catch {
+        toast.error('Erro ao carregar cliente')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    carregar()
+  }, [params.id])
 
   // Verificar se e aniversário hoje
   const hoje = new Date()
-  const nascimento = cliente.data_nascimento ? new Date(cliente.data_nascimento) : null
-  const ehAniversárioHoje = nascimento &&
+  const nascimento = cliente?.data_nascimento ? new Date(cliente.data_nascimento) : null
+  const ehAniversarioHoje = nascimento &&
     nascimento.getDate() === hoje.getDate() &&
     nascimento.getMonth() === hoje.getMonth()
 
@@ -131,8 +76,8 @@ export default function ClienteDetalhePage() {
     const hoje = new Date()
     const nascimento = new Date(dataNascimento)
     let idade = hoje.getFullYear() - nascimento.getFullYear()
-    const mês = hoje.getMonth() - nascimento.getMonth()
-    if (mês < 0 || (mês === 0 && hoje.getDate() < nascimento.getDate())) {
+    const mes = hoje.getMonth() - nascimento.getMonth()
+    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
       idade--
     }
     return idade
@@ -163,6 +108,36 @@ export default function ClienteDetalhePage() {
     return <Badge variant={config.variant}>{config.label}</Badge>
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Detalhes do Cliente" />
+        <div className="flex-1 flex items-center justify-center h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!cliente) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Detalhes do Cliente" />
+        <div className="flex-1 space-y-6 p-4 lg:p-6">
+          <Link href="/clientes">
+            <Button variant="outline">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+          </Link>
+          <div className="text-center py-12 text-muted-foreground">
+            Cliente não encontrado.
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col">
       <Header title="Detalhes do Cliente" />
@@ -185,7 +160,7 @@ export default function ClienteDetalhePage() {
         </div>
 
         {/* Cabecalho do Cliente */}
-        <Card className={ehAniversárioHoje ? 'border-primary bg-primary/5' : ''}>
+        <Card className={ehAniversarioHoje ? 'border-primary bg-primary/5' : ''}>
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row sm:items-start gap-4">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -196,7 +171,7 @@ export default function ClienteDetalhePage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-2xl font-bold">{cliente.nome}</h2>
-                  {ehAniversárioHoje && (
+                  {ehAniversarioHoje && (
                     <Badge variant="default" className="text-sm">
                       <Cake className="mr-1 h-4 w-4" />
                       Aniversário Hoje!
@@ -206,12 +181,6 @@ export default function ClienteDetalhePage() {
                 <p className="text-muted-foreground">
                   Cliente desde {formatDate(cliente.created_at)}
                 </p>
-              </div>
-              <div className="text-right">
-                <div className="text-sm text-muted-foreground">Total gasto</div>
-                <div className="text-2xl font-bold text-green-600">
-                  {formatCurrency(totalGeral)}
-                </div>
               </div>
             </div>
           </CardContent>
@@ -231,7 +200,7 @@ export default function ClienteDetalhePage() {
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{cliente.telefone}</span>
+                  <span>{cliente.telefone || '-'}</span>
                 </div>
                 {cliente.telefone2 && (
                   <div className="flex items-center gap-2">
@@ -279,7 +248,7 @@ export default function ClienteDetalhePage() {
             </Card>
 
             {/* Endereço */}
-            {cliente.endereço && (
+            {cliente.endereco && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
@@ -289,9 +258,9 @@ export default function ClienteDetalhePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm space-y-1">
-                    <p>{cliente.endereço}, {cliente.número}</p>
+                    <p>{cliente.endereco}{cliente.numero ? `, ${cliente.numero}` : ''}</p>
                     {cliente.complemento && <p>{cliente.complemento}</p>}
-                    <p>{cliente.bairro}</p>
+                    {cliente.bairro && <p>{cliente.bairro}</p>}
                     <p>{cliente.cidade}/{cliente.estado}</p>
                     {cliente.cep && <p className="text-muted-foreground">{cliente.cep}</p>}
                   </div>
@@ -300,7 +269,7 @@ export default function ClienteDetalhePage() {
             )}
 
             {/* Observações */}
-            {cliente.observações && (
+            {cliente.observacoes && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
@@ -310,7 +279,7 @@ export default function ClienteDetalhePage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    {cliente.observações}
+                    {cliente.observacoes}
                   </p>
                 </CardContent>
               </Card>
@@ -319,159 +288,6 @@ export default function ClienteDetalhePage() {
 
           {/* Histórico */}
           <div className="lg:col-span-2">
-            {/* Cards de Estatísticas */}
-            <div className="grid gap-4 sm:grid-cols-3 mb-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4" />
-                    Compras
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{compras.length}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {formatCurrency(totalCompras)} total
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Wrench className="h-4 w-4" />
-                    Ordens de Serviço
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{ordens.length}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {formatCurrency(totalOS)} total
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    Total Geral
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">
-                    {formatCurrency(totalGeral)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    em {compras.length + ordens.length} transações
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Tabs de Histórico */}
-            <Card>
-              <Tabs defaultValue="compras">
-                <CardHeader>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="compras">
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      Compras ({compras.length})
-                    </TabsTrigger>
-                    <TabsTrigger value="os">
-                      <Wrench className="mr-2 h-4 w-4" />
-                      Ordens de Serviço ({ordens.length})
-                    </TabsTrigger>
-                  </TabsList>
-                </CardHeader>
-                <CardContent>
-                  {/* Tab Compras */}
-                  <TabsContent value="compras" className="mt-0">
-                    {compras.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        Nenhuma compra registrada
-                      </div>
-                    ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Código</TableHead>
-                            <TableHead>Data</TableHead>
-                            <TableHead>Produtos</TableHead>
-                            <TableHead>Pagamento</TableHead>
-                            <TableHead className="text-right">Valor</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {compras.map((compra) => (
-                            <TableRow key={compra.id}>
-                              <TableCell className="font-mono">{compra.id}</TableCell>
-                              <TableCell>{formatDate(compra.data)}</TableCell>
-                              <TableCell>
-                                <div className="max-w-[200px]">
-                                  {compra.produtos.join(', ')}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline">{compra.forma_pagamento}</Badge>
-                              </TableCell>
-                              <TableCell className="text-right font-medium">
-                                {formatCurrency(compra.valor_total)}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </TabsContent>
-
-                  {/* Tab OS */}
-                  <TabsContent value="os" className="mt-0">
-                    {ordens.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        Nenhuma ordem de serviço registrada
-                      </div>
-                    ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>OS</TableHead>
-                            <TableHead>Data</TableHead>
-                            <TableHead>Aparelho</TableHead>
-                            <TableHead>Serviço</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Valor</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {ordens.map((os) => (
-                            <TableRow key={os.id}>
-                              <TableCell>
-                                <Link
-                                  href={`/ordens-servico/${os.id}`}
-                                  className="font-mono text-primary hover:underline flex items-center gap-1"
-                                >
-                                  {os.id}
-                                  <ExternalLink className="h-3 w-3" />
-                                </Link>
-                              </TableCell>
-                              <TableCell>{formatDate(os.data)}</TableCell>
-                              <TableCell>{os.aparelho}</TableCell>
-                              <TableCell>{os.serviço}</TableCell>
-                              <TableCell>{getStatusBadge(os.status)}</TableCell>
-                              <TableCell className="text-right font-medium">
-                                {formatCurrency(os.valor_total)}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </TabsContent>
-                </CardContent>
-              </Tabs>
-            </Card>
-
             {/* Ações Rápidas */}
             <div className="flex gap-2 mt-6">
               <Link href="/vendas" className="flex-1">

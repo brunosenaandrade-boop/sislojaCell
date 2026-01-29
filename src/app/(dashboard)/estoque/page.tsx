@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
@@ -45,81 +45,86 @@ import {
   DollarSign,
   Filter,
   FileDown,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import type { Produto, MovimentacaoEstoque } from '@/types/database'
+import { produtosService } from '@/services/produtos.service'
+import { estoqueService } from '@/services/estoque.service'
 
 // Tipos
-type TipoMovimentação = 'entrada' | 'saida'
-type MotivoMovimentação = 'compra' | 'venda' | 'ajuste' | 'perda' | 'uso_interno' | 'devolução'
-
-// Produtos mockados
-const produtosMock = [
-  { id: '1', código: '001', nome: 'Carregador USB-C Turbo 20W', categoria: 'Carregadores', custo: 25.00, preço_venda: 49.90, estoque_atual: 15, estoque_mínimo: 5 },
-  { id: '2', código: '002', nome: 'Cabo Lightning 1m', categoria: 'Cabos', custo: 8.00, preço_venda: 25.00, estoque_atual: 3, estoque_mínimo: 10 },
-  { id: '3', código: '003', nome: 'Película Galaxy S23', categoria: 'Películas', custo: 5.00, preço_venda: 20.00, estoque_atual: 0, estoque_mínimo: 5 },
-  { id: '4', código: '004', nome: 'Capa iPhone 14 Silicone', categoria: 'Capas', custo: 12.00, preço_venda: 35.00, estoque_atual: 8, estoque_mínimo: 5 },
-  { id: '5', código: '005', nome: 'Fone Bluetooth TWS', categoria: 'Fones', custo: 35.00, preço_venda: 89.90, estoque_atual: 2, estoque_mínimo: 3 },
-  { id: '6', código: '006', nome: 'Power Bank 10000mAh', categoria: 'Power Banks', custo: 45.00, preço_venda: 99.90, estoque_atual: 6, estoque_mínimo: 3 },
-  { id: '7', código: '007', nome: 'Tela iPhone 11', categoria: 'Peças', custo: 120.00, preço_venda: 250.00, estoque_atual: 4, estoque_mínimo: 2 },
-  { id: '8', código: '008', nome: 'Bateria Samsung S21', categoria: 'Peças', custo: 60.00, preço_venda: 150.00, estoque_atual: 1, estoque_mínimo: 3 },
-]
-
-// Movimentações mockadas
-const movimentaçõesMock = [
-  { id: '1', produto_id: '1', produto_nome: 'Carregador USB-C Turbo 20W', tipo: 'entrada' as TipoMovimentação, quantidade: 20, motivo: 'compra' as MotivoMovimentação, observação: 'Compra fornecedor ABC', usuário: 'Admin', data: '2024-01-27T10:30:00' },
-  { id: '2', produto_id: '1', produto_nome: 'Carregador USB-C Turbo 20W', tipo: 'saida' as TipoMovimentação, quantidade: 5, motivo: 'venda' as MotivoMovimentação, observação: 'Venda V001', usuário: 'Admin', data: '2024-01-27T14:20:00' },
-  { id: '3', produto_id: '2', produto_nome: 'Cabo Lightning 1m', tipo: 'saida' as TipoMovimentação, quantidade: 2, motivo: 'venda' as MotivoMovimentação, observação: 'Venda V002', usuário: 'Funcionário', data: '2024-01-27T15:45:00' },
-  { id: '4', produto_id: '3', produto_nome: 'Película Galaxy S23', tipo: 'saida' as TipoMovimentação, quantidade: 5, motivo: 'perda' as MotivoMovimentação, observação: 'Produtos danificados', usuário: 'Admin', data: '2024-01-26T09:00:00' },
-  { id: '5', produto_id: '5', produto_nome: 'Fone Bluetooth TWS', tipo: 'entrada' as TipoMovimentação, quantidade: 10, motivo: 'compra' as MotivoMovimentação, observação: 'Reposição mensal', usuário: 'Admin', data: '2024-01-25T11:30:00' },
-  { id: '6', produto_id: '7', produto_nome: 'Tela iPhone 11', tipo: 'saida' as TipoMovimentação, quantidade: 1, motivo: 'uso_interno' as MotivoMovimentação, observação: 'OS #OS001', usuário: 'Funcionário', data: '2024-01-25T16:00:00' },
-]
+type TipoMovimentacao = 'entrada' | 'saida'
 
 function EstoqueContent() {
   const searchParams = useSearchParams()
   const produtoIdFiltro = searchParams.get('produto')
 
-  const [produtos, setProdutos] = useState(produtosMock)
-  const [movimentações, setMovimentações] = useState(movimentaçõesMock)
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [movimentacoes, setMovimentacoes] = useState<MovimentacaoEstoque[]>([])
   const [busca, setBusca] = useState('')
   const [filtroEstoque, setFiltroEstoque] = useState<string>('todos')
   const [filtroTipoMov, setFiltroTipoMov] = useState<string>('todos')
+  const [isLoading, setIsLoading] = useState(true)
 
   // Dialog de movimentação
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [movTipo, setMovTipo] = useState<TipoMovimentação>('entrada')
+  const [movTipo, setMovTipo] = useState<TipoMovimentacao>('entrada')
   const [movProdutoId, setMovProdutoId] = useState('')
   const [movQuantidade, setMovQuantidade] = useState('')
   const [movMotivo, setMovMotivo] = useState<string>('')
-  const [movObservação, setMovObservação] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [movObservacao, setMovObservacao] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Carregar dados do Supabase
+  useEffect(() => {
+    const carregarDados = async () => {
+      setIsLoading(true)
+      try {
+        const [produtosRes, movRes] = await Promise.all([
+          produtosService.listar(),
+          estoqueService.listarMovimentacoes(),
+        ])
+
+        if (produtosRes.data) setProdutos(produtosRes.data)
+        if (movRes.data) setMovimentacoes(movRes.data)
+
+        if (produtosRes.error) toast.error('Erro ao carregar produtos: ' + produtosRes.error)
+        if (movRes.error) toast.error('Erro ao carregar movimentacoes: ' + movRes.error)
+      } catch {
+        toast.error('Erro ao carregar dados')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    carregarDados()
+  }, [])
 
   // Filtrar produtos
   const produtosFiltrados = produtos.filter(produto => {
     const matchBusca = produto.nome.toLowerCase().includes(busca.toLowerCase()) ||
-                       produto.código.includes(busca)
+                       (produto.codigo && produto.codigo.includes(busca))
     const matchEstoque = filtroEstoque === 'todos' ||
-      (filtroEstoque === 'baixo' && produto.estoque_atual <= produto.estoque_mínimo && produto.estoque_atual > 0) ||
+      (filtroEstoque === 'baixo' && produto.estoque_atual <= produto.estoque_minimo && produto.estoque_atual > 0) ||
       (filtroEstoque === 'zerado' && produto.estoque_atual === 0) ||
-      (filtroEstoque === 'ok' && produto.estoque_atual > produto.estoque_mínimo)
+      (filtroEstoque === 'ok' && produto.estoque_atual > produto.estoque_minimo)
     const matchProduto = !produtoIdFiltro || produto.id === produtoIdFiltro
     return matchBusca && matchEstoque && matchProduto
   })
 
   // Filtrar movimentações
-  const movimentaçõesFiltradas = movimentações
+  const movimentacoesFiltradas = movimentacoes
     .filter(mov => {
       const matchTipo = filtroTipoMov === 'todos' || mov.tipo === filtroTipoMov
       const matchProduto = !produtoIdFiltro || mov.produto_id === produtoIdFiltro
       return matchTipo && matchProduto
     })
-    .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
 
   // Estatísticas
   const totalProdutos = produtos.length
-  const produtosEstoqueBaixo = produtos.filter(p => p.estoque_atual <= p.estoque_mínimo && p.estoque_atual > 0).length
+  const produtosEstoqueBaixo = produtos.filter(p => p.estoque_atual <= p.estoque_minimo && p.estoque_atual > 0).length
   const produtosSemEstoque = produtos.filter(p => p.estoque_atual === 0).length
   const valorTotalEstoque = produtos.reduce((acc, p) => acc + (p.custo * p.estoque_atual), 0)
-  const valorVendaEstoque = produtos.reduce((acc, p) => acc + (p.preço_venda * p.estoque_atual), 0)
+  const valorVendaEstoque = produtos.reduce((acc, p) => acc + (p.preco_venda * p.estoque_atual), 0)
 
   // Formatar moeda
   const formatCurrency = (value: number) => {
@@ -135,17 +140,17 @@ function EstoqueContent() {
   }
 
   // Abrir dialog de movimentação
-  const abrirMovimentação = (tipo: TipoMovimentação, produtoId?: string) => {
+  const abrirMovimentacao = (tipo: TipoMovimentacao, produtoId?: string) => {
     setMovTipo(tipo)
     setMovProdutoId(produtoId || '')
     setMovQuantidade('')
     setMovMotivo('')
-    setMovObservação('')
+    setMovObservacao('')
     setDialogOpen(true)
   }
 
   // Salvar movimentação
-  const handleSalvarMovimentação = async () => {
+  const handleSalvarMovimentacao = async () => {
     if (!movProdutoId) {
       toast.error('Selecione um produto')
       return
@@ -170,10 +175,23 @@ function EstoqueContent() {
       return
     }
 
-    setIsLoading(true)
+    setIsSaving(true)
 
     try {
-      // Atualizar estoque
+      const { data: movCriada, error } = await estoqueService.registrarMovimentacao({
+        produto_id: movProdutoId,
+        tipo: movTipo,
+        quantidade,
+        motivo: movMotivo,
+        observacoes: movObservacao || undefined,
+      })
+
+      if (error) {
+        toast.error('Erro ao registrar movimentacao: ' + error)
+        return
+      }
+
+      // Atualizar estoque local
       const novoEstoque = movTipo === 'entrada'
         ? produto.estoque_atual + quantidade
         : produto.estoque_atual - quantidade
@@ -182,38 +200,29 @@ function EstoqueContent() {
         p.id === movProdutoId ? { ...p, estoque_atual: novoEstoque } : p
       ))
 
-      // Adicionar movimentação
-      const novaMovimentação = {
-        id: String(Date.now()),
-        produto_id: movProdutoId,
-        produto_nome: produto.nome,
-        tipo: movTipo,
-        quantidade,
-        motivo: movMotivo as MotivoMovimentação,
-        observação: movObservação,
-        usuário: 'Admin',
-        data: new Date().toISOString(),
+      // Adicionar movimentação à lista local
+      if (movCriada) {
+        setMovimentacoes(prev => [{ ...movCriada, produto }, ...prev])
       }
-      setMovimentações([novaMovimentação, ...movimentações])
 
       toast.success(`${movTipo === 'entrada' ? 'Entrada' : 'Saida'} registrada com sucesso!`)
       setDialogOpen(false)
-    } catch (error) {
+    } catch {
       toast.error('Erro ao registrar movimentação')
     } finally {
-      setIsLoading(false)
+      setIsSaving(false)
     }
   }
 
   // Exportar relatório
-  const exportarRelatório = () => {
+  const exportarRelatorio = () => {
     const headers = ['Código', 'Produto', 'Categoria', 'Estoque Atual', 'Estoque Mínimo', 'Custo Unit.', 'Valor Total']
     const rows = produtos.map(p => [
-      p.código,
+      p.codigo || '',
       p.nome,
-      p.categoria,
+      p.categoria?.nome || '',
       p.estoque_atual,
-      p.estoque_mínimo,
+      p.estoque_minimo,
       p.custo.toFixed(2),
       (p.custo * p.estoque_atual).toFixed(2),
     ])
@@ -228,11 +237,11 @@ function EstoqueContent() {
   }
 
   // Badge de status do estoque
-  const getStatusBadge = (atual: number, mínimo: number) => {
+  const getStatusBadge = (atual: number, minimo: number) => {
     if (atual === 0) {
       return <Badge variant="destructive">Sem estoque</Badge>
     }
-    if (atual <= mínimo) {
+    if (atual <= minimo) {
       return <Badge className="bg-orange-100 text-orange-700">Estoque baixo</Badge>
     }
     return <Badge variant="secondary">OK</Badge>
@@ -241,7 +250,7 @@ function EstoqueContent() {
   // Motivos por tipo
   const motivosEntrada = [
     { value: 'compra', label: 'Compra de fornecedor' },
-    { value: 'devolução', label: 'Devolução de cliente' },
+    { value: 'devolucao', label: 'Devolução de cliente' },
     { value: 'ajuste', label: 'Ajuste de inventario' },
   ]
 
@@ -252,6 +261,17 @@ function EstoqueContent() {
     { value: 'ajuste', label: 'Ajuste de inventario' },
   ]
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Controle de Estoque" />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col">
       <Header title="Controle de Estoque" />
@@ -260,16 +280,16 @@ function EstoqueContent() {
         {/* Ações */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-2">
-            <Button onClick={() => abrirMovimentação('entrada')} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={() => abrirMovimentacao('entrada')} className="bg-green-600 hover:bg-green-700">
               <ArrowUpCircle className="mr-2 h-4 w-4" />
               Entrada
             </Button>
-            <Button onClick={() => abrirMovimentação('saida')} variant="destructive">
+            <Button onClick={() => abrirMovimentacao('saida')} variant="destructive">
               <ArrowDownCircle className="mr-2 h-4 w-4" />
               Saida
             </Button>
           </div>
-          <Button variant="outline" onClick={exportarRelatório}>
+          <Button variant="outline" onClick={exportarRelatorio}>
             <FileDown className="mr-2 h-4 w-4" />
             Exportar Relatório
           </Button>
@@ -368,7 +388,7 @@ function EstoqueContent() {
               <Package className="mr-2 h-4 w-4" />
               Produtos
             </TabsTrigger>
-            <TabsTrigger value="movimentações">
+            <TabsTrigger value="movimentacoes">
               <History className="mr-2 h-4 w-4" />
               Movimentações
             </TabsTrigger>
@@ -424,26 +444,26 @@ function EstoqueContent() {
                       </TableRow>
                     ) : (
                       produtosFiltrados.map((produto) => (
-                        <TableRow key={produto.id} className={produto.estoque_atual === 0 ? 'bg-red-50' : produto.estoque_atual <= produto.estoque_mínimo ? 'bg-orange-50' : ''}>
+                        <TableRow key={produto.id} className={produto.estoque_atual === 0 ? 'bg-red-50' : produto.estoque_atual <= produto.estoque_minimo ? 'bg-orange-50' : ''}>
                           <TableCell>
                             <div>
                               <div className="font-medium">{produto.nome}</div>
                               <div className="text-xs text-muted-foreground font-mono">
-                                {produto.código}
+                                {produto.codigo}
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>{produto.categoria}</TableCell>
+                          <TableCell>{produto.categoria?.nome || ''}</TableCell>
                           <TableCell className="text-center">
-                            <span className={`font-bold ${produto.estoque_atual === 0 ? 'text-red-600' : produto.estoque_atual <= produto.estoque_mínimo ? 'text-orange-600' : ''}`}>
+                            <span className={`font-bold ${produto.estoque_atual === 0 ? 'text-red-600' : produto.estoque_atual <= produto.estoque_minimo ? 'text-orange-600' : ''}`}>
                               {produto.estoque_atual}
                             </span>
                           </TableCell>
                           <TableCell className="text-center text-muted-foreground">
-                            {produto.estoque_mínimo}
+                            {produto.estoque_minimo}
                           </TableCell>
                           <TableCell className="text-center">
-                            {getStatusBadge(produto.estoque_atual, produto.estoque_mínimo)}
+                            {getStatusBadge(produto.estoque_atual, produto.estoque_minimo)}
                           </TableCell>
                           <TableCell className="text-right">
                             {formatCurrency(produto.custo)}
@@ -457,7 +477,7 @@ function EstoqueContent() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-green-600"
-                                onClick={() => abrirMovimentação('entrada', produto.id)}
+                                onClick={() => abrirMovimentacao('entrada', produto.id)}
                                 title="Entrada"
                               >
                                 <ArrowUpCircle className="h-4 w-4" />
@@ -466,7 +486,7 @@ function EstoqueContent() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-red-600"
-                                onClick={() => abrirMovimentação('saida', produto.id)}
+                                onClick={() => abrirMovimentacao('saida', produto.id)}
                                 title="Saida"
                                 disabled={produto.estoque_atual === 0}
                               >
@@ -484,7 +504,7 @@ function EstoqueContent() {
           </TabsContent>
 
           {/* Tab Movimentações */}
-          <TabsContent value="movimentações" className="space-y-4">
+          <TabsContent value="movimentacoes" className="space-y-4">
             <div className="flex items-center gap-4">
               <Select value={filtroTipoMov} onValueChange={setFiltroTipoMov}>
                 <SelectTrigger className="w-[180px]">
@@ -514,17 +534,17 @@ function EstoqueContent() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {movimentaçõesFiltradas.length === 0 ? (
+                    {movimentacoesFiltradas.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                           Nenhuma movimentação encontrada.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      movimentaçõesFiltradas.map((mov) => (
+                      movimentacoesFiltradas.map((mov) => (
                         <TableRow key={mov.id}>
                           <TableCell className="text-sm">
-                            {formatDateTime(mov.data)}
+                            {formatDateTime(mov.created_at)}
                           </TableCell>
                           <TableCell>
                             {mov.tipo === 'entrada' ? (
@@ -540,7 +560,7 @@ function EstoqueContent() {
                             )}
                           </TableCell>
                           <TableCell className="font-medium">
-                            {mov.produto_nome}
+                            {mov.produto?.nome || '-'}
                           </TableCell>
                           <TableCell className="text-center font-bold">
                             <span className={mov.tipo === 'entrada' ? 'text-green-600' : 'text-red-600'}>
@@ -549,19 +569,14 @@ function EstoqueContent() {
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">
-                              {mov.motivo === 'compra' && 'Compra'}
-                              {mov.motivo === 'venda' && 'Venda'}
-                              {mov.motivo === 'ajuste' && 'Ajuste'}
-                              {mov.motivo === 'perda' && 'Perda'}
-                              {mov.motivo === 'uso_interno' && 'Uso Interno'}
-                              {mov.motivo === 'devolução' && 'Devolução'}
+                              {mov.motivo || '-'}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
-                            {mov.observação || '-'}
+                            {mov.observacoes || '-'}
                           </TableCell>
                           <TableCell className="text-sm">
-                            {mov.usuário}
+                            {mov.usuario?.nome || '-'}
                           </TableCell>
                         </TableRow>
                       ))
@@ -650,8 +665,8 @@ function EstoqueContent() {
                 <Label>Observação</Label>
                 <Input
                   placeholder="Ex: Nota fiscal 12345"
-                  value={movObservação}
-                  onChange={(e) => setMovObservação(e.target.value)}
+                  value={movObservacao}
+                  onChange={(e) => setMovObservacao(e.target.value)}
                 />
               </div>
             </div>
@@ -661,12 +676,12 @@ function EstoqueContent() {
                 Cancelar
               </Button>
               <Button
-                onClick={handleSalvarMovimentação}
-                disabled={isLoading}
+                onClick={handleSalvarMovimentacao}
+                disabled={isSaving}
                 className={movTipo === 'entrada' ? 'bg-green-600 hover:bg-green-700' : ''}
                 variant={movTipo === 'saida' ? 'destructive' : 'default'}
               >
-                {isLoading ? 'Salvando...' : 'Confirmar'}
+                {isSaving ? 'Salvando...' : 'Confirmar'}
               </Button>
             </DialogFooter>
           </DialogContent>

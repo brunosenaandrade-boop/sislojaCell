@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
@@ -50,52 +50,59 @@ import {
   DollarSign,
   Archive,
   ArrowUpDown,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { usePermissao } from '@/hooks/usePermissao'
-
-// Categorias mockadas
-const categoriasMock = [
-  { id: '1', nome: 'Carregadores' },
-  { id: '2', nome: 'Cabos' },
-  { id: '3', nome: 'Películas' },
-  { id: '4', nome: 'Capas' },
-  { id: '5', nome: 'Fones' },
-  { id: '6', nome: 'Power Banks' },
-  { id: '7', nome: 'Acessórios' },
-  { id: '8', nome: 'Peças' },
-]
-
-// Produtos mockados
-const produtosMock = [
-  { id: '1', código: '001', nome: 'Carregador USB-C Turbo 20W', categoria_id: '1', categoria: 'Carregadores', custo: 25.00, preço_venda: 49.90, estoque_atual: 15, estoque_mínimo: 5, ativo: true },
-  { id: '2', código: '002', nome: 'Cabo USB-C 2m', categoria_id: '2', categoria: 'Cabos', custo: 12.00, preço_venda: 29.90, estoque_atual: 30, estoque_mínimo: 10, ativo: true },
-  { id: '3', código: '003', nome: 'Película iPhone 13', categoria_id: '3', categoria: 'Películas', custo: 8.00, preço_venda: 25.00, estoque_atual: 3, estoque_mínimo: 5, ativo: true },
-  { id: '4', código: '004', nome: 'Capa Silicone iPhone 13', categoria_id: '4', categoria: 'Capas', custo: 15.00, preço_venda: 35.00, estoque_atual: 12, estoque_mínimo: 5, ativo: true },
-  { id: '5', código: '005', nome: 'Fone Bluetooth TWS', categoria_id: '5', categoria: 'Fones', custo: 45.00, preço_venda: 89.90, estoque_atual: 2, estoque_mínimo: 3, ativo: true },
-  { id: '6', código: '006', nome: 'Carregador Wireless 15W', categoria_id: '1', categoria: 'Carregadores', custo: 40.00, preço_venda: 79.90, estoque_atual: 5, estoque_mínimo: 3, ativo: true },
-  { id: '7', código: '007', nome: 'Suporte Veicular Magnetico', categoria_id: '7', categoria: 'Acessórios', custo: 20.00, preço_venda: 45.00, estoque_atual: 10, estoque_mínimo: 5, ativo: true },
-  { id: '8', código: '008', nome: 'Power Bank 10000mAh', categoria_id: '6', categoria: 'Power Banks', custo: 55.00, preço_venda: 99.90, estoque_atual: 7, estoque_mínimo: 3, ativo: true },
-  { id: '9', código: '009', nome: 'Película Samsung S22', categoria_id: '3', categoria: 'Películas', custo: 8.00, preço_venda: 25.00, estoque_atual: 0, estoque_mínimo: 5, ativo: true },
-  { id: '10', código: '010', nome: 'Capa Samsung S22', categoria_id: '4', categoria: 'Capas', custo: 15.00, preço_venda: 35.00, estoque_atual: 14, estoque_mínimo: 5, ativo: true },
-  { id: '11', código: '011', nome: 'Cabo Lightning 1m Original', categoria_id: '2', categoria: 'Cabos', custo: 18.00, preço_venda: 39.90, estoque_atual: 25, estoque_mínimo: 10, ativo: true },
-  { id: '12', código: '012', nome: 'Tela iPhone 13 (Peca)', categoria_id: '8', categoria: 'Peças', custo: 280.00, preço_venda: 450.00, estoque_atual: 2, estoque_mínimo: 2, ativo: true },
-]
+import { produtosService } from '@/services/produtos.service'
+import type { Produto, CategoriaProduto } from '@/types/database'
 
 export default function ProdutosPage() {
   const { podeExcluirRegistros } = usePermissao()
-  const [produtos, setProdutos] = useState(produtosMock)
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [categorias, setCategorias] = useState<CategoriaProduto[]>([])
+  const [loading, setLoading] = useState(true)
   const [busca, setBusca] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('todas')
   const [estoqueFiltro, setEstoqueFiltro] = useState('todos')
   const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false)
   const [produtoParaDeletar, setProdutoParaDeletar] = useState<string | null>(null)
 
+  const carregarDados = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [produtosRes, categoriasRes] = await Promise.all([
+        produtosService.listar(),
+        produtosService.listarCategorias(),
+      ])
+
+      if (produtosRes.error) {
+        toast.error('Erro ao carregar produtos: ' + produtosRes.error)
+      } else {
+        setProdutos(produtosRes.data || [])
+      }
+
+      if (categoriasRes.error) {
+        toast.error('Erro ao carregar categorias: ' + categoriasRes.error)
+      } else {
+        setCategorias(categoriasRes.data || [])
+      }
+    } catch {
+      toast.error('Erro ao carregar dados')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    carregarDados()
+  }, [carregarDados])
+
   // Estatísticas
   const stats = {
     totalProdutos: produtos.length,
     produtosAtivos: produtos.filter(p => p.ativo).length,
-    estoqueBaixo: produtos.filter(p => p.estoque_atual <= p.estoque_mínimo && p.estoque_atual > 0).length,
+    estoqueBaixo: produtos.filter(p => p.estoque_atual <= p.estoque_minimo && p.estoque_atual > 0).length,
     semEstoque: produtos.filter(p => p.estoque_atual === 0).length,
     valorEstoque: produtos.reduce((acc, p) => acc + (p.custo * p.estoque_atual), 0),
   }
@@ -104,17 +111,17 @@ export default function ProdutosPage() {
   const produtosFiltrados = produtos.filter(p => {
     const matchBusca =
       p.nome.toLowerCase().includes(busca.toLowerCase()) ||
-      p.código.includes(busca)
+      (p.codigo || '').includes(busca)
 
     const matchCategoria = categoriaFiltro === 'todas' || p.categoria_id === categoriaFiltro
 
     let matchEstoque = true
     if (estoqueFiltro === 'baixo') {
-      matchEstoque = p.estoque_atual <= p.estoque_mínimo && p.estoque_atual > 0
+      matchEstoque = p.estoque_atual <= p.estoque_minimo && p.estoque_atual > 0
     } else if (estoqueFiltro === 'zerado') {
       matchEstoque = p.estoque_atual === 0
     } else if (estoqueFiltro === 'ok') {
-      matchEstoque = p.estoque_atual > p.estoque_mínimo
+      matchEstoque = p.estoque_atual > p.estoque_minimo
     }
 
     return matchBusca && matchCategoria && matchEstoque
@@ -134,10 +141,15 @@ export default function ProdutosPage() {
   }
 
   // Deletar produto
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!produtoParaDeletar) return
-    setProdutos(produtos.filter(p => p.id !== produtoParaDeletar))
-    toast.success('Produto excluído')
+    const { error } = await produtosService.excluir(produtoParaDeletar)
+    if (error) {
+      toast.error('Erro ao excluir produto: ' + error)
+    } else {
+      toast.success('Produto excluído')
+      carregarDados()
+    }
     setDialogDeleteOpen(false)
     setProdutoParaDeletar(null)
   }
@@ -145,6 +157,17 @@ export default function ProdutosPage() {
   const confirmarDelete = (id: string) => {
     setProdutoParaDeletar(id)
     setDialogDeleteOpen(true)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Produtos" />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -237,7 +260,7 @@ export default function ProdutosPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todas">Todas Categorias</SelectItem>
-                {categoriasMock.map(cat => (
+                {categorias.map(cat => (
                   <SelectItem key={cat.id} value={cat.id}>{cat.nome}</SelectItem>
                 ))}
               </SelectContent>
@@ -294,14 +317,14 @@ export default function ProdutosPage() {
                   </TableRow>
                 ) : (
                   produtosFiltrados.map((produto) => {
-                    const margem = calcularMargem(produto.custo, produto.preço_venda)
-                    const estoqueBaixo = produto.estoque_atual <= produto.estoque_mínimo
+                    const margem = calcularMargem(produto.custo, produto.preco_venda)
+                    const estoqueBaixo = produto.estoque_atual <= produto.estoque_minimo
                     const semEstoque = produto.estoque_atual === 0
 
                     return (
                       <TableRow key={produto.id} className={!produto.ativo ? 'opacity-50' : ''}>
                         <TableCell className="font-mono text-sm">
-                          {produto.código}
+                          {produto.codigo}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -312,13 +335,13 @@ export default function ProdutosPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{produto.categoria}</Badge>
+                          <Badge variant="outline">{produto.categoria?.nome}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
                           {formatCurrency(produto.custo)}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          {formatCurrency(produto.preço_venda)}
+                          {formatCurrency(produto.preco_venda)}
                         </TableCell>
                         <TableCell className="text-right">
                           <Badge

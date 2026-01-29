@@ -18,52 +18,21 @@ import {
   AlertTriangle,
   Cake,
   ArrowRight,
+  Loader2,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-
-// Dados mockados para demo
-const mockDashboard = {
-  vendas_dia: 1250.00,
-  custo_dia: 680.00,
-  lucro_dia: 570.00,
-  quantidade_vendas: 8,
-  os_abertas: 5,
-  os_finalizadas: 3,
-  produtos_estoque_baixo: 7,
-  aniversariantes: [
-    { id: '1', nome: 'Maria Silva', data_nascimento: '1990-01-26' },
-    { id: '2', nome: 'Joao Santos', data_nascimento: '1985-01-27' },
-  ],
-  ultimas_vendas: [
-    { id: '1', número: 145, valor: 89.90, cliente: 'Cliente Avulso', created_at: new Date().toISOString() },
-    { id: '2', número: 144, valor: 250.00, cliente: 'Pedro Almeida', created_at: new Date().toISOString() },
-    { id: '3', número: 143, valor: 45.00, cliente: 'Ana Costa', created_at: new Date().toISOString() },
-  ],
-  ultimas_os: [
-    { id: '1', número: 89, status: 'em_andamento', cliente: 'Carlos Lima', aparelho: 'iPhone 13' },
-    { id: '2', número: 88, status: 'aguardando_peca', cliente: 'Julia Ferreira', aparelho: 'Samsung S22' },
-    { id: '3', número: 87, status: 'finalizada', cliente: 'Roberto Dias', aparelho: 'PS5' },
-  ],
-}
-
-const mockVendasSemana = [
-  { dia: 'Seg', vendas: 980, lucro: 420 },
-  { dia: 'Ter', vendas: 1250, lucro: 570 },
-  { dia: 'Qua', vendas: 850, lucro: 380 },
-  { dia: 'Qui', vendas: 1500, lucro: 690 },
-  { dia: 'Sex', vendas: 2100, lucro: 950 },
-  { dia: 'Sáb', vendas: 1800, lucro: 810 },
-  { dia: 'Dom', vendas: 600, lucro: 270 },
-]
+import { toast } from 'sonner'
+import { dashboardService } from '@/services/dashboard.service'
+import type { Cliente, Venda, OrdemServico } from '@/types/database'
 
 const statusColors: Record<string, string> = {
   aberta: 'bg-blue-100 text-blue-800',
   em_analise: 'bg-yellow-100 text-yellow-800',
   aguardando_peca: 'bg-orange-100 text-orange-800',
-  aguardando_aprovação: 'bg-purple-100 text-purple-800',
+  aguardando_aprovacao: 'bg-purple-100 text-purple-800',
   em_andamento: 'bg-cyan-100 text-cyan-800',
   finalizada: 'bg-green-100 text-green-800',
   entregue: 'bg-gray-100 text-gray-800',
@@ -74,23 +43,75 @@ const statusLabels: Record<string, string> = {
   aberta: 'Aberta',
   em_analise: 'Em Análise',
   aguardando_peca: 'Aguardando Peça',
-  aguardando_aprovação: 'Aguardando Aprovação',
+  aguardando_aprovacao: 'Aguardando Aprovação',
   em_andamento: 'Em Andamento',
   finalizada: 'Finalizada',
   entregue: 'Entregue',
   cancelada: 'Cancelada',
 }
 
+interface DashboardResumo {
+  vendas_dia: number
+  custo_dia: number
+  lucro_dia: number
+  quantidade_vendas: number
+  os_abertas: number
+  os_finalizadas: number
+  produtos_estoque_baixo: number
+}
+
 export default function DashboardPage() {
   const { usuario } = useAuthStore()
-  const [data, setData] = useState(mockDashboard)
-  const [isLoading, setIsLoading] = useState(false)
+  const [resumo, setResumo] = useState<DashboardResumo>({
+    vendas_dia: 0,
+    custo_dia: 0,
+    lucro_dia: 0,
+    quantidade_vendas: 0,
+    os_abertas: 0,
+    os_finalizadas: 0,
+    produtos_estoque_baixo: 0,
+  })
+  const [aniversariantes, setAniversariantes] = useState<Cliente[]>([])
+  const [ultimasVendas, setUltimasVendas] = useState<Venda[]>([])
+  const [ultimasOS, setUltimasOS] = useState<OrdemServico[]>([])
+  const [vendasSemana, setVendasSemana] = useState<Array<{ dia: string; total: number; custo: number; lucro: number }>>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [isMounted, setIsMounted] = useState(false)
 
-  // TODO: Buscar dados reais do Supabase
   useEffect(() => {
     setIsMounted(true)
-    // fetchDashboardData()
+    const fetchData = async () => {
+      setIsLoading(true)
+      try {
+        const [resumoRes, aniversariantesRes, vendasRes, osRes, vendasSemanaRes] = await Promise.all([
+          dashboardService.getResumo(),
+          dashboardService.getAniversariantes(),
+          dashboardService.getUltimasVendas(),
+          dashboardService.getUltimasOS(),
+          dashboardService.getVendasSemana(),
+        ])
+
+        if (resumoRes.error) toast.error('Erro ao carregar resumo: ' + resumoRes.error)
+        if (resumoRes.data) setResumo(resumoRes.data)
+
+        if (aniversariantesRes.error) toast.error('Erro ao carregar aniversariantes: ' + aniversariantesRes.error)
+        setAniversariantes(aniversariantesRes.data)
+
+        if (vendasRes.error) toast.error('Erro ao carregar vendas: ' + vendasRes.error)
+        setUltimasVendas(vendasRes.data)
+
+        if (osRes.error) toast.error('Erro ao carregar OS: ' + osRes.error)
+        setUltimasOS(osRes.data)
+
+        if (vendasSemanaRes.error) toast.error('Erro ao carregar vendas da semana: ' + vendasSemanaRes.error)
+        setVendasSemana(vendasSemanaRes.data)
+      } catch {
+        toast.error('Erro ao carregar dados do dashboard')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
   }, [])
 
   const formatCurrency = (value: number) => {
@@ -98,6 +119,17 @@ export default function DashboardPage() {
       style: 'currency',
       currency: 'BRL',
     }).format(value)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Dashboard" />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -137,9 +169,9 @@ export default function DashboardPage() {
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <AnimatedCounter value={data.vendas_dia} formatter={formatCurrency} className="text-2xl font-bold" />
+              <AnimatedCounter value={resumo.vendas_dia} formatter={formatCurrency} className="text-2xl font-bold" />
               <p className="text-xs text-muted-foreground">
-                {data.quantidade_vendas} vendas realizadas
+                {resumo.quantidade_vendas} vendas realizadas
               </p>
             </CardContent>
           </Card>
@@ -153,7 +185,7 @@ export default function DashboardPage() {
               <TrendingDown className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <AnimatedCounter value={data.custo_dia} formatter={formatCurrency} className="text-2xl font-bold text-red-600" />
+              <AnimatedCounter value={resumo.custo_dia} formatter={formatCurrency} className="text-2xl font-bold text-red-600" />
               <p className="text-xs text-muted-foreground">
                 Custo total das vendas
               </p>
@@ -169,9 +201,9 @@ export default function DashboardPage() {
               <TrendingUp className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <AnimatedCounter value={data.lucro_dia} formatter={formatCurrency} className="text-2xl font-bold text-green-600" />
+              <AnimatedCounter value={resumo.lucro_dia} formatter={formatCurrency} className="text-2xl font-bold text-green-600" />
               <p className="text-xs text-green-600/80">
-                Margem: {((data.lucro_dia / data.vendas_dia) * 100).toFixed(1)}%
+                Margem: {resumo.vendas_dia > 0 ? ((resumo.lucro_dia / resumo.vendas_dia) * 100).toFixed(1) : '0.0'}%
               </p>
             </CardContent>
           </Card>
@@ -185,9 +217,9 @@ export default function DashboardPage() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <AnimatedCounter value={data.os_abertas} className="text-2xl font-bold" />
+              <AnimatedCounter value={resumo.os_abertas} className="text-2xl font-bold" />
               <p className="text-xs text-muted-foreground">
-                {data.os_finalizadas} finalizadas hoje
+                {resumo.os_finalizadas} finalizadas hoje
               </p>
             </CardContent>
           </Card>
@@ -196,7 +228,7 @@ export default function DashboardPage() {
         {/* Alertas */}
         <div className="grid gap-4 md:grid-cols-2">
           {/* Estoque Baixo */}
-          {data.produtos_estoque_baixo > 0 && (
+          {resumo.produtos_estoque_baixo > 0 && (
             <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20">
               <CardHeader className="flex flex-row items-center gap-2 pb-2">
                 <AlertTriangle className="h-5 w-5 text-orange-600" />
@@ -206,7 +238,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-orange-700">
-                  <strong>{data.produtos_estoque_baixo}</strong> produtos estão com estoque baixo
+                  <strong>{resumo.produtos_estoque_baixo}</strong> produtos estão com estoque baixo
                 </p>
                 <Link href="/estoque?filter=baixo">
                   <Button variant="link" className="h-auto p-0 text-orange-700">
@@ -218,7 +250,7 @@ export default function DashboardPage() {
           )}
 
           {/* Aniversariantes */}
-          {data.aniversariantes.length > 0 && (
+          {aniversariantes.length > 0 && (
             <Card className="border-pink-200 bg-pink-50 dark:bg-pink-950/20">
               <CardHeader className="flex flex-row items-center gap-2 pb-2">
                 <Cake className="h-5 w-5 text-pink-600" />
@@ -228,12 +260,12 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-1">
-                  {data.aniversariantes.map((cliente) => (
+                  {aniversariantes.map((cliente) => (
                     <li key={cliente.id} className="text-sm text-pink-700">
                       {cliente.nome} -{' '}
-                      {format(new Date(cliente.data_nascimento + 'T00:00:00'), 'dd/MM', {
+                      {cliente.data_nascimento ? format(new Date(cliente.data_nascimento + 'T00:00:00'), 'dd/MM', {
                         locale: ptBR,
-                      })}
+                      }) : ''}
                     </li>
                   ))}
                 </ul>
@@ -251,7 +283,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="h-[300px]">
               {isMounted && <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mockVendasSemana}>
+                <BarChart data={vendasSemana}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis dataKey="dia" className="text-xs" />
                   <YAxis
@@ -278,7 +310,7 @@ export default function DashboardPage() {
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="vendas" name="Vendas" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="total" name="Vendas" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="lucro" name="Lucro" fill="#22c55e" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>}
@@ -303,23 +335,26 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.ultimas_vendas.map((venda) => (
+                {ultimasVendas.map((venda) => (
                   <div
                     key={venda.id}
                     className="flex items-center justify-between border-b pb-2 last:border-0"
                   >
                     <div>
-                      <p className="font-medium">Venda #{venda.número}</p>
-                      <p className="text-sm text-muted-foreground">{venda.cliente}</p>
+                      <p className="font-medium">Venda #{venda.numero}</p>
+                      <p className="text-sm text-muted-foreground">{(venda.cliente as { id: string; nome: string } | undefined)?.nome || 'Cliente Avulso'}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">{formatCurrency(venda.valor)}</p>
+                      <p className="font-medium">{formatCurrency(venda.valor_total)}</p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(venda.created_at), 'HH:mm')}
                       </p>
                     </div>
                   </div>
                 ))}
+                {ultimasVendas.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">Nenhuma venda recente</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -339,15 +374,15 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.ultimas_os.map((os) => (
+                {ultimasOS.map((os) => (
                   <div
                     key={os.id}
                     className="flex items-center justify-between border-b pb-2 last:border-0"
                   >
                     <div>
-                      <p className="font-medium">OS #{os.número}</p>
+                      <p className="font-medium">OS #{os.numero}</p>
                       <p className="text-sm text-muted-foreground">
-                        {os.cliente} - {os.aparelho}
+                        {(os.cliente as { id: string; nome: string } | undefined)?.nome || 'Sem cliente'} - {os.modelo || os.tipo_aparelho || 'N/A'}
                       </p>
                     </div>
                     <Badge className={statusColors[os.status]}>
@@ -355,6 +390,9 @@ export default function DashboardPage() {
                     </Badge>
                   </div>
                 ))}
+                {ultimasOS.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">Nenhuma OS recente</p>
+                )}
               </div>
             </CardContent>
           </Card>

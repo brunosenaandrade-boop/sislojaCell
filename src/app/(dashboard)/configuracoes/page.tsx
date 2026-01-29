@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Header } from '@/components/layout/Header'
-import { getClient } from '@/lib/supabase/client'
 import { useAuthStore, usePrintConfigStore } from '@/store/useStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -53,8 +52,11 @@ import {
   AlertTriangle,
   CheckCircle,
   KeyRound,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { configuracoesService } from '@/services/configuracoes.service'
+import type { Empresa, Usuario } from '@/types/database'
 
 interface UsuarioItem {
   id: string
@@ -65,21 +67,23 @@ interface UsuarioItem {
   ultimo_acesso: string
 }
 
-export default function ConfiguraçõesPage() {
-  const supabase = getClient()
+export default function ConfiguracoesPage() {
   const { empresa } = useAuthStore()
   const printConfig = usePrintConfigStore()
 
+  // Loading
+  const [isLoadingPage, setIsLoadingPage] = useState(true)
+
   // Dados da empresa
-  const [nomeEmpresa, setNomeEmpresa] = useState('Assistência Tech SC')
-  const [cnpj, setCnpj] = useState('12.345.678/0001-90')
-  const [telefoneEmpresa, setTelefoneEmpresa] = useState('(48) 3333-1111')
-  const [whatsapp, setWhatsapp] = useState('(48) 99999-0000')
-  const [emailEmpresa, setEmailEmpresa] = useState('contato@assistenciatechsc.com.br')
-  const [endereçoEmpresa, setEndereçoEmpresa] = useState('Rua Principal, 100 - Centro')
-  const [cidadeEmpresa, setCidadeEmpresa] = useState('Florianópolis')
-  const [estadoEmpresa, setEstadoEmpresa] = useState('SC')
-  const [cepEmpresa, setCepEmpresa] = useState('88000-000')
+  const [nomeEmpresa, setNomeEmpresa] = useState('')
+  const [cnpj, setCnpj] = useState('')
+  const [telefoneEmpresa, setTelefoneEmpresa] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
+  const [emailEmpresa, setEmailEmpresa] = useState('')
+  const [enderecoEmpresa, setEnderecoEmpresa] = useState('')
+  const [cidadeEmpresa, setCidadeEmpresa] = useState('')
+  const [estadoEmpresa, setEstadoEmpresa] = useState('')
+  const [cepEmpresa, setCepEmpresa] = useState('')
 
   // Logo
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
@@ -89,7 +93,7 @@ export default function ConfiguraçõesPage() {
   const [tipoImpressora, setTipoImpressora] = useState('térmica')
   const [larguraPapel, setLarguraPapel] = useState('80')
   const [mostrarLogo, setMostrarLogo] = useState(true)
-  const [mostrarEndereço, setMostrarEndereço] = useState(true)
+  const [mostrarEndereco, setMostrarEndereco] = useState(true)
   const [mostrarTelefone, setMostrarTelefone] = useState(true)
   const [mensagemCupom, setMensagemCupom] = useState('Obrigado pela preferência!')
 
@@ -101,57 +105,82 @@ export default function ConfiguraçõesPage() {
     setTipoImpressora(printConfig.tipoImpressora)
     setLarguraPapel(printConfig.larguraPapel)
     setMostrarLogo(printConfig.mostrarLogo)
-    setMostrarEndereço(printConfig.mostrarEndereco)
+    setMostrarEndereco(printConfig.mostrarEndereco)
     setMostrarTelefone(printConfig.mostrarTelefone)
     setMensagemCupom(printConfig.mensagemCupom)
     setStoreHydrated(true)
   }, [printConfig, storeHydrated])
 
   // Usuários
-  const [usuários, setUsuários] = useState<UsuarioItem[]>([])
-  const [dialogUsuárioOpen, setDialogUsuárioOpen] = useState(false)
-  const [editandoUsuário, setEditandoUsuário] = useState<UsuarioItem | null>(null)
-  const [formNomeUsuário, setFormNomeUsuário] = useState('')
-  const [formEmailUsuário, setFormEmailUsuário] = useState('')
-  const [formSenhaUsuário, setFormSenhaUsuário] = useState('')
-  const [formPerfilUsuário, setFormPerfilUsuário] = useState<string>('funcionario')
+  const [usuarios, setUsuarios] = useState<UsuarioItem[]>([])
+  const [dialogUsuarioOpen, setDialogUsuarioOpen] = useState(false)
+  const [editandoUsuario, setEditandoUsuario] = useState<UsuarioItem | null>(null)
+  const [formNomeUsuario, setFormNomeUsuario] = useState('')
+  const [formEmailUsuario, setFormEmailUsuario] = useState('')
+  const [formSenhaUsuario, setFormSenhaUsuario] = useState('')
+  const [formPerfilUsuario, setFormPerfilUsuario] = useState<string>('funcionario')
   const [mostrarSenha, setMostrarSenha] = useState(false)
 
   // Dialog delete usuário
   const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false)
-  const [usuárioParaDeletar, setUsuárioParaDeletar] = useState<string | null>(null)
+  const [usuarioParaDeletar, setUsuarioParaDeletar] = useState<string | null>(null)
 
   const [isLoading, setIsLoading] = useState(false)
 
-  // Buscar usuários do banco
-  const fetchUsuarios = useCallback(async () => {
-    if (!empresa?.id) return
+  // Fetch empresa data
+  const fetchEmpresa = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('empresa_id', empresa.id)
-        .order('created_at', { ascending: true })
-
-      if (error) throw error
+      const { data, error } = await configuracoesService.getEmpresa()
+      if (error) {
+        toast.error('Erro ao carregar empresa: ' + error)
+        return
+      }
       if (data) {
-        setUsuários(data.map((u: Record<string, unknown>) => ({
-          id: u.id as string,
-          nome: u.nome as string,
-          email: u.email as string,
-          perfil: u.perfil as 'admin' | 'funcionario',
-          ativo: u.ativo as boolean,
-          ultimo_acesso: (u.ultimo_acesso as string) || '',
-        })))
+        setNomeEmpresa(data.nome || '')
+        setCnpj(data.cnpj || '')
+        setTelefoneEmpresa(data.telefone || '')
+        setWhatsapp(data.whatsapp || '')
+        setEmailEmpresa(data.email || '')
+        setEnderecoEmpresa(data.endereco || '')
+        setCidadeEmpresa(data.cidade || '')
+        setEstadoEmpresa(data.estado || '')
+        setCepEmpresa(data.cep || '')
+        if (data.logo_url) setLogoPreview(data.logo_url)
       }
     } catch {
-      // silenciar erro em produção
+      toast.error('Erro ao carregar dados da empresa')
     }
-  }, [empresa?.id, supabase])
+  }, [])
+
+  // Fetch usuarios
+  const fetchUsuarios = useCallback(async () => {
+    try {
+      const { data, error } = await configuracoesService.listarUsuarios()
+      if (error) {
+        toast.error('Erro ao carregar usuários: ' + error)
+        return
+      }
+      setUsuarios(data.map((u: Usuario) => ({
+        id: u.id,
+        nome: u.nome,
+        email: u.email,
+        perfil: u.perfil,
+        ativo: u.ativo,
+        ultimo_acesso: u.ultimo_acesso || '',
+      })))
+    } catch {
+      toast.error('Erro ao carregar usuários')
+    }
+  }, [])
 
   useEffect(() => {
-    fetchUsuarios()
-  }, [fetchUsuarios])
+    const load = async () => {
+      setIsLoadingPage(true)
+      await Promise.all([fetchEmpresa(), fetchUsuarios()])
+      setIsLoadingPage(false)
+    }
+    load()
+  }, [fetchEmpresa, fetchUsuarios])
 
   // Formatar CNPJ
   const formatCNPJ = (value: string) => {
@@ -193,7 +222,21 @@ export default function ConfiguraçõesPage() {
 
     setIsLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 800))
+      const { error } = await configuracoesService.atualizarEmpresa({
+        nome: nomeEmpresa,
+        cnpj: cnpj || undefined,
+        telefone: telefoneEmpresa || undefined,
+        whatsapp: whatsapp || undefined,
+        email: emailEmpresa || undefined,
+        endereco: enderecoEmpresa || undefined,
+        cidade: cidadeEmpresa || undefined,
+        estado: estadoEmpresa || undefined,
+        cep: cepEmpresa || undefined,
+      })
+      if (error) {
+        toast.error('Erro ao salvar: ' + error)
+        return
+      }
       toast.success('Dados da empresa salvos!')
     } catch {
       toast.error('Erro ao salvar')
@@ -203,16 +246,15 @@ export default function ConfiguraçõesPage() {
   }
 
   // Salvar config de impressão
-  const handleSalvarImpressão = async () => {
+  const handleSalvarImpressao = async () => {
     setIsLoading(true)
     try {
       printConfig.setTipoImpressora(tipoImpressora)
       printConfig.setLarguraPapel(larguraPapel)
       printConfig.setMostrarLogo(mostrarLogo)
-      printConfig.setMostrarEndereco(mostrarEndereço)
+      printConfig.setMostrarEndereco(mostrarEndereco)
       printConfig.setMostrarTelefone(mostrarTelefone)
       printConfig.setMensagemCupom(mensagemCupom)
-      await new Promise(resolve => setTimeout(resolve, 300))
       toast.success('Configurações de impressão salvas!')
     } catch {
       toast.error('Erro ao salvar')
@@ -222,79 +264,68 @@ export default function ConfiguraçõesPage() {
   }
 
   // Abrir dialog novo usuário
-  const abrirNovoUsuário = () => {
-    setEditandoUsuário(null)
-    setFormNomeUsuário('')
-    setFormEmailUsuário('')
-    setFormSenhaUsuário('')
-    setFormPerfilUsuário('funcionario')
-    setDialogUsuárioOpen(true)
+  const abrirNovoUsuario = () => {
+    setEditandoUsuario(null)
+    setFormNomeUsuario('')
+    setFormEmailUsuario('')
+    setFormSenhaUsuario('')
+    setFormPerfilUsuario('funcionario')
+    setDialogUsuarioOpen(true)
   }
 
   // Abrir dialog editar usuário
-  const abrirEditarUsuário = (usuário: UsuarioItem) => {
-    setEditandoUsuário(usuário)
-    setFormNomeUsuário(usuário.nome)
-    setFormEmailUsuário(usuário.email)
-    setFormSenhaUsuário('')
-    setFormPerfilUsuário(usuário.perfil)
-    setDialogUsuárioOpen(true)
+  const abrirEditarUsuario = (usuario: UsuarioItem) => {
+    setEditandoUsuario(usuario)
+    setFormNomeUsuario(usuario.nome)
+    setFormEmailUsuario(usuario.email)
+    setFormSenhaUsuario('')
+    setFormPerfilUsuario(usuario.perfil)
+    setDialogUsuarioOpen(true)
   }
 
   // Salvar usuário
-  const handleSalvarUsuário = async () => {
-    if (!formNomeUsuário.trim()) {
+  const handleSalvarUsuario = async () => {
+    if (!formNomeUsuario.trim()) {
       toast.error('Informe o nome')
       return
     }
-    if (!formEmailUsuário.trim()) {
+    if (!formEmailUsuario.trim()) {
       toast.error('Informe o email')
       return
     }
-    if (!editandoUsuário && !formSenhaUsuário.trim()) {
+    if (!editandoUsuario && !formSenhaUsuario.trim()) {
       toast.error('Informe a senha')
       return
     }
 
     setIsLoading(true)
     try {
-      if (editandoUsuário) {
-        // Editar usuário existente
-        const { error } = await supabase
-          .from('usuarios')
-          .update({
-            nome: formNomeUsuário,
-            email: formEmailUsuário,
-            perfil: formPerfilUsuário,
-          })
-          .eq('id', editandoUsuário.id)
-
-        if (error) throw error
+      if (editandoUsuario) {
+        const { error } = await configuracoesService.atualizarUsuario(editandoUsuario.id, {
+          nome: formNomeUsuario,
+          email: formEmailUsuario,
+          perfil: formPerfilUsuario as 'admin' | 'funcionario',
+        })
+        if (error) {
+          toast.error('Erro ao atualizar: ' + error)
+          return
+        }
         toast.success('Usuário atualizado!')
       } else {
-        // Criar novo usuário via Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formEmailUsuário,
-          password: formSenhaUsuário,
+        const { error } = await configuracoesService.criarUsuario({
+          nome: formNomeUsuario,
+          email: formEmailUsuario,
+          senha: formSenhaUsuario,
+          perfil: formPerfilUsuario as 'admin' | 'funcionario',
         })
-
-        if (authError) throw authError
-
-        // Inserir na tabela usuarios
-        const { error: insertError } = await supabase.from('usuarios').insert({
-          auth_id: authData.user?.id,
-          empresa_id: empresa?.id,
-          nome: formNomeUsuário,
-          email: formEmailUsuário,
-          perfil: formPerfilUsuário,
-          ativo: true,
-        })
-
-        if (insertError) throw insertError
+        if (error) {
+          toast.error('Erro ao criar: ' + error)
+          return
+        }
         toast.success('Usuário criado!')
       }
 
-      setDialogUsuárioOpen(false)
+      setDialogUsuarioOpen(false)
       await fetchUsuarios()
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erro ao salvar usuário'
@@ -307,6 +338,9 @@ export default function ConfiguraçõesPage() {
   // Resetar senha do usuário
   const handleResetSenha = async (email: string) => {
     try {
+      // Use the base supabase client for auth operations
+      const { getSupabase } = await import('@/services/base')
+      const supabase = getSupabase()
       await supabase.auth.resetPasswordForEmail(email)
       toast.success('E-mail de redefinição de senha enviado')
     } catch {
@@ -315,20 +349,21 @@ export default function ConfiguraçõesPage() {
   }
 
   // Toggle ativo usuário
-  const toggleAtivoUsuário = async (id: string) => {
-    const usuário = usuários.find(u => u.id === id)
-    if (!usuário) return
+  const toggleAtivoUsuario = async (id: string) => {
+    const usuario = usuarios.find(u => u.id === id)
+    if (!usuario) return
 
-    const novoAtivo = !usuário.ativo
+    const novoAtivo = !usuario.ativo
     try {
-      const { error } = await supabase
-        .from('usuarios')
-        .update({ ativo: novoAtivo })
-        .eq('id', id)
+      if (novoAtivo) {
+        const { error } = await configuracoesService.atualizarUsuario(id, { ativo: true })
+        if (error) throw new Error(error)
+      } else {
+        const { error } = await configuracoesService.desativarUsuario(id)
+        if (error) throw new Error(error)
+      }
 
-      if (error) throw error
-
-      setUsuários(usuários.map(u =>
+      setUsuarios(usuarios.map(u =>
         u.id === id ? { ...u, ativo: novoAtivo } : u
       ))
       toast.success(novoAtivo ? 'Usuário ativado' : 'Usuário desativado')
@@ -338,43 +373,39 @@ export default function ConfiguraçõesPage() {
   }
 
   // Confirmar exclusão usuário
-  const confirmarDeleteUsuário = (id: string) => {
-    const usuário = usuários.find(u => u.id === id)
-    if (usuário?.perfil === 'admin') {
+  const confirmarDeleteUsuario = (id: string) => {
+    const usuario = usuarios.find(u => u.id === id)
+    if (usuario?.perfil === 'admin') {
       toast.error('Não é possível excluir o administrador')
       return
     }
-    setUsuárioParaDeletar(id)
+    setUsuarioParaDeletar(id)
     setDialogDeleteOpen(true)
   }
 
-  // Deletar usuário
-  const handleDeleteUsuário = async () => {
-    if (!usuárioParaDeletar) return
+  // Deletar usuário (desativar)
+  const handleDeleteUsuario = async () => {
+    if (!usuarioParaDeletar) return
     try {
-      const { error } = await supabase
-        .from('usuarios')
-        .delete()
-        .eq('id', usuárioParaDeletar)
+      const { error } = await configuracoesService.desativarUsuario(usuarioParaDeletar)
+      if (error) throw new Error(error)
 
-      if (error) throw error
-
-      setUsuários(usuários.filter(u => u.id !== usuárioParaDeletar))
+      setUsuarios(usuarios.filter(u => u.id !== usuarioParaDeletar))
       toast.success('Usuário excluído')
     } catch {
       toast.error('Erro ao excluir usuário')
     } finally {
       setDialogDeleteOpen(false)
-      setUsuárioParaDeletar(null)
+      setUsuarioParaDeletar(null)
     }
   }
 
   // Exportar backup
   const handleExportarBackup = () => {
     const dados = {
-      empresa: { nomeEmpresa, cnpj, telefoneEmpresa, whatsapp, emailEmpresa, endereçoEmpresa, cidadeEmpresa, estadoEmpresa },
-      impressão: { tipoImpressora, larguraPapel, mostrarLogo, mostrarEndereço, mostrarTelefone, mensagemCupom },
-      usuários: usuários.map(u => ({ nome: u.nome, email: u.email, perfil: u.perfil })),
+      empresa: { nomeEmpresa, cnpj, telefoneEmpresa, whatsapp, emailEmpresa, enderecoEmpresa, cidadeEmpresa, estadoEmpresa },
+      impressao: { tipoImpressora, larguraPapel, mostrarLogo, mostrarEndereco, mostrarTelefone, mensagemCupom },
+      usuarios: usuarios.map(u => ({ nome: u.nome, email: u.email, perfil: u.perfil })),
       data_export: new Date().toISOString(),
     }
 
@@ -393,6 +424,17 @@ export default function ConfiguraçõesPage() {
     return new Date(dateString).toLocaleString('pt-BR')
   }
 
+  if (isLoadingPage) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Configurações" />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col">
       <Header title="Configurações" />
@@ -404,11 +446,11 @@ export default function ConfiguraçõesPage() {
               <Building2 className="mr-2 h-4 w-4 hidden sm:inline" />
               Empresa
             </TabsTrigger>
-            <TabsTrigger value="impressão">
+            <TabsTrigger value="impressao">
               <Printer className="mr-2 h-4 w-4 hidden sm:inline" />
               Impressão
             </TabsTrigger>
-            <TabsTrigger value="usuários">
+            <TabsTrigger value="usuarios">
               <Users className="mr-2 h-4 w-4 hidden sm:inline" />
               Usuários
             </TabsTrigger>
@@ -490,11 +532,11 @@ export default function ConfiguraçõesPage() {
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2 sm:col-span-2">
-                        <Label htmlFor="endereço_empresa">Endereço</Label>
+                        <Label htmlFor="endereco_empresa">Endereço</Label>
                         <Input
-                          id="endereço_empresa"
-                          value={endereçoEmpresa}
-                          onChange={(e) => setEndereçoEmpresa(e.target.value)}
+                          id="endereco_empresa"
+                          value={enderecoEmpresa}
+                          onChange={(e) => setEnderecoEmpresa(e.target.value)}
                         />
                       </div>
 
@@ -609,7 +651,7 @@ export default function ConfiguraçõesPage() {
           </TabsContent>
 
           {/* ===== TAB IMPRESSAO ===== */}
-          <TabsContent value="impressão" className="space-y-6">
+          <TabsContent value="impressao" className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Config de Impressão */}
               <Card>
@@ -672,11 +714,11 @@ export default function ConfiguraçõesPage() {
                     <div className="flex items-center justify-between rounded-lg border p-3">
                       <span className="text-sm">Endereço da empresa</span>
                       <Button
-                        variant={mostrarEndereço ? 'default' : 'outline'}
+                        variant={mostrarEndereco ? 'default' : 'outline'}
                         size="sm"
-                        onClick={() => setMostrarEndereço(!mostrarEndereço)}
+                        onClick={() => setMostrarEndereco(!mostrarEndereco)}
                       >
-                        {mostrarEndereço ? 'Sim' : 'Não'}
+                        {mostrarEndereco ? 'Sim' : 'Não'}
                       </Button>
                     </div>
 
@@ -706,7 +748,7 @@ export default function ConfiguraçõesPage() {
                   </div>
 
                   <div className="flex justify-end">
-                    <Button onClick={handleSalvarImpressão} disabled={isLoading}>
+                    <Button onClick={handleSalvarImpressao} disabled={isLoading}>
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? 'Salvando...' : 'Salvar'}
                     </Button>
@@ -741,9 +783,9 @@ export default function ConfiguraçõesPage() {
                       {cnpj && <div>CNPJ: {cnpj}</div>}
                     </div>
 
-                    {mostrarEndereço && endereçoEmpresa && (
+                    {mostrarEndereco && enderecoEmpresa && (
                       <div className="text-center mb-1">
-                        <div>{endereçoEmpresa}</div>
+                        <div>{enderecoEmpresa}</div>
                         <div>{cidadeEmpresa}/{estadoEmpresa}</div>
                       </div>
                     )}
@@ -796,7 +838,7 @@ export default function ConfiguraçõesPage() {
           </TabsContent>
 
           {/* ===== TAB USUARIOS ===== */}
-          <TabsContent value="usuários" className="space-y-6">
+          <TabsContent value="usuarios" className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-medium">Gerenciar Usuários</h3>
@@ -804,7 +846,7 @@ export default function ConfiguraçõesPage() {
                   Cadastre e gerencie os usuários do sistema
                 </p>
               </div>
-              <Button onClick={abrirNovoUsuário}>
+              <Button onClick={abrirNovoUsuario}>
                 <Plus className="mr-2 h-4 w-4" />
                 Novo Usuário
               </Button>
@@ -856,22 +898,22 @@ export default function ConfiguraçõesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {usuários.map(usuário => (
-                      <TableRow key={usuário.id} className={!usuário.ativo ? 'opacity-50' : ''}>
+                    {usuarios.map(usuario => (
+                      <TableRow key={usuario.id} className={!usuario.ativo ? 'opacity-50' : ''}>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                               <span className="text-sm font-medium text-primary">
-                                {usuário.nome.charAt(0)}
+                                {usuario.nome.charAt(0)}
                               </span>
                             </div>
-                            <span className="font-medium">{usuário.nome}</span>
+                            <span className="font-medium">{usuario.nome}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm">{usuário.email}</TableCell>
+                        <TableCell className="text-sm">{usuario.email}</TableCell>
                         <TableCell>
-                          <Badge variant={usuário.perfil === 'admin' ? 'default' : 'secondary'}>
-                            {usuário.perfil === 'admin' ? (
+                          <Badge variant={usuario.perfil === 'admin' ? 'default' : 'secondary'}>
+                            {usuario.perfil === 'admin' ? (
                               <><Shield className="h-3 w-3 mr-1" /> Admin</>
                             ) : (
                               'Funcionário'
@@ -879,12 +921,12 @@ export default function ConfiguraçõesPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={usuário.ativo ? 'default' : 'secondary'}>
-                            {usuário.ativo ? 'Ativo' : 'Inativo'}
+                          <Badge variant={usuario.ativo ? 'default' : 'secondary'}>
+                            {usuario.ativo ? 'Ativo' : 'Inativo'}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {formatDateTime(usuário.ultimo_acesso)}
+                          {formatDateTime(usuario.ultimo_acesso)}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
@@ -892,7 +934,7 @@ export default function ConfiguraçõesPage() {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() => abrirEditarUsuário(usuário)}
+                              onClick={() => abrirEditarUsuario(usuario)}
                               title="Editar"
                             >
                               <Edit className="h-4 w-4" />
@@ -901,7 +943,7 @@ export default function ConfiguraçõesPage() {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() => handleResetSenha(usuário.email)}
+                              onClick={() => handleResetSenha(usuario.email)}
                               title="Resetar senha"
                             >
                               <KeyRound className="h-4 w-4" />
@@ -910,16 +952,16 @@ export default function ConfiguraçõesPage() {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() => toggleAtivoUsuário(usuário.id)}
-                              title={usuário.ativo ? 'Desativar' : 'Ativar'}
+                              onClick={() => toggleAtivoUsuario(usuario.id)}
+                              title={usuario.ativo ? 'Desativar' : 'Ativar'}
                             >
-                              {usuário.ativo ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              {usuario.ativo ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-red-600"
-                              onClick={() => confirmarDeleteUsuário(usuário.id)}
+                              onClick={() => confirmarDeleteUsuario(usuario.id)}
                               title="Excluir"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -1016,14 +1058,14 @@ export default function ConfiguraçõesPage() {
         </Tabs>
 
         {/* Dialog Novo/Editar Usuário */}
-        <Dialog open={dialogUsuárioOpen} onOpenChange={setDialogUsuárioOpen}>
+        <Dialog open={dialogUsuarioOpen} onOpenChange={setDialogUsuarioOpen}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editandoUsuário ? 'Editar Usuário' : 'Novo Usuário'}
+                {editandoUsuario ? 'Editar Usuário' : 'Novo Usuário'}
               </DialogTitle>
               <DialogDescription>
-                {editandoUsuário
+                {editandoUsuario
                   ? 'Altere os dados do usuário'
                   : 'Preencha os dados para criar um novo usuário'}
               </DialogDescription>
@@ -1033,8 +1075,8 @@ export default function ConfiguraçõesPage() {
                 <Label>Nome *</Label>
                 <Input
                   placeholder="Nome do usuário"
-                  value={formNomeUsuário}
-                  onChange={(e) => setFormNomeUsuário(e.target.value)}
+                  value={formNomeUsuario}
+                  onChange={(e) => setFormNomeUsuario(e.target.value)}
                 />
               </div>
 
@@ -1043,19 +1085,19 @@ export default function ConfiguraçõesPage() {
                 <Input
                   type="email"
                   placeholder="usuário@email.com"
-                  value={formEmailUsuário}
-                  onChange={(e) => setFormEmailUsuário(e.target.value)}
+                  value={formEmailUsuario}
+                  onChange={(e) => setFormEmailUsuario(e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>{editandoUsuário ? 'Nova Senha (deixe vazio para manter)' : 'Senha *'}</Label>
+                <Label>{editandoUsuario ? 'Nova Senha (deixe vazio para manter)' : 'Senha *'}</Label>
                 <div className="relative">
                   <Input
                     type={mostrarSenha ? 'text' : 'password'}
                     placeholder="********"
-                    value={formSenhaUsuário}
-                    onChange={(e) => setFormSenhaUsuário(e.target.value)}
+                    value={formSenhaUsuario}
+                    onChange={(e) => setFormSenhaUsuario(e.target.value)}
                     className="pr-10"
                   />
                   <Button
@@ -1072,7 +1114,7 @@ export default function ConfiguraçõesPage() {
 
               <div className="space-y-2">
                 <Label>Perfil de Acesso *</Label>
-                <Select value={formPerfilUsuário} onValueChange={setFormPerfilUsuário}>
+                <Select value={formPerfilUsuario} onValueChange={setFormPerfilUsuario}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -1094,10 +1136,10 @@ export default function ConfiguraçõesPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogUsuárioOpen(false)}>
+              <Button variant="outline" onClick={() => setDialogUsuarioOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleSalvarUsuário} disabled={isLoading}>
+              <Button onClick={handleSalvarUsuario} disabled={isLoading}>
                 {isLoading ? 'Salvando...' : 'Salvar'}
               </Button>
             </DialogFooter>
@@ -1117,7 +1159,7 @@ export default function ConfiguraçõesPage() {
               <Button variant="outline" onClick={() => setDialogDeleteOpen(false)}>
                 Cancelar
               </Button>
-              <Button variant="destructive" onClick={handleDeleteUsuário}>
+              <Button variant="destructive" onClick={handleDeleteUsuario}>
                 Excluir
               </Button>
             </DialogFooter>

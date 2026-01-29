@@ -13,7 +13,7 @@ interface PrintConfig {
 
 interface CupomOSProps {
   os: {
-    número: number
+    numero: number
     status: string
     tipo_aparelho?: string
     marca?: string
@@ -28,7 +28,7 @@ interface CupomOSProps {
     condicao_entrada?: string
     acessorios?: string
     problema_relatado: string
-    valor_serviços: number
+    valor_servicos: number
     valor_produtos: number
     valor_desconto: number
     valor_total: number
@@ -42,7 +42,7 @@ interface CupomOSProps {
     itens?: {
       id: string
       tipo: string
-      nome: string
+      descricao: string
       quantidade: number
       valor_unitario: number
     }[]
@@ -123,7 +123,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
       {/* Título */}
       <div className="text-center mb-2">
         <h2 className="font-bold text-sm">{getTitulo()}</h2>
-        <p className="text-lg font-bold">OS #{os.número}</p>
+        <p className="text-lg font-bold">OS #{os.numero}</p>
       </div>
 
       {/* Data e Operador */}
@@ -241,7 +241,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
           <p className="font-bold">SERVIÇOS REALIZADOS:</p>
           {os.itens.map(item => (
             <div key={item.id} className="flex justify-between text-[10px]">
-              <span>{item.quantidade}x {item.nome}</span>
+              <span>{item.quantidade}x {item.descricao}</span>
               <span>{formatCurrency(item.valor_unitario * item.quantidade)}</span>
             </div>
           ))}
@@ -256,7 +256,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
             <p className="font-bold">SERVIÇOS/PEÇAS:</p>
             {os.itens.map(item => (
               <div key={item.id} className="flex justify-between text-[10px]">
-                <span>{item.quantidade}x {item.nome}</span>
+                <span>{item.quantidade}x {item.descricao}</span>
                 <span>{formatCurrency(item.valor_unitario * item.quantidade)}</span>
               </div>
             ))}
@@ -268,7 +268,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
           <div className="mb-2">
             <div className="flex justify-between">
               <span>Serviços:</span>
-              <span>{formatCurrency(os.valor_serviços)}</span>
+              <span>{formatCurrency(os.valor_servicos)}</span>
             </div>
             <div className="flex justify-between">
               <span>Peças:</span>

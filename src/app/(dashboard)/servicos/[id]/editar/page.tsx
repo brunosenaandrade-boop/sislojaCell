@@ -30,55 +30,58 @@ import {
   Zap,
   History,
   AlertTriangle,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { servicosService } from '@/services/servicos.service'
 
-// Serviço mockado
-const serviçoMock = {
-  id: '1',
-  nome: 'Troca de Tela',
-  descrição: 'Substituição completa do display e touchscreen',
-  tipo: 'celular',
-  nivel: 'avançado',
-  preço_base: 150.00,
-  tempo_estimado: 60,
-  ativo: true,
-  total_realizados: 45,
-  created_at: '2023-06-15',
-  updated_at: '2024-01-20',
-}
-
-export default function EditarServiçoPage() {
+export default function EditarServicoPage() {
   const router = useRouter()
   const params = useParams()
   const [isLoading, setIsLoading] = useState(false)
+  const [loadingData, setLoadingData] = useState(true)
 
   // Estados do formulario
   const [nome, setNome] = useState('')
-  const [descrição, setDescrição] = useState('')
+  const [descricao, setDescricao] = useState('')
   const [tipo, setTipo] = useState<string>('')
-  const [nivel, setNivel] = useState<string>('')
-  const [preçoBase, setPreçoBase] = useState('')
+  const [precoBase, setPrecoBase] = useState('')
   const [tempoEstimado, setTempoEstimado] = useState('')
   const [ativo, setAtivo] = useState(true)
-  const [totalRealizados, setTotalRealizados] = useState(0)
 
   // Carregar dados do serviço
   useEffect(() => {
-    // TODO: Buscar do Supabase
-    const serviço = serviçoMock
-    setNome(serviço.nome)
-    setDescrição(serviço.descrição || '')
-    setTipo(serviço.tipo)
-    setNivel(serviço.nivel)
-    setPreçoBase(serviço.preço_base.toString())
-    setTempoEstimado(serviço.tempo_estimado.toString())
-    setAtivo(serviço.ativo)
-    setTotalRealizados(serviço.total_realizados)
-  }, [params.id])
+    const carregarServico = async () => {
+      setLoadingData(true)
+      try {
+        const { data, error } = await servicosService.buscarPorId(params.id as string)
+
+        if (error) {
+          toast.error('Erro ao carregar serviço: ' + error)
+          router.push('/servicos')
+          return
+        }
+
+        if (data) {
+          setNome(data.nome)
+          setDescricao(data.descricao || '')
+          setTipo(data.tipo)
+          setPrecoBase(data.preco_base.toString())
+          setTempoEstimado(data.tempo_estimado?.toString() || '')
+          setAtivo(data.ativo)
+        }
+      } catch {
+        toast.error('Erro ao carregar dados')
+        router.push('/servicos')
+      } finally {
+        setLoadingData(false)
+      }
+    }
+    carregarServico()
+  }, [params.id, router])
 
   // Calculos
-  const preçoNum = parseFloat(preçoBase) || 0
+  const precoNum = parseFloat(precoBase) || 0
   const tempoNum = parseInt(tempoEstimado) || 0
 
   // Formatar moeda
@@ -108,11 +111,7 @@ export default function EditarServiçoPage() {
       toast.error('Selecione o tipo do serviço')
       return
     }
-    if (!nivel) {
-      toast.error('Selecione o nível do serviço')
-      return
-    }
-    if (preçoNum <= 0) {
+    if (precoNum <= 0) {
       toast.error('Informe o preço base')
       return
     }
@@ -124,26 +123,37 @@ export default function EditarServiçoPage() {
     setIsLoading(true)
 
     try {
-      const serviço = {
-        id: params.id,
+      const { error } = await servicosService.atualizar(params.id as string, {
         nome,
-        descrição,
-        tipo,
-        nivel,
-        preço_base: preçoNum,
+        descricao,
+        tipo: tipo as 'basico' | 'avancado',
+        preco_base: precoNum,
         tempo_estimado: tempoNum,
         ativo,
+      })
+
+      if (error) {
+        toast.error('Erro ao atualizar serviço: ' + error)
+      } else {
+        toast.success('Serviço atualizado com sucesso!')
+        router.push('/servicos')
       }
-
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      toast.success('Serviço atualizado com sucesso!')
-      router.push('/servicos')
-    } catch (error) {
+    } catch {
       toast.error('Erro ao atualizar serviço')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (loadingData) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Editar Serviço" />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -187,11 +197,11 @@ export default function EditarServiçoPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="descrição">Descrição</Label>
+                  <Label htmlFor="descricao">Descrição</Label>
                   <Textarea
-                    id="descrição"
-                    value={descrição}
-                    onChange={(e) => setDescrição(e.target.value)}
+                    id="descricao"
+                    value={descricao}
+                    onChange={(e) => setDescricao(e.target.value)}
                     rows={3}
                   />
                 </div>
@@ -204,36 +214,13 @@ export default function EditarServiçoPage() {
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="celular">
-                          <div className="flex items-center gap-2">
-                            <Smartphone className="h-4 w-4" />
-                            Celular
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="videogame">
-                          <div className="flex items-center gap-2">
-                            <Gamepad2 className="h-4 w-4" />
-                            Videogame
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="nivel">Nível de Complexidade *</Label>
-                    <Select value={nivel} onValueChange={setNivel}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o nível" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="básico">
+                        <SelectItem value="basico">
                           <div className="flex items-center gap-2">
                             <Settings className="h-4 w-4" />
                             Básico
                           </div>
                         </SelectItem>
-                        <SelectItem value="avançado">
+                        <SelectItem value="avancado">
                           <div className="flex items-center gap-2">
                             <Zap className="h-4 w-4" />
                             Avançado
@@ -273,18 +260,18 @@ export default function EditarServiçoPage() {
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="preço_base">Preço Base *</Label>
+                    <Label htmlFor="preco_base">Preço Base *</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         R$
                       </span>
                       <Input
-                        id="preço_base"
+                        id="preco_base"
                         type="number"
                         step="0.01"
                         min="0"
-                        value={preçoBase}
-                        onChange={(e) => setPreçoBase(e.target.value)}
+                        value={precoBase}
+                        onChange={(e) => setPrecoBase(e.target.value)}
                         className="pl-10"
                       />
                     </div>
@@ -324,24 +311,6 @@ export default function EditarServiçoPage() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Histórico */}
-            {totalRealizados > 0 && (
-              <Card className="border-orange-200 bg-orange-50">
-                <CardHeader>
-                  <CardTitle className="text-sm flex items-center gap-2 text-orange-700">
-                    <AlertTriangle className="h-4 w-4" />
-                    Atenção
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-orange-700">
-                    Este serviço ja foi realizado <strong>{totalRealizados} vezes</strong>.
-                    Alterações no preço base não afetarao OS ja criadas.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
           </div>
 
           {/* Coluna Lateral - Resumo */}
@@ -372,25 +341,8 @@ export default function EditarServiçoPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Tipo</span>
                     {tipo ? (
-                      <Badge variant="outline" className="gap-1">
-                        {tipo === 'celular' ? (
-                          <><Smartphone className="h-3 w-3" /> Celular</>
-                        ) : (
-                          <><Gamepad2 className="h-3 w-3" /> Videogame</>
-                        )}
-                      </Badge>
-                    ) : (
-                      <span>-</span>
-                    )}
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Nível</span>
-                    {nivel ? (
-                      <Badge
-                        variant={nivel === 'básico' ? 'secondary' : 'default'}
-                        className={nivel === 'avançado' ? 'bg-orange-100 text-orange-700' : ''}
-                      >
-                        {nivel === 'básico' ? (
+                      <Badge variant={tipo === 'basico' ? 'secondary' : 'default'} className={tipo === 'avancado' ? 'bg-orange-100 text-orange-700' : ''}>
+                        {tipo === 'basico' ? (
                           <><Settings className="h-3 w-3 mr-1" /> Básico</>
                         ) : (
                           <><Zap className="h-3 w-3 mr-1" /> Avançado</>
@@ -408,24 +360,12 @@ export default function EditarServiçoPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Preço Base</span>
                     <span className="font-medium text-green-600">
-                      {preçoNum > 0 ? formatCurrency(preçoNum) : '-'}
+                      {precoNum > 0 ? formatCurrency(precoNum) : '-'}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Tempo Estimado</span>
                     <span>{tempoNum > 0 ? formatTempo(tempoNum) : '-'}</span>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Vezes Realizado</span>
-                    <Badge variant="outline">
-                      <History className="h-3 w-3 mr-1" />
-                      {totalRealizados}
-                    </Badge>
                   </div>
                 </div>
 

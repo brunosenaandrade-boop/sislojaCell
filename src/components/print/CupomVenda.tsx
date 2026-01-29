@@ -14,14 +14,14 @@ interface PrintConfig {
 
 interface CupomVendaProps {
   venda: {
-    número: number
+    numero: number
     cliente?: {
       nome: string
       telefone?: string
     } | null
     itens: {
       produto_id: string
-      nome: string
+      descricao: string
       quantidade: number
       valor_unitario: number
       valor_total: number
@@ -107,7 +107,7 @@ export function CupomVenda({ venda, empresa, config, operador }: CupomVendaProps
       {/* Título */}
       <div className="text-center mb-2">
         <h2 className="font-bold">CUPOM NÃO FISCAL</h2>
-        <p className="text-lg font-bold">VENDA #{venda.número}</p>
+        <p className="text-lg font-bold">VENDA #{venda.numero}</p>
       </div>
 
       {/* Data e Operador */}
@@ -145,7 +145,7 @@ export function CupomVenda({ venda, empresa, config, operador }: CupomVendaProps
             {venda.itens.map((item, index) => (
               <tr key={item.produto_id} className="border-b border-dotted border-gray-400">
                 <td className="py-1 pr-1">
-                  <span className="text-[9px]">{index + 1}.</span> {item.nome}
+                  <span className="text-[9px]">{index + 1}.</span> {item.descricao}
                 </td>
                 <td className="text-center">{item.quantidade}</td>
                 <td className="text-right">{formatCurrency(item.valor_total)}</td>
@@ -187,7 +187,7 @@ export function CupomVenda({ venda, empresa, config, operador }: CupomVendaProps
 
       {/* Código */}
       <div className="text-center mt-4 text-[8px] text-gray-500">
-        <p>*** {format(new Date(), 'yyyyMMddHHmmss')}-{venda.número} ***</p>
+        <p>*** {format(new Date(), 'yyyyMMddHHmmss')}-{venda.numero} ***</p>
       </div>
     </div>
   )

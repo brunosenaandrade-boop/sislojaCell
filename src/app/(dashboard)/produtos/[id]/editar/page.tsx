@@ -26,72 +26,79 @@ import {
   TrendingUp,
   AlertTriangle,
   History,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-// Categorias mockadas
-const categoriasMock = [
-  { id: '1', nome: 'Carregadores' },
-  { id: '2', nome: 'Cabos' },
-  { id: '3', nome: 'Películas' },
-  { id: '4', nome: 'Capas' },
-  { id: '5', nome: 'Fones' },
-  { id: '6', nome: 'Power Banks' },
-  { id: '7', nome: 'Acessórios' },
-  { id: '8', nome: 'Peças' },
-]
-
-// Produto mockado para edição
-const produtoMock = {
-  id: '1',
-  código: '001',
-  nome: 'Carregador USB-C Turbo 20W',
-  descrição: 'Carregador rápido com tecnologia Power Delivery',
-  categoria_id: '1',
-  custo: 25.00,
-  preço_venda: 49.90,
-  estoque_atual: 15,
-  estoque_mínimo: 5,
-  unidade: 'UN',
-  ativo: true,
-}
+import { produtosService } from '@/services/produtos.service'
+import type { CategoriaProduto } from '@/types/database'
 
 export default function EditarProdutoPage() {
   const router = useRouter()
   const params = useParams()
   const [isLoading, setIsLoading] = useState(false)
+  const [loadingData, setLoadingData] = useState(true)
+  const [categorias, setCategorias] = useState<CategoriaProduto[]>([])
 
   // Estados do formulário
-  const [código, setCódigo] = useState('')
+  const [codigo, setCodigo] = useState('')
   const [nome, setNome] = useState('')
-  const [descrição, setDescrição] = useState('')
+  const [descricao, setDescricao] = useState('')
   const [categoriaId, setCategoriaId] = useState('')
   const [custo, setCusto] = useState('')
-  const [preçoVenda, setPreçoVenda] = useState('')
+  const [precoVenda, setPrecoVenda] = useState('')
   const [estoqueAtual, setEstoqueAtual] = useState('')
-  const [estoqueMínimo, setEstoqueMínimo] = useState('')
+  const [estoqueMinimo, setEstoqueMinimo] = useState('')
   const [unidade, setUnidade] = useState('UN')
   const [ativo, setAtivo] = useState(true)
 
   // Carregar dados do produto
   useEffect(() => {
-    // TODO: Buscar do Supabase
-    const produto = produtoMock
-    setCódigo(produto.código)
-    setNome(produto.nome)
-    setDescrição(produto.descrição || '')
-    setCategoriaId(produto.categoria_id)
-    setCusto(produto.custo.toString())
-    setPreçoVenda(produto.preço_venda.toString())
-    setEstoqueAtual(produto.estoque_atual.toString())
-    setEstoqueMínimo(produto.estoque_mínimo.toString())
-    setUnidade(produto.unidade)
-    setAtivo(produto.ativo)
-  }, [params.id])
+    const carregarDados = async () => {
+      setLoadingData(true)
+      try {
+        const [produtoRes, categoriasRes] = await Promise.all([
+          produtosService.buscarPorId(params.id as string),
+          produtosService.listarCategorias(),
+        ])
+
+        if (categoriasRes.error) {
+          toast.error('Erro ao carregar categorias: ' + categoriasRes.error)
+        } else {
+          setCategorias(categoriasRes.data || [])
+        }
+
+        if (produtoRes.error) {
+          toast.error('Erro ao carregar produto: ' + produtoRes.error)
+          router.push('/produtos')
+          return
+        }
+
+        if (produtoRes.data) {
+          const produto = produtoRes.data
+          setCodigo(produto.codigo || '')
+          setNome(produto.nome)
+          setDescricao(produto.descricao || '')
+          setCategoriaId(produto.categoria_id || '')
+          setCusto(produto.custo.toString())
+          setPrecoVenda(produto.preco_venda.toString())
+          setEstoqueAtual(produto.estoque_atual.toString())
+          setEstoqueMinimo(produto.estoque_minimo.toString())
+          setUnidade(produto.unidade)
+          setAtivo(produto.ativo)
+        }
+      } catch {
+        toast.error('Erro ao carregar dados')
+        router.push('/produtos')
+      } finally {
+        setLoadingData(false)
+      }
+    }
+    carregarDados()
+  }, [params.id, router])
 
   // Calcular margem
   const custoNum = parseFloat(custo) || 0
-  const vendaNum = parseFloat(preçoVenda) || 0
+  const vendaNum = parseFloat(precoVenda) || 0
   const lucro = vendaNum - custoNum
   const margem = custoNum > 0 ? ((vendaNum - custoNum) / custoNum) * 100 : 0
 
@@ -124,29 +131,40 @@ export default function EditarProdutoPage() {
     setIsLoading(true)
 
     try {
-      const produto = {
-        id: params.id,
-        código,
+      const { error } = await produtosService.atualizar(params.id as string, {
+        codigo,
         nome,
-        descrição,
+        descricao,
         categoria_id: categoriaId,
         custo: custoNum,
-        preço_venda: vendaNum,
-        estoque_atual: parseInt(estoqueAtual) || 0,
-        estoque_mínimo: parseInt(estoqueMínimo) || 5,
+        preco_venda: vendaNum,
+        estoque_minimo: parseInt(estoqueMinimo) || 5,
         unidade,
         ativo,
+      })
+
+      if (error) {
+        toast.error('Erro ao atualizar produto: ' + error)
+      } else {
+        toast.success('Produto atualizado com sucesso!')
+        router.push('/produtos')
       }
-
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      toast.success('Produto atualizado com sucesso!')
-      router.push('/produtos')
-    } catch (error) {
+    } catch {
       toast.error('Erro ao atualizar produto')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (loadingData) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Editar Produto" />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -190,11 +208,11 @@ export default function EditarProdutoPage() {
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="código">Código</Label>
+                    <Label htmlFor="codigo">Código</Label>
                     <Input
-                      id="código"
-                      value={código}
-                      onChange={(e) => setCódigo(e.target.value)}
+                      id="codigo"
+                      value={codigo}
+                      onChange={(e) => setCodigo(e.target.value)}
                     />
                   </div>
 
@@ -205,7 +223,7 @@ export default function EditarProdutoPage() {
                         <SelectValue placeholder="Selecione a categoria" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categoriasMock.map(cat => (
+                        {categorias.map(cat => (
                           <SelectItem key={cat.id} value={cat.id}>
                             {cat.nome}
                           </SelectItem>
@@ -225,11 +243,11 @@ export default function EditarProdutoPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="descrição">Descrição</Label>
+                  <Label htmlFor="descricao">Descrição</Label>
                   <Textarea
-                    id="descrição"
-                    value={descrição}
-                    onChange={(e) => setDescrição(e.target.value)}
+                    id="descricao"
+                    value={descricao}
+                    onChange={(e) => setDescricao(e.target.value)}
                     rows={3}
                   />
                 </div>
@@ -280,18 +298,18 @@ export default function EditarProdutoPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="preço_venda">Preço de Venda *</Label>
+                    <Label htmlFor="preco_venda">Preço de Venda *</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         R$
                       </span>
                       <Input
-                        id="preço_venda"
+                        id="preco_venda"
                         type="number"
                         step="0.01"
                         min="0"
-                        value={preçoVenda}
-                        onChange={(e) => setPreçoVenda(e.target.value)}
+                        value={precoVenda}
+                        onChange={(e) => setPrecoVenda(e.target.value)}
                         className="pl-10"
                       />
                     </div>
@@ -359,13 +377,13 @@ export default function EditarProdutoPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="estoque_mínimo">Estoque Mínimo</Label>
+                    <Label htmlFor="estoque_minimo">Estoque Mínimo</Label>
                     <Input
-                      id="estoque_mínimo"
+                      id="estoque_minimo"
                       type="number"
                       min="0"
-                      value={estoqueMínimo}
-                      onChange={(e) => setEstoqueMínimo(e.target.value)}
+                      value={estoqueMinimo}
+                      onChange={(e) => setEstoqueMinimo(e.target.value)}
                     />
                   </div>
 
@@ -385,7 +403,7 @@ export default function EditarProdutoPage() {
                   </div>
                 </div>
 
-                {parseInt(estoqueAtual) <= parseInt(estoqueMínimo) && parseInt(estoqueAtual) > 0 && (
+                {parseInt(estoqueAtual) <= parseInt(estoqueMinimo) && parseInt(estoqueAtual) > 0 && (
                   <div className="flex items-center gap-2 text-orange-600 text-sm rounded-lg bg-orange-50 p-3">
                     <AlertTriangle className="h-4 w-4" />
                     Estoque abaixo do mínimo! Considere repor o produto.
@@ -412,7 +430,7 @@ export default function EditarProdutoPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Código</span>
-                    <span className="font-mono">{código}</span>
+                    <span className="font-mono">{codigo}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Status</span>
@@ -451,7 +469,7 @@ export default function EditarProdutoPage() {
                     <span className={
                       parseInt(estoqueAtual) === 0
                         ? 'text-red-600 font-medium'
-                        : parseInt(estoqueAtual) <= parseInt(estoqueMínimo)
+                        : parseInt(estoqueAtual) <= parseInt(estoqueMinimo)
                         ? 'text-orange-600 font-medium'
                         : ''
                     }>

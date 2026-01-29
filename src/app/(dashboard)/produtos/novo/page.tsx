@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
@@ -27,37 +27,40 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-// Categorias mockadas
-const categoriasMock = [
-  { id: '1', nome: 'Carregadores' },
-  { id: '2', nome: 'Cabos' },
-  { id: '3', nome: 'Películas' },
-  { id: '4', nome: 'Capas' },
-  { id: '5', nome: 'Fones' },
-  { id: '6', nome: 'Power Banks' },
-  { id: '7', nome: 'Acessórios' },
-  { id: '8', nome: 'Peças' },
-]
+import { produtosService } from '@/services/produtos.service'
+import type { CategoriaProduto } from '@/types/database'
 
 export default function NovoProdutoPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [categorias, setCategorias] = useState<CategoriaProduto[]>([])
 
   // Estados do formulário
-  const [código, setCódigo] = useState('')
+  const [codigo, setCodigo] = useState('')
   const [nome, setNome] = useState('')
-  const [descrição, setDescrição] = useState('')
+  const [descricao, setDescricao] = useState('')
   const [categoriaId, setCategoriaId] = useState('')
   const [custo, setCusto] = useState('')
-  const [preçoVenda, setPreçoVenda] = useState('')
+  const [precoVenda, setPrecoVenda] = useState('')
   const [estoqueAtual, setEstoqueAtual] = useState('')
-  const [estoqueMínimo, setEstoqueMínimo] = useState('5')
+  const [estoqueMinimo, setEstoqueMinimo] = useState('5')
   const [unidade, setUnidade] = useState('UN')
+
+  useEffect(() => {
+    const carregarCategorias = async () => {
+      const { data, error } = await produtosService.listarCategorias()
+      if (error) {
+        toast.error('Erro ao carregar categorias: ' + error)
+      } else {
+        setCategorias(data || [])
+      }
+    }
+    carregarCategorias()
+  }, [])
 
   // Calcular margem
   const custoNum = parseFloat(custo) || 0
-  const vendaNum = parseFloat(preçoVenda) || 0
+  const vendaNum = parseFloat(precoVenda) || 0
   const lucro = vendaNum - custoNum
   const margem = custoNum > 0 ? ((vendaNum - custoNum) / custoNum) * 100 : 0
 
@@ -70,9 +73,9 @@ export default function NovoProdutoPage() {
   }
 
   // Gerar código automático
-  const gerarCódigo = () => {
-    const novoCódigo = String(Math.floor(Math.random() * 9000) + 1000)
-    setCódigo(novoCódigo)
+  const gerarCodigo = () => {
+    const novoCodigo = String(Math.floor(Math.random() * 9000) + 1000)
+    setCodigo(novoCodigo)
   }
 
   // Salvar produto
@@ -102,24 +105,25 @@ export default function NovoProdutoPage() {
     setIsLoading(true)
 
     try {
-      // TODO: Salvar no Supabase
-      const produto = {
-        código: código || String(Date.now()).slice(-6),
+      const { error } = await produtosService.criar({
+        codigo: codigo || String(Date.now()).slice(-6),
         nome,
-        descrição,
+        descricao,
         categoria_id: categoriaId,
         custo: custoNum,
-        preço_venda: vendaNum,
+        preco_venda: vendaNum,
         estoque_atual: parseInt(estoqueAtual) || 0,
-        estoque_mínimo: parseInt(estoqueMínimo) || 5,
+        estoque_minimo: parseInt(estoqueMinimo) || 5,
         unidade,
+      })
+
+      if (error) {
+        toast.error('Erro ao cadastrar produto: ' + error)
+      } else {
+        toast.success('Produto cadastrado com sucesso!')
+        router.push('/produtos')
       }
-
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      toast.success('Produto cadastrado com sucesso!')
-      router.push('/produtos')
-    } catch (error) {
+    } catch {
       toast.error('Erro ao cadastrar produto')
     } finally {
       setIsLoading(false)
@@ -162,16 +166,16 @@ export default function NovoProdutoPage() {
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="código">Código</Label>
+                    <Label htmlFor="codigo">Código</Label>
                     <div className="flex gap-2">
                       <Input
-                        id="código"
+                        id="codigo"
                         placeholder="Ex: 001"
-                        value={código}
-                        onChange={(e) => setCódigo(e.target.value)}
+                        value={codigo}
+                        onChange={(e) => setCodigo(e.target.value)}
                         className="flex-1"
                       />
-                      <Button type="button" variant="outline" onClick={gerarCódigo}>
+                      <Button type="button" variant="outline" onClick={gerarCodigo}>
                         Gerar
                       </Button>
                     </div>
@@ -184,7 +188,7 @@ export default function NovoProdutoPage() {
                         <SelectValue placeholder="Selecione a categoria" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categoriasMock.map(cat => (
+                        {categorias.map(cat => (
                           <SelectItem key={cat.id} value={cat.id}>
                             {cat.nome}
                           </SelectItem>
@@ -205,12 +209,12 @@ export default function NovoProdutoPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="descrição">Descrição</Label>
+                  <Label htmlFor="descricao">Descrição</Label>
                   <Textarea
-                    id="descrição"
+                    id="descricao"
                     placeholder="Descrição detalhada do produto (opcional)"
-                    value={descrição}
-                    onChange={(e) => setDescrição(e.target.value)}
+                    value={descricao}
+                    onChange={(e) => setDescricao(e.target.value)}
                     rows={3}
                   />
                 </div>
@@ -250,19 +254,19 @@ export default function NovoProdutoPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="preço_venda">Preço de Venda *</Label>
+                    <Label htmlFor="preco_venda">Preço de Venda *</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         R$
                       </span>
                       <Input
-                        id="preço_venda"
+                        id="preco_venda"
                         type="number"
                         step="0.01"
                         min="0"
                         placeholder="0,00"
-                        value={preçoVenda}
-                        onChange={(e) => setPreçoVenda(e.target.value)}
+                        value={precoVenda}
+                        onChange={(e) => setPrecoVenda(e.target.value)}
                         className="pl-10"
                       />
                     </div>
@@ -332,14 +336,14 @@ export default function NovoProdutoPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="estoque_mínimo">Estoque Mínimo</Label>
+                    <Label htmlFor="estoque_minimo">Estoque Mínimo</Label>
                     <Input
-                      id="estoque_mínimo"
+                      id="estoque_minimo"
                       type="number"
                       min="0"
                       placeholder="5"
-                      value={estoqueMínimo}
-                      onChange={(e) => setEstoqueMínimo(e.target.value)}
+                      value={estoqueMinimo}
+                      onChange={(e) => setEstoqueMinimo(e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
                       Alerta quando atingir este valor
@@ -375,7 +379,7 @@ export default function NovoProdutoPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Código</span>
-                    <span className="font-mono">{código || '-'}</span>
+                    <span className="font-mono">{codigo || '-'}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Nome</span>
@@ -386,7 +390,7 @@ export default function NovoProdutoPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Categoria</span>
                     <span>
-                      {categoriasMock.find(c => c.id === categoriaId)?.nome || '-'}
+                      {categorias.find(c => c.id === categoriaId)?.nome || '-'}
                     </span>
                   </div>
                 </div>
@@ -427,7 +431,7 @@ export default function NovoProdutoPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Estoque Mínimo</span>
-                    <span>{estoqueMínimo || '5'}</span>
+                    <span>{estoqueMinimo || '5'}</span>
                   </div>
                 </div>
 

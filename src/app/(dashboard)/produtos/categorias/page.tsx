@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
@@ -37,46 +37,58 @@ import {
   Trash2,
   FolderOpen,
   Package,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-// Categorias mockadas com contagem de produtos
-const categoriasMock = [
-  { id: '1', nome: 'Carregadores', descrição: 'Carregadores de celular e tablet', produtos: 8 },
-  { id: '2', nome: 'Cabos', descrição: 'Cabos USB, Lightning e outros', produtos: 12 },
-  { id: '3', nome: 'Películas', descrição: 'Películas de proteção para telas', produtos: 15 },
-  { id: '4', nome: 'Capas', descrição: 'Capas e cases para celulares', produtos: 20 },
-  { id: '5', nome: 'Fones', descrição: 'Fones de ouvido e headsets', produtos: 6 },
-  { id: '6', nome: 'Power Banks', descrição: 'Carregadores portáteis', produtos: 4 },
-  { id: '7', nome: 'Acessórios', descrição: 'Acessórios diversos', produtos: 10 },
-  { id: '8', nome: 'Peças', descrição: 'Peças para reparo', produtos: 25 },
-]
+import { produtosService } from '@/services/produtos.service'
+import type { CategoriaProduto } from '@/types/database'
 
 export default function CategoriasPage() {
-  const [categorias, setCategorias] = useState(categoriasMock)
+  const [categorias, setCategorias] = useState<CategoriaProduto[]>([])
+  const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false)
-  const [categoriaEditando, setCategoriaEditando] = useState<typeof categoriasMock[0] | null>(null)
+  const [categoriaEditando, setCategoriaEditando] = useState<CategoriaProduto | null>(null)
   const [categoriaParaDeletar, setCategoriaParaDeletar] = useState<string | null>(null)
 
   // Formulário
   const [nome, setNome] = useState('')
-  const [descrição, setDescrição] = useState('')
+  const [descricao, setDescricao] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  const carregarCategorias = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { data, error } = await produtosService.listarCategorias()
+      if (error) {
+        toast.error('Erro ao carregar categorias: ' + error)
+      } else {
+        setCategorias(data || [])
+      }
+    } catch {
+      toast.error('Erro ao carregar categorias')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    carregarCategorias()
+  }, [carregarCategorias])
 
   // Abrir dialog para nova categoria
   const abrirNovaCategoria = () => {
     setCategoriaEditando(null)
     setNome('')
-    setDescrição('')
+    setDescricao('')
     setDialogOpen(true)
   }
 
   // Abrir dialog para editar categoria
-  const abrirEditarCategoria = (categoria: typeof categoriasMock[0]) => {
+  const abrirEditarCategoria = (categoria: CategoriaProduto) => {
     setCategoriaEditando(categoria)
     setNome(categoria.nome)
-    setDescrição(categoria.descrição || '')
+    setDescricao(categoria.descricao || '')
     setDialogOpen(true)
   }
 
@@ -90,32 +102,28 @@ export default function CategoriasPage() {
     setIsLoading(true)
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-
       if (categoriaEditando) {
-        // Editar
-        setCategorias(categorias.map(c =>
-          c.id === categoriaEditando.id
-            ? { ...c, nome, descrição }
-            : c
-        ))
-        toast.success('Categoria atualizada')
-      } else {
-        // Nova
-        const novaCategoria = {
-          id: String(Date.now()),
-          nome,
-          descrição,
-          produtos: 0,
+        const { error } = await produtosService.atualizarCategoria(categoriaEditando.id, nome, descricao || undefined)
+        if (error) {
+          toast.error('Erro ao atualizar categoria: ' + error)
+        } else {
+          toast.success('Categoria atualizada')
+          carregarCategorias()
         }
-        setCategorias([...categorias, novaCategoria])
-        toast.success('Categoria criada')
+      } else {
+        const { error } = await produtosService.criarCategoria(nome, descricao || undefined)
+        if (error) {
+          toast.error('Erro ao criar categoria: ' + error)
+        } else {
+          toast.success('Categoria criada')
+          carregarCategorias()
+        }
       }
 
       setDialogOpen(false)
       setNome('')
-      setDescrição('')
-    } catch (error) {
+      setDescricao('')
+    } catch {
       toast.error('Erro ao salvar categoria')
     } finally {
       setIsLoading(false)
@@ -124,22 +132,33 @@ export default function CategoriasPage() {
 
   // Confirmar exclusão
   const confirmarDelete = (id: string) => {
-    const categoria = categorias.find(c => c.id === id)
-    if (categoria && categoria.produtos > 0) {
-      toast.error('Não é possível excluir categoria com produtos vinculados')
-      return
-    }
     setCategoriaParaDeletar(id)
     setDialogDeleteOpen(true)
   }
 
   // Deletar categoria
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!categoriaParaDeletar) return
-    setCategorias(categorias.filter(c => c.id !== categoriaParaDeletar))
-    toast.success('Categoria excluída')
+    const { error } = await produtosService.excluirCategoria(categoriaParaDeletar)
+    if (error) {
+      toast.error('Erro ao excluir categoria: ' + error)
+    } else {
+      toast.success('Categoria excluída')
+      carregarCategorias()
+    }
     setDialogDeleteOpen(false)
     setCategoriaParaDeletar(null)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Categorias de Produtos" />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -182,14 +201,13 @@ export default function CategoriasPage() {
                 <TableRow>
                   <TableHead>Categoria</TableHead>
                   <TableHead>Descrição</TableHead>
-                  <TableHead className="text-center">Produtos</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {categorias.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
                       Nenhuma categoria cadastrada.
                     </TableCell>
                   </TableRow>
@@ -205,13 +223,7 @@ export default function CategoriasPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {categoria.descrição || '-'}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Package className="h-4 w-4 text-muted-foreground" />
-                          <span>{categoria.produtos}</span>
-                        </div>
+                        {categoria.descricao || '-'}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -268,12 +280,12 @@ export default function CategoriasPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="descrição">Descrição</Label>
+                <Label htmlFor="descricao">Descrição</Label>
                 <Input
-                  id="descrição"
+                  id="descricao"
                   placeholder="Descrição opcional"
-                  value={descrição}
-                  onChange={(e) => setDescrição(e.target.value)}
+                  value={descricao}
+                  onChange={(e) => setDescricao(e.target.value)}
                 />
               </div>
             </div>

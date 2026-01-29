@@ -20,6 +20,7 @@ import {
   FileText,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { clientesService } from '@/services/clientes.service'
 
 export default function NovoClientePage() {
   const router = useRouter()
@@ -33,13 +34,13 @@ export default function NovoClientePage() {
   const [cpf, setCpf] = useState('')
   const [dataNascimento, setDataNascimento] = useState('')
   const [cep, setCep] = useState('')
-  const [endereço, setEndereço] = useState('')
-  const [número, setNúmero] = useState('')
+  const [endereco, setEndereco] = useState('')
+  const [numero, setNumero] = useState('')
   const [complemento, setComplemento] = useState('')
   const [bairro, setBairro] = useState('')
   const [cidade, setCidade] = useState('')
   const [estado, setEstado] = useState('SC')
-  const [observações, setObservações] = useState('')
+  const [observacoes, setObservacoes] = useState('')
 
   // Formatar telefone
   const formatTelefone = (value: string) => {
@@ -79,7 +80,7 @@ export default function NovoClientePage() {
         return
       }
 
-      setEndereço(data.logradouro || '')
+      setEndereco(data.logradouro || '')
       setBairro(data.bairro || '')
       setCidade(data.localidade || '')
       setEstado(data.uf || 'SC')
@@ -107,25 +108,30 @@ export default function NovoClientePage() {
       const cliente = {
         nome,
         telefone,
-        telefone2: telefone2 || null,
-        email: email || null,
-        cpf: cpf || null,
-        data_nascimento: dataNascimento || null,
-        cep: cep || null,
-        endereço: endereço || null,
-        número: número || null,
-        complemento: complemento || null,
-        bairro: bairro || null,
-        cidade: cidade || null,
-        estado: estado || null,
-        observações: observações || null,
+        telefone2: telefone2 || undefined,
+        email: email || undefined,
+        cpf: cpf || undefined,
+        data_nascimento: dataNascimento || undefined,
+        cep: cep || undefined,
+        endereco: endereco || undefined,
+        numero: numero || undefined,
+        complemento: complemento || undefined,
+        bairro: bairro || undefined,
+        cidade: cidade || undefined,
+        estado: estado || undefined,
+        observacoes: observacoes || undefined,
       }
 
-      await new Promise(resolve => setTimeout(resolve, 800))
+      const { error } = await clientesService.criar(cliente)
+
+      if (error) {
+        toast.error('Erro ao cadastrar cliente: ' + error)
+        return
+      }
 
       toast.success('Cliente cadastrado com sucesso!')
       router.push('/clientes')
-    } catch (error) {
+    } catch {
       toast.error('Erro ao cadastrar cliente')
     } finally {
       setIsLoading(false)
@@ -278,24 +284,24 @@ export default function NovoClientePage() {
                   </div>
 
                   <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="endereço">Logradouro</Label>
+                    <Label htmlFor="endereco">Logradouro</Label>
                     <Input
-                      id="endereço"
+                      id="endereco"
                       placeholder="Rua, Avenida..."
-                      value={endereço}
-                      onChange={(e) => setEndereço(e.target.value)}
+                      value={endereco}
+                      onChange={(e) => setEndereco(e.target.value)}
                     />
                   </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-4">
                   <div className="space-y-2">
-                    <Label htmlFor="número">Número</Label>
+                    <Label htmlFor="numero">Número</Label>
                     <Input
-                      id="número"
+                      id="numero"
                       placeholder="123"
-                      value={número}
-                      onChange={(e) => setNúmero(e.target.value)}
+                      value={numero}
+                      onChange={(e) => setNumero(e.target.value)}
                     />
                   </div>
 
@@ -355,13 +361,13 @@ export default function NovoClientePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Label htmlFor="observações">Observações sobre o cliente</Label>
+                  <Label htmlFor="observacoes">Observações sobre o cliente</Label>
                   <textarea
-                    id="observações"
+                    id="observacoes"
                     className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="Informações adicionais, preferências, etc..."
-                    value={observações}
-                    onChange={(e) => setObservações(e.target.value)}
+                    value={observacoes}
+                    onChange={(e) => setObservacoes(e.target.value)}
                   />
                 </div>
               </CardContent>

@@ -19,32 +19,17 @@ import {
   Calendar,
   FileText,
   History,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-// Cliente mockado
-const clienteMock = {
-  id: '1',
-  nome: 'Maria Santos',
-  telefone: '(48) 99999-2222',
-  telefone2: '(48) 3333-4444',
-  email: 'maria@email.com',
-  cpf: '987.654.321-00',
-  data_nascimento: '1985-01-27',
-  cep: '88000-000',
-  endereço: 'Av. Brasil',
-  número: '456',
-  complemento: 'Apto 302',
-  bairro: 'Centro',
-  cidade: 'Florianopolis',
-  estado: 'SC',
-  observações: 'Cliente VIP. Sempre paga em dia.',
-}
+import { clientesService } from '@/services/clientes.service'
+import type { Cliente } from '@/types/database'
 
 export default function EditarClientePage() {
   const router = useRouter()
   const params = useParams()
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
 
   // Estados do formulario
   const [nome, setNome] = useState('')
@@ -54,32 +39,48 @@ export default function EditarClientePage() {
   const [cpf, setCpf] = useState('')
   const [dataNascimento, setDataNascimento] = useState('')
   const [cep, setCep] = useState('')
-  const [endereço, setEndereço] = useState('')
-  const [número, setNúmero] = useState('')
+  const [endereco, setEndereco] = useState('')
+  const [numero, setNumero] = useState('')
   const [complemento, setComplemento] = useState('')
   const [bairro, setBairro] = useState('')
   const [cidade, setCidade] = useState('')
   const [estado, setEstado] = useState('SC')
-  const [observações, setObservações] = useState('')
+  const [observacoes, setObservacoes] = useState('')
 
   // Carregar dados do cliente
   useEffect(() => {
-    // TODO: Buscar do Supabase
-    const cliente = clienteMock
-    setNome(cliente.nome)
-    setTelefone(cliente.telefone)
-    setTelefone2(cliente.telefone2 || '')
-    setEmail(cliente.email || '')
-    setCpf(cliente.cpf || '')
-    setDataNascimento(cliente.data_nascimento || '')
-    setCep(cliente.cep || '')
-    setEndereço(cliente.endereço || '')
-    setNúmero(cliente.número || '')
-    setComplemento(cliente.complemento || '')
-    setBairro(cliente.bairro || '')
-    setCidade(cliente.cidade || '')
-    setEstado(cliente.estado || 'SC')
-    setObservações(cliente.observações || '')
+    const carregar = async () => {
+      if (!params.id) return
+      setIsLoadingData(true)
+      try {
+        const { data: cliente, error } = await clientesService.buscarPorId(params.id as string)
+        if (error) {
+          toast.error('Erro ao carregar cliente: ' + error)
+          return
+        }
+        if (cliente) {
+          setNome(cliente.nome)
+          setTelefone(cliente.telefone || '')
+          setTelefone2(cliente.telefone2 || '')
+          setEmail(cliente.email || '')
+          setCpf(cliente.cpf || '')
+          setDataNascimento(cliente.data_nascimento || '')
+          setCep(cliente.cep || '')
+          setEndereco(cliente.endereco || '')
+          setNumero(cliente.numero || '')
+          setComplemento(cliente.complemento || '')
+          setBairro(cliente.bairro || '')
+          setCidade(cliente.cidade || '')
+          setEstado(cliente.estado || 'SC')
+          setObservacoes(cliente.observacoes || '')
+        }
+      } catch {
+        toast.error('Erro ao carregar cliente')
+      } finally {
+        setIsLoadingData(false)
+      }
+    }
+    carregar()
   }, [params.id])
 
   // Formatar telefone
@@ -120,7 +121,7 @@ export default function EditarClientePage() {
         return
       }
 
-      setEndereço(data.logradouro || '')
+      setEndereco(data.logradouro || '')
       setBairro(data.bairro || '')
       setCidade(data.localidade || '')
       setEstado(data.uf || 'SC')
@@ -145,33 +146,48 @@ export default function EditarClientePage() {
     setIsLoading(true)
 
     try {
-      const cliente = {
-        id: params.id,
+      const dados = {
         nome,
         telefone,
-        telefone2: telefone2 || null,
-        email: email || null,
-        cpf: cpf || null,
-        data_nascimento: dataNascimento || null,
-        cep: cep || null,
-        endereço: endereço || null,
-        número: número || null,
-        complemento: complemento || null,
-        bairro: bairro || null,
-        cidade: cidade || null,
-        estado: estado || null,
-        observações: observações || null,
+        telefone2: telefone2 || undefined,
+        email: email || undefined,
+        cpf: cpf || undefined,
+        data_nascimento: dataNascimento || undefined,
+        cep: cep || undefined,
+        endereco: endereco || undefined,
+        numero: numero || undefined,
+        complemento: complemento || undefined,
+        bairro: bairro || undefined,
+        cidade: cidade || undefined,
+        estado: estado || undefined,
+        observacoes: observacoes || undefined,
       }
 
-      await new Promise(resolve => setTimeout(resolve, 800))
+      const { error } = await clientesService.atualizar(params.id as string, dados)
+
+      if (error) {
+        toast.error('Erro ao atualizar cliente: ' + error)
+        return
+      }
 
       toast.success('Cliente atualizado com sucesso!')
       router.push(`/clientes/${params.id}`)
-    } catch (error) {
+    } catch {
       toast.error('Erro ao atualizar cliente')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (isLoadingData) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Editar Cliente" />
+        <div className="flex-1 flex items-center justify-center h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -320,22 +336,22 @@ export default function EditarClientePage() {
                   </div>
 
                   <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="endereço">Logradouro</Label>
+                    <Label htmlFor="endereco">Logradouro</Label>
                     <Input
-                      id="endereço"
-                      value={endereço}
-                      onChange={(e) => setEndereço(e.target.value)}
+                      id="endereco"
+                      value={endereco}
+                      onChange={(e) => setEndereco(e.target.value)}
                     />
                   </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-4">
                   <div className="space-y-2">
-                    <Label htmlFor="número">Número</Label>
+                    <Label htmlFor="numero">Número</Label>
                     <Input
-                      id="número"
-                      value={número}
-                      onChange={(e) => setNúmero(e.target.value)}
+                      id="numero"
+                      value={numero}
+                      onChange={(e) => setNumero(e.target.value)}
                     />
                   </div>
 
@@ -391,12 +407,12 @@ export default function EditarClientePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Label htmlFor="observações">Observações sobre o cliente</Label>
+                  <Label htmlFor="observacoes">Observações sobre o cliente</Label>
                   <textarea
-                    id="observações"
+                    id="observacoes"
                     className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={observações}
-                    onChange={(e) => setObservações(e.target.value)}
+                    value={observacoes}
+                    onChange={(e) => setObservacoes(e.target.value)}
                   />
                 </div>
               </CardContent>

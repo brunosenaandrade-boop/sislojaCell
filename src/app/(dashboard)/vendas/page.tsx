@@ -40,42 +40,23 @@ import {
   Package,
   DollarSign,
   TrendingUp,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCarrinhoStore, useAuthStore, useCaixaStore } from '@/store/useStore'
 import { CupomVenda } from '@/components/print/CupomVenda'
+import type { Produto, Cliente } from '@/types/database'
+import { produtosService } from '@/services/produtos.service'
+import { clientesService } from '@/services/clientes.service'
+import { vendasService } from '@/services/vendas.service'
 
-// Produtos mockados
-const produtosMock = [
-  { id: '1', código: '001', nome: 'Carregador USB-C Turbo', preço: 49.90, custo: 25, estoque: 15, categoria: 'Carregadores' },
-  { id: '2', código: '002', nome: 'Cabo USB-C 2m', preço: 29.90, custo: 12, estoque: 30, categoria: 'Cabos' },
-  { id: '3', código: '003', nome: 'Película iPhone 13', preço: 25.00, custo: 8, estoque: 20, categoria: 'Películas' },
-  { id: '4', código: '004', nome: 'Capa Silicone iPhone 13', preço: 35.00, custo: 15, estoque: 12, categoria: 'Capas' },
-  { id: '5', código: '005', nome: 'Fone Bluetooth TWS', preço: 89.90, custo: 45, estoque: 8, categoria: 'Fones' },
-  { id: '6', código: '006', nome: 'Carregador Wireless', preço: 79.90, custo: 40, estoque: 5, categoria: 'Carregadores' },
-  { id: '7', código: '007', nome: 'Suporte Veicular', preço: 45.00, custo: 20, estoque: 10, categoria: 'Acessórios' },
-  { id: '8', código: '008', nome: 'Power Bank 10000mAh', preço: 99.90, custo: 55, estoque: 7, categoria: 'Power Banks' },
-  { id: '9', código: '009', nome: 'Película Samsung S22', preço: 25.00, custo: 8, estoque: 18, categoria: 'Películas' },
-  { id: '10', código: '010', nome: 'Capa Samsung S22', preço: 35.00, custo: 15, estoque: 14, categoria: 'Capas' },
-  { id: '11', código: '011', nome: 'Cabo Lightning 1m', preço: 39.90, custo: 18, estoque: 25, categoria: 'Cabos' },
-  { id: '12', código: '012', nome: 'Adaptador USB-C/P2', preço: 19.90, custo: 8, estoque: 20, categoria: 'Adaptadores' },
-]
-
-// Clientes mockados
-const clientesMock = [
-  { id: '1', nome: 'Maria Silva', telefone: '(48) 99999-1111' },
-  { id: '2', nome: 'Joao Santos', telefone: '(48) 99999-2222' },
-  { id: '3', nome: 'Pedro Costa', telefone: '(48) 99999-3333' },
-  { id: '4', nome: 'Ana Oliveira', telefone: '(48) 99999-4444' },
-]
-
-type FormaPagamento = 'dinheiro' | 'pix' | 'débito' | 'crédito'
+type FormaPagamento = 'dinheiro' | 'pix' | 'debito' | 'credito'
 
 const formasPagamento: { value: FormaPagamento; label: string; icon: React.ReactNode }[] = [
   { value: 'dinheiro', label: 'Dinheiro', icon: <Banknote className="h-5 w-5" /> },
   { value: 'pix', label: 'PIX', icon: <QrCode className="h-5 w-5" /> },
-  { value: 'débito', label: 'Débito', icon: <CreditCard className="h-5 w-5" /> },
-  { value: 'crédito', label: 'Crédito', icon: <CreditCard className="h-5 w-5" /> },
+  { value: 'debito', label: 'Débito', icon: <CreditCard className="h-5 w-5" /> },
+  { value: 'credito', label: 'Crédito', icon: <CreditCard className="h-5 w-5" /> },
 ]
 
 export default function VendasPage() {
@@ -98,34 +79,65 @@ export default function VendasPage() {
 
   const [busca, setBusca] = useState('')
   const [buscaCliente, setBuscaCliente] = useState('')
-  const [clienteSelecionado, setClienteSelecionado] = useState<typeof clientesMock[0] | null>(null)
+  const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
   const [formaPagamento, setFormaPagamento] = useState<FormaPagamento | null>(null)
   const [dialogFinalizarOpen, setDialogFinalizarOpen] = useState(false)
   const [dialogClienteOpen, setDialogClienteOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
   const [vendaFinalizada, setVendaFinalizada] = useState<any>(null)
   const [showPrint, setShowPrint] = useState(false)
 
+  // Dados carregados do Supabase
+  const [produtosCatalogo, setProdutosCatalogo] = useState<Produto[]>([])
+  const [clientesLista, setClientesLista] = useState<Cliente[]>([])
+
+  // Carregar dados do Supabase
+  useEffect(() => {
+    const carregarDados = async () => {
+      setIsLoadingData(true)
+      try {
+        const [produtosRes, clientesRes] = await Promise.all([
+          produtosService.listar(),
+          clientesService.listar(),
+        ])
+
+        if (produtosRes.data) setProdutosCatalogo(produtosRes.data)
+        if (clientesRes.data) setClientesLista(clientesRes.data)
+
+        if (produtosRes.error) toast.error('Erro ao carregar produtos: ' + produtosRes.error)
+        if (clientesRes.error) toast.error('Erro ao carregar clientes: ' + clientesRes.error)
+      } catch {
+        toast.error('Erro ao carregar dados')
+      } finally {
+        setIsLoadingData(false)
+      }
+    }
+    carregarDados()
+  }, [])
+
   // Focar no campo de busca ao carregar
   useEffect(() => {
-    searchRef.current?.focus()
-  }, [])
+    if (!isLoadingData) {
+      searchRef.current?.focus()
+    }
+  }, [isLoadingData])
 
   // Filtrar produtos
   const produtosFiltrados = busca
-    ? produtosMock.filter(p =>
+    ? produtosCatalogo.filter(p =>
         p.nome.toLowerCase().includes(busca.toLowerCase()) ||
-        p.código.includes(busca)
+        (p.codigo && p.codigo.includes(busca))
       )
     : []
 
   // Filtrar clientes
   const clientesFiltrados = buscaCliente
-    ? clientesMock.filter(c =>
+    ? clientesLista.filter(c =>
         c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) ||
-        c.telefone.includes(buscaCliente)
+        (c.telefone && c.telefone.includes(buscaCliente))
       )
-    : clientesMock
+    : clientesLista
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -135,14 +147,14 @@ export default function VendasPage() {
   }
 
   // Adicionar produto ao carrinho
-  const handleAddProduto = (produto: typeof produtosMock[0]) => {
-    if (produto.estoque <= 0) {
+  const handleAddProduto = (produto: Produto) => {
+    if (produto.estoque_atual <= 0) {
       toast.error('Produto sem estoque')
       return
     }
 
     const itemExistente = itens.find(i => i.produto_id === produto.id)
-    if (itemExistente && itemExistente.quantidade >= produto.estoque) {
+    if (itemExistente && itemExistente.quantidade >= produto.estoque_atual) {
       toast.error('Quantidade máxima atingida (estoque)')
       return
     }
@@ -151,7 +163,7 @@ export default function VendasPage() {
       produto_id: produto.id,
       nome: produto.nome,
       quantidade: 1,
-      valor_unitario: produto.preço,
+      valor_unitario: produto.preco_venda,
       valor_custo: produto.custo,
     })
 
@@ -161,7 +173,7 @@ export default function VendasPage() {
   }
 
   // Selecionar cliente
-  const handleSelectCliente = (cliente: typeof clientesMock[0]) => {
+  const handleSelectCliente = (cliente: Cliente) => {
     setClienteSelecionado(cliente)
     setCliente(cliente.id)
     setDialogClienteOpen(false)
@@ -195,9 +207,32 @@ export default function VendasPage() {
 
     setIsLoading(true)
     try {
-      // TODO: Salvar no Supabase
+      const vendaData = {
+        cliente_id: clienteSelecionado?.id,
+        forma_pagamento: formaPagamento,
+        valor_produtos: getTotal(),
+        valor_custo_total: getCustoTotal(),
+        valor_desconto: 0,
+        valor_total: getTotal(),
+        itens: itens.map(item => ({
+          produto_id: item.produto_id,
+          descricao: item.nome,
+          quantidade: item.quantidade,
+          valor_unitario: item.valor_unitario,
+          valor_custo: item.valor_custo,
+          valor_total: item.valor_unitario * item.quantidade,
+          lucro_item: (item.valor_unitario - item.valor_custo) * item.quantidade,
+        })),
+      }
+
+      const { data: vendaCriada, error } = await vendasService.criar(vendaData)
+      if (error) {
+        toast.error('Erro ao finalizar venda: ' + error)
+        return
+      }
+
       const venda = {
-        número: Math.floor(Math.random() * 9000) + 1000, // Mock
+        numero: vendaCriada?.numero,
         cliente: clienteSelecionado,
         itens: itens,
         valor_total: getTotal(),
@@ -207,22 +242,14 @@ export default function VendasPage() {
         data: new Date().toISOString(),
       }
 
-      await new Promise(resolve => setTimeout(resolve, 800))
-
       // Registrar no caixa se estiver aberto
       if (isCaixaAberto()) {
-        const formaPgMap: Record<string, 'dinheiro' | 'pix' | 'debito' | 'credito'> = {
-          'dinheiro': 'dinheiro',
-          'pix': 'pix',
-          'débito': 'debito',
-          'crédito': 'credito',
-        }
         registrarVenda({
           valor: venda.valor_total,
           custo: venda.valor_custo,
-          formaPagamento: formaPgMap[formaPagamento!] || 'dinheiro',
-          descricao: `Venda #${venda.número} - ${itens.map(i => i.nome).join(', ')}`,
-          vendaId: String(venda.número),
+          formaPagamento: formaPagamento,
+          descricao: `Venda #${venda.numero} - ${itens.map(i => i.nome).join(', ')}`,
+          vendaId: vendaCriada?.id || String(venda.numero),
         })
       }
 
@@ -234,7 +261,7 @@ export default function VendasPage() {
       setFormaPagamento(null)
       setDialogFinalizarOpen(false)
 
-    } catch (error) {
+    } catch {
       toast.error('Erro ao finalizar venda')
     } finally {
       setIsLoading(false)
@@ -280,6 +307,17 @@ export default function VendasPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [itens])
 
+  if (isLoadingData) {
+    return (
+      <div className="flex flex-col h-screen">
+        <Header title="PDV - Ponto de Venda" />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       {/* Cupom para impressão */}
@@ -306,7 +344,7 @@ export default function VendasPage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-green-600">Venda Finalizada!</h2>
-                  <p className="text-muted-foreground">Venda #{vendaFinalizada.número}</p>
+                  <p className="text-muted-foreground">Venda #{vendaFinalizada.numero}</p>
                 </div>
                 <div className="text-4xl font-bold">
                   {formatCurrency(vendaFinalizada.valor_total)}
@@ -379,14 +417,14 @@ export default function VendasPage() {
                               <div>
                                 <p className="font-medium">{produto.nome}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  Cod: {produto.código} | Estoque: {produto.estoque}
+                                  Cod: {produto.codigo} | Estoque: {produto.estoque_atual}
                                 </p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="font-bold text-lg">{formatCurrency(produto.preço)}</p>
+                              <p className="font-bold text-lg">{formatCurrency(produto.preco_venda)}</p>
                               <Badge variant="outline" className="text-xs">
-                                {produto.categoria}
+                                {produto.categoria?.nome || ''}
                               </Badge>
                             </div>
                           </div>

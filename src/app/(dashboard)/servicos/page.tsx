@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
@@ -49,130 +49,54 @@ import {
   DollarSign,
   Settings,
   Zap,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { usePermissao } from '@/hooks/usePermissao'
+import { servicosService } from '@/services/servicos.service'
+import type { Servico } from '@/types/database'
 
-// Tipos de serviço
-type TipoServiço = 'celular' | 'videogame'
-type NivelServiço = 'básico' | 'avançado'
-
-// Serviços mockados
-const serviçosMock = [
-  {
-    id: '1',
-    nome: 'Troca de Tela',
-    descrição: 'Substituição completa do display e touchscreen',
-    tipo: 'celular' as TipoServiço,
-    nivel: 'avançado' as NivelServiço,
-    preço_base: 150.00,
-    tempo_estimado: 60,
-    ativo: true,
-    total_realizados: 45,
-  },
-  {
-    id: '2',
-    nome: 'Troca de Bateria',
-    descrição: 'Substituição da bateria por uma nova original ou compatível',
-    tipo: 'celular' as TipoServiço,
-    nivel: 'básico' as NivelServiço,
-    preço_base: 80.00,
-    tempo_estimado: 30,
-    ativo: true,
-    total_realizados: 78,
-  },
-  {
-    id: '3',
-    nome: 'Troca de Conector de Carga',
-    descrição: 'Reparo ou substituição do conector USB/Lightning',
-    tipo: 'celular' as TipoServiço,
-    nivel: 'avançado' as NivelServiço,
-    preço_base: 100.00,
-    tempo_estimado: 45,
-    ativo: true,
-    total_realizados: 32,
-  },
-  {
-    id: '4',
-    nome: 'Limpeza Interna',
-    descrição: 'Limpeza completa de poeira e sujeira interna',
-    tipo: 'videogame' as TipoServiço,
-    nivel: 'básico' as NivelServiço,
-    preço_base: 80.00,
-    tempo_estimado: 40,
-    ativo: true,
-    total_realizados: 56,
-  },
-  {
-    id: '5',
-    nome: 'Troca de Pasta Térmica',
-    descrição: 'Substituição da pasta térmica do processador',
-    tipo: 'videogame' as TipoServiço,
-    nivel: 'básico' as NivelServiço,
-    preço_base: 100.00,
-    tempo_estimado: 50,
-    ativo: true,
-    total_realizados: 41,
-  },
-  {
-    id: '6',
-    nome: 'Reparo de Placa',
-    descrição: 'Diagnóstico e reparo de componentes na placa-mãe',
-    tipo: 'videogame' as TipoServiço,
-    nivel: 'avançado' as NivelServiço,
-    preço_base: 250.00,
-    tempo_estimado: 120,
-    ativo: true,
-    total_realizados: 18,
-  },
-  {
-    id: '7',
-    nome: 'Troca de Botões',
-    descrição: 'Substituição de botões de volume, power ou home',
-    tipo: 'celular' as TipoServiço,
-    nivel: 'básico' as NivelServiço,
-    preço_base: 60.00,
-    tempo_estimado: 25,
-    ativo: true,
-    total_realizados: 23,
-  },
-  {
-    id: '8',
-    nome: 'Reparo HDMI',
-    descrição: 'Reparo ou substituição da porta HDMI',
-    tipo: 'videogame' as TipoServiço,
-    nivel: 'avançado' as NivelServiço,
-    preço_base: 180.00,
-    tempo_estimado: 90,
-    ativo: false,
-    total_realizados: 12,
-  },
-]
-
-export default function ServiçosPage() {
+export default function ServicosPage() {
   const { podeExcluirRegistros } = usePermissao()
-  const [serviços, setServiços] = useState(serviçosMock)
+  const [servicos, setServicos] = useState<Servico[]>([])
+  const [loading, setLoading] = useState(true)
   const [busca, setBusca] = useState('')
   const [filtroTipo, setFiltroTipo] = useState<string>('todos')
-  const [filtroNivel, setFiltroNivel] = useState<string>('todos')
   const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false)
-  const [serviçoParaDeletar, setServiçoParaDeletar] = useState<string | null>(null)
+  const [servicoParaDeletar, setServicoParaDeletar] = useState<string | null>(null)
+
+  const carregarServicos = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { data, error } = await servicosService.listar()
+      if (error) {
+        toast.error('Erro ao carregar serviços: ' + error)
+      } else {
+        setServicos(data || [])
+      }
+    } catch {
+      toast.error('Erro ao carregar serviços')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    carregarServicos()
+  }, [carregarServicos])
 
   // Filtrar serviços
-  const serviçosFiltrados = serviços.filter(serviço => {
-    const matchBusca = serviço.nome.toLowerCase().includes(busca.toLowerCase()) ||
-                       serviço.descrição.toLowerCase().includes(busca.toLowerCase())
-    const matchTipo = filtroTipo === 'todos' || serviço.tipo === filtroTipo
-    const matchNivel = filtroNivel === 'todos' || serviço.nivel === filtroNivel
-    return matchBusca && matchTipo && matchNivel
+  const servicosFiltrados = servicos.filter(servico => {
+    const matchBusca = servico.nome.toLowerCase().includes(busca.toLowerCase()) ||
+                       (servico.descricao || '').toLowerCase().includes(busca.toLowerCase())
+    const matchTipo = filtroTipo === 'todos' || servico.tipo === filtroTipo
+    return matchBusca && matchTipo
   })
 
   // Estatísticas
-  const totalServiços = serviços.length
-  const serviçosAtivos = serviços.filter(s => s.ativo).length
-  const serviçosCelular = serviços.filter(s => s.tipo === 'celular').length
-  const serviçosVideogame = serviços.filter(s => s.tipo === 'videogame').length
-  const totalRealizados = serviços.reduce((acc, s) => acc + s.total_realizados, 0)
+  const totalServicos = servicos.length
+  const servicosBasico = servicos.filter(s => s.tipo === 'basico').length
+  const servicosAvancado = servicos.filter(s => s.tipo === 'avancado').length
 
   // Formatar moeda
   const formatCurrency = (value: number) => {
@@ -191,26 +115,8 @@ export default function ServiçosPage() {
   }
 
   // Badge de tipo
-  const getTipoBadge = (tipo: TipoServiço) => {
-    if (tipo === 'celular') {
-      return (
-        <Badge variant="outline" className="gap-1">
-          <Smartphone className="h-3 w-3" />
-          Celular
-        </Badge>
-      )
-    }
-    return (
-      <Badge variant="outline" className="gap-1">
-        <Gamepad2 className="h-3 w-3" />
-        Videogame
-      </Badge>
-    )
-  }
-
-  // Badge de nivel
-  const getNivelBadge = (nivel: NivelServiço) => {
-    if (nivel === 'básico') {
+  const getTipoBadge = (tipo: string) => {
+    if (tipo === 'basico') {
       return (
         <Badge variant="secondary" className="gap-1">
           <Settings className="h-3 w-3" />
@@ -227,32 +133,48 @@ export default function ServiçosPage() {
   }
 
   // Toggle ativo
-  const toggleAtivo = (id: string) => {
-    setServiços(serviços.map(s =>
-      s.id === id ? { ...s, ativo: !s.ativo } : s
-    ))
-    const serviço = serviços.find(s => s.id === id)
-    toast.success(serviço?.ativo ? 'Serviço desativado' : 'Serviço ativado')
+  const toggleAtivo = async (id: string) => {
+    const servico = servicos.find(s => s.id === id)
+    if (!servico) return
+
+    const { error } = await servicosService.atualizar(id, { ativo: !servico.ativo })
+    if (error) {
+      toast.error('Erro ao atualizar serviço: ' + error)
+    } else {
+      toast.success(servico.ativo ? 'Serviço desativado' : 'Serviço ativado')
+      carregarServicos()
+    }
   }
 
   // Confirmar exclusão
   const confirmarDelete = (id: string) => {
-    const serviço = serviços.find(s => s.id === id)
-    if (serviço && serviço.total_realizados > 0) {
-      toast.error('Não é possível excluir serviço com histórico de realizações')
-      return
-    }
-    setServiçoParaDeletar(id)
+    setServicoParaDeletar(id)
     setDialogDeleteOpen(true)
   }
 
   // Deletar serviço
-  const handleDelete = () => {
-    if (!serviçoParaDeletar) return
-    setServiços(serviços.filter(s => s.id !== serviçoParaDeletar))
-    toast.success('Serviço excluído')
+  const handleDelete = async () => {
+    if (!servicoParaDeletar) return
+    const { error } = await servicosService.excluir(servicoParaDeletar)
+    if (error) {
+      toast.error('Erro ao excluir serviço: ' + error)
+    } else {
+      toast.success('Serviço excluído')
+      carregarServicos()
+    }
     setDialogDeleteOpen(false)
-    setServiçoParaDeletar(null)
+    setServicoParaDeletar(null)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Serviços" />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -278,18 +200,8 @@ export default function ServiçosPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="celular">Celular</SelectItem>
-                <SelectItem value="videogame">Videogame</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filtroNivel} onValueChange={setFiltroNivel}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Nível" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="básico">Básico</SelectItem>
-                <SelectItem value="avançado">Avançado</SelectItem>
+                <SelectItem value="basico">Básico</SelectItem>
+                <SelectItem value="avancado">Avançado</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -302,7 +214,7 @@ export default function ServiçosPage() {
         </div>
 
         {/* Cards de Estatísticas */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -311,34 +223,7 @@ export default function ServiçosPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalServiços}</div>
-              <p className="text-xs text-muted-foreground">{serviçosAtivos} ativos</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Smartphone className="h-4 w-4" />
-                Celular
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{serviçosCelular}</div>
-              <p className="text-xs text-muted-foreground">serviços</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Gamepad2 className="h-4 w-4" />
-                Videogame
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{serviçosVideogame}</div>
-              <p className="text-xs text-muted-foreground">serviços</p>
+              <div className="text-2xl font-bold">{totalServicos}</div>
             </CardContent>
           </Card>
 
@@ -346,12 +231,25 @@ export default function ServiçosPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Settings className="h-4 w-4" />
-                Realizados
+                Básico
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalRealizados}</div>
-              <p className="text-xs text-muted-foreground">total histórico</p>
+              <div className="text-2xl font-bold">{servicosBasico}</div>
+              <p className="text-xs text-muted-foreground">serviços</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Avançado
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{servicosAvancado}</div>
+              <p className="text-xs text-muted-foreground">serviços</p>
             </CardContent>
           </Card>
 
@@ -364,7 +262,10 @@ export default function ServiçosPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(serviços.reduce((acc, s) => acc + s.preço_base, 0) / serviços.length)}
+                {servicos.length > 0
+                  ? formatCurrency(servicos.reduce((acc, s) => acc + s.preco_base, 0) / servicos.length)
+                  : formatCurrency(0)
+                }
               </div>
               <p className="text-xs text-muted-foreground">por serviço</p>
             </CardContent>
@@ -379,56 +280,50 @@ export default function ServiçosPage() {
                 <TableRow>
                   <TableHead>Serviço</TableHead>
                   <TableHead>Tipo</TableHead>
-                  <TableHead>Nível</TableHead>
                   <TableHead className="text-center">
                     <Clock className="h-4 w-4 inline mr-1" />
                     Tempo
                   </TableHead>
                   <TableHead className="text-right">Preço Base</TableHead>
-                  <TableHead className="text-center">Realizados</TableHead>
                   <TableHead className="text-center">Status</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {serviçosFiltrados.length === 0 ? (
+                {servicosFiltrados.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                      {busca || filtroTipo !== 'todos' || filtroNivel !== 'todos'
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                      {busca || filtroTipo !== 'todos'
                         ? 'Nenhum serviço encontrado com os filtros aplicados.'
                         : 'Nenhum serviço cadastrado.'}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  serviçosFiltrados.map((serviço) => (
-                    <TableRow key={serviço.id} className={!serviço.ativo ? 'opacity-50' : ''}>
+                  servicosFiltrados.map((servico) => (
+                    <TableRow key={servico.id} className={!servico.ativo ? 'opacity-50' : ''}>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
                             <Wrench className="h-4 w-4 text-primary" />
                           </div>
                           <div>
-                            <div className="font-medium">{serviço.nome}</div>
+                            <div className="font-medium">{servico.nome}</div>
                             <div className="text-xs text-muted-foreground max-w-[250px] truncate">
-                              {serviço.descrição}
+                              {servico.descricao}
                             </div>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{getTipoBadge(serviço.tipo)}</TableCell>
-                      <TableCell>{getNivelBadge(serviço.nivel)}</TableCell>
+                      <TableCell>{getTipoBadge(servico.tipo)}</TableCell>
                       <TableCell className="text-center">
-                        {formatTempo(serviço.tempo_estimado)}
+                        {servico.tempo_estimado ? formatTempo(servico.tempo_estimado) : '-'}
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        {formatCurrency(serviço.preço_base)}
+                        {formatCurrency(servico.preco_base)}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="outline">{serviço.total_realizados}</Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant={serviço.ativo ? 'default' : 'secondary'}>
-                          {serviço.ativo ? 'Ativo' : 'Inativo'}
+                        <Badge variant={servico.ativo ? 'default' : 'secondary'}>
+                          {servico.ativo ? 'Ativo' : 'Inativo'}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -439,20 +334,20 @@ export default function ServiçosPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <Link href={`/servicos/${serviço.id}/editar`}>
+                            <Link href={`/servicos/${servico.id}/editar`}>
                               <DropdownMenuItem>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Editar
                               </DropdownMenuItem>
                             </Link>
-                            <DropdownMenuItem onClick={() => toggleAtivo(serviço.id)}>
+                            <DropdownMenuItem onClick={() => toggleAtivo(servico.id)}>
                               <Settings className="mr-2 h-4 w-4" />
-                              {serviço.ativo ? 'Desativar' : 'Ativar'}
+                              {servico.ativo ? 'Desativar' : 'Ativar'}
                             </DropdownMenuItem>
                             {podeExcluirRegistros && (
                               <DropdownMenuItem
                                 className="text-red-600"
-                                onClick={() => confirmarDelete(serviço.id)}
+                                onClick={() => confirmarDelete(servico.id)}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Excluir

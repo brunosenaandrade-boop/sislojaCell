@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
@@ -51,10 +51,16 @@ import {
   Hash,
   KeyRound,
   ShieldOff,
+  Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { PatternLock } from '@/components/ui/pattern-lock'
+import type { Cliente, Servico, Produto } from '@/types/database'
+import { clientesService } from '@/services/clientes.service'
+import { servicosService } from '@/services/servicos.service'
+import { produtosService } from '@/services/produtos.service'
+import { ordensServicoService } from '@/services/ordens-servico.service'
 
 // Tipos de aparelho
 const tiposAparelho = [
@@ -68,54 +74,32 @@ const tiposAparelho = [
 const marcasCelular = ['Apple', 'Samsung', 'Motorola', 'Xiaomi', 'LG', 'Huawei', 'Asus', 'Outra']
 const marcasVideogame = ['Sony', 'Microsoft', 'Nintendo', 'Outra']
 
-// Serviços mockados
-const serviçosMock = [
-  { id: '1', nome: 'Troca de Tela', preço: 150, tipo: 'básico' },
-  { id: '2', nome: 'Troca de Bateria', preço: 80, tipo: 'básico' },
-  { id: '3', nome: 'Troca de Conector de Carga', preço: 100, tipo: 'básico' },
-  { id: '4', nome: 'Reparo de Placa (Avançado)', preço: 300, tipo: 'avançado' },
-  { id: '5', nome: 'Troca de Camera', preço: 120, tipo: 'básico' },
-  { id: '6', nome: 'Limpeza Interna', preço: 50, tipo: 'básico' },
-  { id: '7', nome: 'Troca de Leitor de Disco (Videogame)', preço: 200, tipo: 'básico' },
-  { id: '8', nome: 'Troca de Pasta Térmica', preço: 80, tipo: 'básico' },
-]
-
-// Produtos/Peças mockados
-const produtosMock = [
-  { id: '1', nome: 'Tela iPhone 13', preço: 450, custo: 280, estoque: 5 },
-  { id: '2', nome: 'Bateria iPhone 13', preço: 150, custo: 80, estoque: 10 },
-  { id: '3', nome: 'Tela Samsung S22', preço: 380, custo: 220, estoque: 3 },
-  { id: '4', nome: 'Bateria Samsung S22', preço: 120, custo: 65, estoque: 8 },
-  { id: '5', nome: 'Conector de Carga Universal', preço: 40, custo: 15, estoque: 20 },
-  { id: '6', nome: 'Leitor Blu-ray PS5', preço: 350, custo: 200, estoque: 2 },
-]
-
-// Clientes mockados
-const clientesMock = [
-  { id: '1', nome: 'Maria Silva', telefone: '(48) 99999-1111', cpf: '123.456.789-00' },
-  { id: '2', nome: 'Joao Santos', telefone: '(48) 99999-2222', cpf: '234.567.890-11' },
-  { id: '3', nome: 'Pedro Costa', telefone: '(48) 99999-3333', cpf: '345.678.901-22' },
-  { id: '4', nome: 'Ana Oliveira', telefone: '(48) 99999-4444', cpf: '456.789.012-33' },
-]
-
 interface ItemOS {
   id: string
-  tipo: 'serviço' | 'produto'
+  tipo: 'servico' | 'produto'
   nome: string
   quantidade: number
   valor_unitario: number
   valor_custo: number
+  servico_id?: string
+  produto_id?: string
 }
 
 export default function NovaOSPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
   const [showSenha, setShowSenha] = useState(false)
+
+  // Dados carregados do Supabase
+  const [clientes, setClientes] = useState<Cliente[]>([])
+  const [servicos, setServicos] = useState<Servico[]>([])
+  const [produtos, setProdutos] = useState<Produto[]>([])
 
   // Estados do formulário
   const [clienteId, setClienteId] = useState('')
   const [clienteBusca, setClienteBusca] = useState('')
-  const [clienteSelecionado, setClienteSelecionado] = useState<typeof clientesMock[0] | null>(null)
+  const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
 
   // Dados do aparelho
   const [tipoAparelho, setTipoAparelho] = useState('celular')
@@ -123,71 +107,100 @@ export default function NovaOSPage() {
   const [modelo, setModelo] = useState('')
   const [cor, setCor] = useState('')
   const [imei, setImei] = useState('')
-  const [númeroSerie, setNúmeroSerie] = useState('')
+  const [numeroSerie, setNumeroSerie] = useState('')
   const [tipoDesbloqueio, setTipoDesbloqueio] = useState<string>('sem_senha')
   const [padraoDesbloqueio, setPadraoDesbloqueio] = useState<number[]>([])
   const [pinDesbloqueio, setPinDesbloqueio] = useState('')
   const [senhaAparelho, setSenhaAparelho] = useState('')
   const [condicaoEntrada, setCondicaoEntrada] = useState('')
-  const [acessórios, setAcessórios] = useState('')
+  const [acessorios, setAcessorios] = useState('')
 
   // Problema
   const [problemaRelatado, setProblemaRelatado] = useState('')
-  const [observações, setObservações] = useState('')
+  const [observacoes, setObservacoes] = useState('')
 
   // Itens da OS
   const [itensOS, setItensOS] = useState<ItemOS[]>([])
-  const [dialogServiçoOpen, setDialogServiçoOpen] = useState(false)
+  const [dialogServicoOpen, setDialogServicoOpen] = useState(false)
   const [dialogProdutoOpen, setDialogProdutoOpen] = useState(false)
 
+  // Carregar dados do Supabase
+  useEffect(() => {
+    const carregarDados = async () => {
+      setIsLoadingData(true)
+      try {
+        const [clientesRes, servicosRes, produtosRes] = await Promise.all([
+          clientesService.listar(),
+          servicosService.listar(),
+          produtosService.listar(),
+        ])
+
+        if (clientesRes.data) setClientes(clientesRes.data)
+        if (servicosRes.data) setServicos(servicosRes.data)
+        if (produtosRes.data) setProdutos(produtosRes.data)
+
+        if (clientesRes.error) toast.error('Erro ao carregar clientes: ' + clientesRes.error)
+        if (servicosRes.error) toast.error('Erro ao carregar servicos: ' + servicosRes.error)
+        if (produtosRes.error) toast.error('Erro ao carregar produtos: ' + produtosRes.error)
+      } catch {
+        toast.error('Erro ao carregar dados')
+      } finally {
+        setIsLoadingData(false)
+      }
+    }
+    carregarDados()
+  }, [])
+
   // Calcular totais
-  const totalServiços = itensOS
-    .filter(i => i.tipo === 'serviço')
+  const totalServicos = itensOS
+    .filter(i => i.tipo === 'servico')
     .reduce((acc, i) => acc + i.valor_unitario * i.quantidade, 0)
 
   const totalProdutos = itensOS
     .filter(i => i.tipo === 'produto')
     .reduce((acc, i) => acc + i.valor_unitario * i.quantidade, 0)
 
-  const totalGeral = totalServiços + totalProdutos
+  const totalGeral = totalServicos + totalProdutos
 
   // Buscar cliente
-  const clientesFiltrados = clientesMock.filter(c =>
+  const clientesFiltrados = clientes.filter(c =>
     c.nome.toLowerCase().includes(clienteBusca.toLowerCase()) ||
-    c.telefone.includes(clienteBusca) ||
-    c.cpf.includes(clienteBusca)
+    (c.telefone && c.telefone.includes(clienteBusca)) ||
+    (c.cpf && c.cpf.includes(clienteBusca))
   )
 
-  const selecionarCliente = (cliente: typeof clientesMock[0]) => {
+  const selecionarCliente = (cliente: Cliente) => {
     setClienteSelecionado(cliente)
     setClienteId(cliente.id)
     setClienteBusca('')
   }
 
   // Adicionar serviço
-  const adicionarServiço = (serviço: typeof serviçosMock[0]) => {
+  const adicionarServico = (servico: Servico) => {
     const novoItem: ItemOS = {
       id: `s-${Date.now()}`,
-      tipo: 'serviço',
-      nome: serviço.nome,
+      tipo: 'servico',
+      nome: servico.nome,
       quantidade: 1,
-      valor_unitario: serviço.preço,
+      valor_unitario: servico.preco_base,
       valor_custo: 0,
+      servico_id: servico.id,
     }
     setItensOS([...itensOS, novoItem])
-    setDialogServiçoOpen(false)
+    setDialogServicoOpen(false)
     toast.success('Serviço adicionado')
   }
 
   // Adicionar produto
-  const adicionarProduto = (produto: typeof produtosMock[0]) => {
+  const adicionarProduto = (produto: Produto) => {
     const novoItem: ItemOS = {
       id: `p-${Date.now()}`,
       tipo: 'produto',
       nome: produto.nome,
       quantidade: 1,
-      valor_unitario: produto.preço,
+      valor_unitario: produto.preco_venda,
       valor_custo: produto.custo,
+      produto_id: produto.id,
     }
     setItensOS([...itensOS, novoItem])
     setDialogProdutoOpen(false)
@@ -225,35 +238,57 @@ export default function NovaOSPage() {
     setIsLoading(true)
 
     try {
-      // TODO: Salvar no Supabase
-      const osData = {
+      const osData: Record<string, unknown> = {
         cliente_id: clienteSelecionado.id,
         tipo_aparelho: tipoAparelho,
         marca,
         modelo,
-        cor,
-        imei,
-        número_serie: númeroSerie,
-        tipo_desbloqueio: tipoDesbloqueio,
+        cor: cor || undefined,
+        imei: imei || undefined,
+        numero_serie: numeroSerie || undefined,
+        tipo_desbloqueio: tipoDesbloqueio as 'sem_senha' | 'padrao' | 'pin' | 'senha',
         senha_aparelho: tipoDesbloqueio === 'senha' ? senhaAparelho : undefined,
         pin_desbloqueio: tipoDesbloqueio === 'pin' ? pinDesbloqueio : undefined,
         padrao_desbloqueio: tipoDesbloqueio === 'padrao' ? padraoDesbloqueio : undefined,
-        condicao_entrada: condicaoEntrada,
-        acessórios,
+        condicao_entrada: condicaoEntrada || undefined,
+        acessorios: acessorios || undefined,
         problema_relatado: problemaRelatado,
-        observações,
-        valor_serviços: totalServiços,
+        observacoes: observacoes || undefined,
+        valor_servicos: totalServicos,
         valor_produtos: totalProdutos,
+        valor_desconto: 0,
         valor_total: totalGeral,
-        itens: itensOS,
+        status: 'aberta',
+        pago: false,
+        data_entrada: new Date().toISOString(),
       }
 
-      // Simular salvamento
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const { data: osCriada, error } = await ordensServicoService.criar(osData as any)
+      if (error) {
+        toast.error('Erro ao criar OS: ' + error)
+        return
+      }
+
+      // Adicionar itens da OS
+      if (osCriada && itensOS.length > 0) {
+        for (const item of itensOS) {
+          await ordensServicoService.adicionarItem({
+            os_id: osCriada.id,
+            tipo: item.tipo,
+            servico_id: item.servico_id,
+            produto_id: item.produto_id,
+            descricao: item.nome,
+            quantidade: item.quantidade,
+            valor_unitario: item.valor_unitario,
+            valor_custo: item.valor_custo,
+            valor_total: item.valor_unitario * item.quantidade,
+          })
+        }
+      }
 
       toast.success('Ordem de Serviço criada com sucesso!')
       router.push('/ordens-servico')
-    } catch (error) {
+    } catch {
       toast.error('Erro ao criar OS')
     } finally {
       setIsLoading(false)
@@ -271,6 +306,17 @@ export default function NovaOSPage() {
       style: 'currency',
       currency: 'BRL',
     }).format(value)
+  }
+
+  if (isLoadingData) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Nova Ordem de Serviço" />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -554,12 +600,12 @@ export default function NovaOSPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="acessórios">Acessórios Deixados</Label>
+                  <Label htmlFor="acessorios">Acessórios Deixados</Label>
                   <Input
-                    id="acessórios"
+                    id="acessorios"
                     placeholder="Ex: Carregador, capa, película..."
-                    value={acessórios}
-                    onChange={(e) => setAcessórios(e.target.value)}
+                    value={acessorios}
+                    onChange={(e) => setAcessorios(e.target.value)}
                   />
                 </div>
               </CardContent>
@@ -586,12 +632,12 @@ export default function NovaOSPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="observações">Observações Internas</Label>
+                  <Label htmlFor="observacoes">Observações Internas</Label>
                   <Textarea
-                    id="observações"
+                    id="observacoes"
                     placeholder="Anotações internas (não aparece para o cliente)"
-                    value={observações}
-                    onChange={(e) => setObservações(e.target.value)}
+                    value={observacoes}
+                    onChange={(e) => setObservacoes(e.target.value)}
                     rows={2}
                   />
                 </div>
@@ -608,7 +654,7 @@ export default function NovaOSPage() {
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Dialog open={dialogServiçoOpen} onOpenChange={setDialogServiçoOpen}>
+                  <Dialog open={dialogServicoOpen} onOpenChange={setDialogServicoOpen}>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
                         <Plus className="mr-2 h-4 w-4" />
@@ -623,20 +669,20 @@ export default function NovaOSPage() {
                         </DialogDescription>
                       </DialogHeader>
                       <div className="max-h-[300px] overflow-y-auto divide-y">
-                        {serviçosMock.map(serviço => (
+                        {servicos.map(servico => (
                           <div
-                            key={serviço.id}
+                            key={servico.id}
                             className="flex items-center justify-between p-3 hover:bg-muted cursor-pointer"
-                            onClick={() => adicionarServiço(serviço)}
+                            onClick={() => adicionarServico(servico)}
                           >
                             <div>
-                              <p className="font-medium">{serviço.nome}</p>
+                              <p className="font-medium">{servico.nome}</p>
                               <Badge variant="outline" className="text-xs">
-                                {serviço.tipo}
+                                {servico.tipo}
                               </Badge>
                             </div>
                             <span className="font-medium">
-                              {formatCurrency(serviço.preço)}
+                              {formatCurrency(servico.preco_base)}
                             </span>
                           </div>
                         ))}
@@ -659,7 +705,7 @@ export default function NovaOSPage() {
                         </DialogDescription>
                       </DialogHeader>
                       <div className="max-h-[300px] overflow-y-auto divide-y">
-                        {produtosMock.map(produto => (
+                        {produtos.map(produto => (
                           <div
                             key={produto.id}
                             className="flex items-center justify-between p-3 hover:bg-muted cursor-pointer"
@@ -668,11 +714,11 @@ export default function NovaOSPage() {
                             <div>
                               <p className="font-medium">{produto.nome}</p>
                               <p className="text-sm text-muted-foreground">
-                                Estoque: {produto.estoque}
+                                Estoque: {produto.estoque_atual}
                               </p>
                             </div>
                             <span className="font-medium">
-                              {formatCurrency(produto.preço)}
+                              {formatCurrency(produto.preco_venda)}
                             </span>
                           </div>
                         ))}
@@ -703,8 +749,8 @@ export default function NovaOSPage() {
                       {itensOS.map(item => (
                         <TableRow key={item.id}>
                           <TableCell>
-                            <Badge variant={item.tipo === 'serviço' ? 'default' : 'secondary'}>
-                              {item.tipo === 'serviço' ? 'Serviço' : 'Peça'}
+                            <Badge variant={item.tipo === 'servico' ? 'default' : 'secondary'}>
+                              {item.tipo === 'servico' ? 'Serviço' : 'Peça'}
                             </Badge>
                           </TableCell>
                           <TableCell>{item.nome}</TableCell>
@@ -752,7 +798,7 @@ export default function NovaOSPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Serviços</span>
-                    <span>{formatCurrency(totalServiços)}</span>
+                    <span>{formatCurrency(totalServicos)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Peças/Produtos</span>

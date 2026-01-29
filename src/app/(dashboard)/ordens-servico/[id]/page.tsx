@@ -58,15 +58,17 @@ import {
   DollarSign,
   Wrench,
   Package,
+  Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
-import type { StatusOS } from '@/types/database'
+import type { OrdemServico, StatusOS } from '@/types/database'
 import { CupomOS } from '@/components/print/CupomOS'
 import { useAuthStore } from '@/store/useStore'
 import { PatternLock } from '@/components/ui/pattern-lock'
+import { ordensServicoService } from '@/services/ordens-servico.service'
 
 // Configurações de status
 const statusConfig: Record<StatusOS, { label: string; color: string; icon: React.ReactNode }> = {
@@ -92,77 +94,46 @@ const statusFlow: Record<StatusOS, StatusOS[]> = {
   cancelada: [],
 }
 
-// Mock de OS detalhada
-const mockOSDetalhada = {
-  id: '1',
-  empresa_id: '1',
-  cliente_id: '1',
-  usuário_id: '1',
-  número: 1001,
-  status: 'em_andamento' as StatusOS,
-  tipo_aparelho: 'celular',
-  marca: 'Apple',
-  modelo: 'iPhone 13',
-  cor: 'Azul',
-  imei: '123456789012345',
-  tipo_desbloqueio: 'padrao' as 'sem_senha' | 'padrao' | 'pin' | 'senha',
-  padrao_desbloqueio: [1, 4, 7, 8, 9, 6, 3] as number[] | undefined,
-  pin_desbloqueio: undefined as string | undefined,
-  senha_aparelho: undefined as string | undefined,
-  condicao_entrada: 'Aparelho com tela quebrada no canto superior direito. Pequenos arranhoes na traseira.',
-  acessórios: 'Carregador original, capa silicone preta',
-  problema_relatado: 'Cliente relata que a tela quebrou apos queda. O aparelho liga mas o touch não funciona na parte de cima.',
-  diagnóstico: 'Tela LCD danificada. Necessaria troca completa do display.',
-  observações_internas: 'Cliente com pressa, prometemos entregar em 2 dias.',
-  valor_serviços: 150,
-  valor_produtos: 450,
-  valor_desconto: 0,
-  valor_total: 600,
-  pago: false,
-  data_entrada: '2026-01-25T10:30:00',
-  data_previsao: '2026-01-27T18:00:00',
-  created_at: '2026-01-25T10:30:00',
-  updated_at: '2026-01-26T14:00:00',
-  cliente: {
-    id: '1',
-    empresa_id: '1',
-    nome: 'Maria Silva',
-    telefone: '(48) 99999-1111',
-    whatsapp: '(48) 99999-1111',
-    email: 'maria@email.com',
-    cpf: '123.456.789-00',
-    ativo: true,
-    created_at: '',
-    updated_at: '',
-  },
-  usuário: {
-    id: '1',
-    empresa_id: '1',
-    nome: 'Bruno (Admin)',
-    email: 'bruno@loja.com',
-    perfil: 'admin' as const,
-    ativo: true,
-    created_at: '',
-    updated_at: '',
-  },
-  itens: [
-    { id: '1', tipo: 'serviço', nome: 'Troca de Tela', quantidade: 1, valor_unitario: 150, valor_custo: 0 },
-    { id: '2', tipo: 'produto', nome: 'Tela iPhone 13 Original', quantidade: 1, valor_unitario: 450, valor_custo: 280 },
-  ],
-}
-
 export default function VisualizarOSPage() {
   const params = useParams()
   const router = useRouter()
   const { empresa, usuario } = useAuthStore()
-  const [os, setOs] = useState(mockOSDetalhada)
+  const [os, setOs] = useState<OrdemServico | null>(null)
   const [showSenha, setShowSenha] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [dialogStatusOpen, setDialogStatusOpen] = useState(false)
   const [novoStatus, setNovoStatus] = useState<StatusOS | ''>('')
-  const [diagnóstico, setDiagnóstico] = useState(os.diagnóstico || '')
+  const [diagnostico, setDiagnostico] = useState('')
   const [showPrint, setShowPrint] = useState(false)
   const [tipoPrint, setTipoPrint] = useState<'entrada' | 'completa' | 'entrega'>('entrada')
+
+  // Carregar OS
+  useEffect(() => {
+    const carregar = async () => {
+      if (!params.id) return
+      setIsLoading(true)
+      try {
+        const { data, error } = await ordensServicoService.buscarPorId(params.id as string)
+        if (error) {
+          toast.error('Erro ao carregar OS: ' + error)
+          return
+        }
+        if (!data) {
+          toast.error('Ordem de servico nao encontrada')
+          router.push('/ordens-servico')
+          return
+        }
+        setOs(data)
+        setDiagnostico(data.diagnostico || '')
+      } catch {
+        toast.error('Erro ao carregar OS')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    carregar()
+  }, [params.id, router])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -178,42 +149,66 @@ export default function VisualizarOSPage() {
 
   // Alterar status
   const handleAlterarStatus = async () => {
-    if (!novoStatus) return
+    if (!novoStatus || !os) return
 
-    setIsLoading(true)
+    setIsSaving(true)
     try {
-      // TODO: Atualizar no Supabase
-      await new Promise(resolve => setTimeout(resolve, 500))
+      const dados: { diagnostico?: string; solucao?: string; data_finalizacao?: string; data_entrega?: string } = {}
+      if (diagnostico) {
+        dados.diagnostico = diagnostico
+      }
+      if (novoStatus === 'finalizada') {
+        dados.data_finalizacao = new Date().toISOString()
+        dados.solucao = diagnostico
+      }
+      if (novoStatus === 'entregue') {
+        dados.data_entrega = new Date().toISOString()
+      }
 
-      setOs(prev => ({
+      const { data, error } = await ordensServicoService.atualizarStatus(os.id, novoStatus, dados)
+      if (error) {
+        toast.error('Erro ao alterar status: ' + error)
+        return
+      }
+
+      setOs(prev => prev ? {
         ...prev,
-        status: novoStatus,
-        diagnóstico: diagnóstico,
-        ...(novoStatus === 'finalizada' ? { data_finalização: new Date().toISOString() } : {}),
-        ...(novoStatus === 'entregue' ? { data_entrega: new Date().toISOString() } : {}),
-      }))
+        ...data,
+        cliente: prev.cliente,
+        usuario: prev.usuario,
+        tecnico: prev.tecnico,
+        itens: prev.itens,
+      } : null)
 
       toast.success(`Status alterado para ${statusConfig[novoStatus].label}`)
       setDialogStatusOpen(false)
       setNovoStatus('')
-    } catch (error) {
+    } catch {
       toast.error('Erro ao alterar status')
     } finally {
-      setIsLoading(false)
+      setIsSaving(false)
     }
   }
 
   // Marcar como pago
   const handleMarcarPago = async () => {
-    setIsLoading(true)
+    if (!os) return
+    setIsSaving(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setOs(prev => ({ ...prev, pago: true, data_pagamento: new Date().toISOString() }))
+      const { error } = await ordensServicoService.atualizar(os.id, {
+        pago: true,
+        data_pagamento: new Date().toISOString(),
+      })
+      if (error) {
+        toast.error('Erro ao registrar pagamento: ' + error)
+        return
+      }
+      setOs(prev => prev ? { ...prev, pago: true, data_pagamento: new Date().toISOString() } : null)
       toast.success('Pagamento registrado')
-    } catch (error) {
+    } catch {
       toast.error('Erro ao registrar pagamento')
     } finally {
-      setIsLoading(false)
+      setIsSaving(false)
     }
   }
 
@@ -225,6 +220,28 @@ export default function VisualizarOSPage() {
       window.print()
       setShowPrint(false)
     }, 100)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Carregando OS..." />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!os) {
+    return (
+      <div className="flex flex-col">
+        <Header title="OS nao encontrada" />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <p className="text-muted-foreground">Ordem de servico nao encontrada.</p>
+        </div>
+      </div>
+    )
   }
 
   const statusDisponiveis = statusFlow[os.status]
@@ -244,7 +261,7 @@ export default function VisualizarOSPage() {
       )}
 
       <div className="flex flex-col print:hidden">
-        <Header title={`OS #${os.número}`} />
+        <Header title={`OS #${os.numero}`} />
 
         <div className="flex-1 space-y-6 p-4 lg:p-6">
           {/* Ações */}
@@ -334,8 +351,8 @@ export default function VisualizarOSPage() {
                           <Label>Diagnóstico / Solucao</Label>
                           <Textarea
                             placeholder="Descreva o diagnóstico ou a solucao aplicada..."
-                            value={diagnóstico}
-                            onChange={(e) => setDiagnóstico(e.target.value)}
+                            value={diagnostico}
+                            onChange={(e) => setDiagnostico(e.target.value)}
                             rows={4}
                           />
                         </div>
@@ -346,8 +363,8 @@ export default function VisualizarOSPage() {
                       <Button variant="outline" onClick={() => setDialogStatusOpen(false)}>
                         Cancelar
                       </Button>
-                      <Button onClick={handleAlterarStatus} disabled={!novoStatus || isLoading}>
-                        {isLoading ? 'Alterando...' : 'Confirmar'}
+                      <Button onClick={handleAlterarStatus} disabled={!novoStatus || isSaving}>
+                        {isSaving ? 'Alterando...' : 'Confirmar'}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -522,10 +539,10 @@ export default function VisualizarOSPage() {
                     </div>
                   )}
 
-                  {os.acessórios && (
+                  {os.acessorios && (
                     <div>
                       <p className="text-sm text-muted-foreground">Acessórios</p>
-                      <p>{os.acessórios}</p>
+                      <p>{os.acessorios}</p>
                     </div>
                   )}
                 </CardContent>
@@ -542,17 +559,17 @@ export default function VisualizarOSPage() {
                     <p className="mt-1">{os.problema_relatado}</p>
                   </div>
 
-                  {os.diagnóstico && (
+                  {os.diagnostico && (
                     <div>
                       <p className="text-sm text-muted-foreground">Diagnóstico Técnico</p>
-                      <p className="mt-1">{os.diagnóstico}</p>
+                      <p className="mt-1">{os.diagnostico}</p>
                     </div>
                   )}
 
-                  {os.observações_internas && (
+                  {os.observacoes_internas && (
                     <div className="rounded-lg bg-muted p-3">
                       <p className="text-sm text-muted-foreground">Observações Internas</p>
-                      <p className="mt-1 text-sm">{os.observações_internas}</p>
+                      <p className="mt-1 text-sm">{os.observacoes_internas}</p>
                     </div>
                   )}
                 </CardContent>
@@ -578,21 +595,21 @@ export default function VisualizarOSPage() {
                       {os.itens?.map(item => (
                         <TableRow key={item.id}>
                           <TableCell>
-                            <Badge variant={item.tipo === 'serviço' ? 'default' : 'secondary'}>
-                              {item.tipo === 'serviço' ? (
+                            <Badge variant={item.tipo === 'servico' ? 'default' : 'secondary'}>
+                              {item.tipo === 'servico' ? (
                                 <><Wrench className="mr-1 h-3 w-3" /> Serviço</>
                               ) : (
                                 <><Package className="mr-1 h-3 w-3" /> Peça</>
                               )}
                             </Badge>
                           </TableCell>
-                          <TableCell>{item.nome}</TableCell>
+                          <TableCell>{item.descricao}</TableCell>
                           <TableCell className="text-center">{item.quantidade}</TableCell>
                           <TableCell className="text-right">
                             {formatCurrency(item.valor_unitario)}
                           </TableCell>
                           <TableCell className="text-right font-medium">
-                            {formatCurrency(item.valor_unitario * item.quantidade)}
+                            {formatCurrency(item.valor_total)}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -613,7 +630,7 @@ export default function VisualizarOSPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Serviços</span>
-                      <span>{formatCurrency(os.valor_serviços)}</span>
+                      <span>{formatCurrency(os.valor_servicos)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Peças/Produtos</span>
@@ -635,7 +652,7 @@ export default function VisualizarOSPage() {
                   <Separator />
 
                   {!os.pago && os.valor_total > 0 && (
-                    <Button className="w-full" onClick={handleMarcarPago} disabled={isLoading}>
+                    <Button className="w-full" onClick={handleMarcarPago} disabled={isSaving}>
                       <DollarSign className="mr-2 h-4 w-4" />
                       Registrar Pagamento
                     </Button>
@@ -658,11 +675,11 @@ export default function VisualizarOSPage() {
                 <CardContent className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Número da OS</span>
-                    <span className="font-medium">#{os.número}</span>
+                    <span className="font-medium">#{os.numero}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Criado por</span>
-                    <span className="font-medium">{os.usuário?.nome}</span>
+                    <span className="font-medium">{os.usuario?.nome}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Data de Entrada</span>

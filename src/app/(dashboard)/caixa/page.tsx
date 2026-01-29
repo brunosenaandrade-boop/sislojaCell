@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,35 +42,20 @@ import {
   CheckCircle,
   Receipt,
   Wallet,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useCaixaStore } from '@/store/useStore'
-import type { MovimentacaoCaixaLocal } from '@/store/useStore'
+import { caixaService } from '@/services/caixa.service'
+import type { Caixa, MovimentacaoCaixa } from '@/types/database'
 
 type TipoMovimentacao = 'suprimento' | 'sangria'
 
 export default function CaixaPage() {
-  const {
-    statusCaixa,
-    valorAbertura,
-    horaAbertura,
-    movimentacoes,
-    historicoCaixas,
-    abrirCaixa,
-    fecharCaixa,
-    adicionarMovimentacao,
-    getTotalVendas,
-    getTotalOS,
-    getTotalSangrias,
-    getTotalSuprimentos,
-    getTotalCusto,
-    getLucroLiquido,
-    getSaldoAtual,
-    isCaixaAberto,
-    getTotalPorFormaPagamento,
-    getQtdVendas,
-    getQtdOS,
-  } = useCaixaStore()
+  // State for real data
+  const [caixaAberto, setCaixaAberto] = useState<Caixa | null>(null)
+  const [movimentacoes, setMovimentacoes] = useState<MovimentacaoCaixa[]>([])
+  const [historicoCaixas, setHistoricoCaixas] = useState<Caixa[]>([])
+  const [isLoadingPage, setIsLoadingPage] = useState(true)
 
   // Dialogs
   const [dialogAbrirOpen, setDialogAbrirOpen] = useState(false)
@@ -90,21 +75,68 @@ export default function CaixaPage() {
 
   const [isLoading, setIsLoading] = useState(false)
 
-  // Valores calculados
-  const totalVendas = getTotalVendas()
-  const totalOS = getTotalOS()
-  const totalSangrias = getTotalSangrias()
-  const totalSuprimentos = getTotalSuprimentos()
-  const totalCusto = getTotalCusto()
-  const lucroLiquido = getLucroLiquido()
-  const saldoAtual = getSaldoAtual()
-  const qtdVendas = getQtdVendas()
-  const qtdOS = getQtdOS()
-  const totaisPagamento = getTotalPorFormaPagamento()
+  // Derived state
+  const statusCaixa = caixaAberto ? 'aberto' : 'fechado'
+  const valorAbertura = caixaAberto?.valor_abertura ?? 0
+  const horaAbertura = caixaAberto?.data_abertura ?? ''
+
+  // Calculate totals from movimentacoes
+  const totalVendas = movimentacoes.filter(m => m.tipo === 'venda').reduce((acc, m) => acc + m.valor, 0)
+  const totalOS = movimentacoes.filter(m => m.tipo === 'os').reduce((acc, m) => acc + m.valor, 0)
+  const totalSangrias = movimentacoes.filter(m => m.tipo === 'sangria').reduce((acc, m) => acc + Math.abs(m.valor), 0)
+  const totalSuprimentos = movimentacoes.filter(m => m.tipo === 'suprimento').reduce((acc, m) => acc + m.valor, 0)
+  const totalEntradas = totalVendas + totalOS + totalSuprimentos
+  const totalSaidas = totalSangrias
+  const saldoAtual = valorAbertura + totalEntradas - totalSaidas
+  const totalCusto = 0 // Not tracked per-movement
+  const lucroLiquido = totalVendas + totalOS - totalCusto
+  const qtdVendas = movimentacoes.filter(m => m.tipo === 'venda').length
+  const qtdOS = movimentacoes.filter(m => m.tipo === 'os').length
 
   // Lucro de ontem para comparacao
-  const lucroOntem = historicoCaixas.length > 0 ? historicoCaixas[0].lucro_liquido : 0
+  const lucroOntem = historicoCaixas.length > 0 ? (historicoCaixas[0].total_vendas + historicoCaixas[0].total_os) : 0
   const diferencaLucro = lucroLiquido - lucroOntem
+
+  // Fetch data
+  const fetchCaixa = useCallback(async () => {
+    try {
+      const { data, error } = await caixaService.buscarAberto()
+      if (error) {
+        toast.error('Erro ao buscar caixa: ' + error)
+        return
+      }
+      setCaixaAberto(data)
+
+      if (data) {
+        const movRes = await caixaService.listarMovimentacoes(data.id)
+        if (movRes.error) toast.error('Erro ao carregar movimentações: ' + movRes.error)
+        setMovimentacoes(movRes.data)
+      } else {
+        setMovimentacoes([])
+      }
+    } catch {
+      toast.error('Erro ao carregar caixa')
+    }
+  }, [])
+
+  const fetchHistorico = useCallback(async () => {
+    try {
+      const { data, error } = await caixaService.listarHistorico(10)
+      if (error) toast.error('Erro ao carregar histórico: ' + error)
+      setHistoricoCaixas(data)
+    } catch {
+      toast.error('Erro ao carregar histórico')
+    }
+  }, [])
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoadingPage(true)
+      await Promise.all([fetchCaixa(), fetchHistorico()])
+      setIsLoadingPage(false)
+    }
+    load()
+  }, [fetchCaixa, fetchHistorico])
 
   // Formatar moeda
   const formatCurrency = (value: number) => {
@@ -135,8 +167,13 @@ export default function CaixaPage() {
     }
     setIsLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      abrirCaixa(valor, 'Admin')
+      const { data, error } = await caixaService.abrir(valor)
+      if (error) {
+        toast.error('Erro ao abrir caixa: ' + error)
+        return
+      }
+      setCaixaAberto(data)
+      setMovimentacoes([])
       toast.success('Caixa aberto com sucesso!')
       setDialogAbrirOpen(false)
       setFormValorAbertura('')
@@ -162,15 +199,23 @@ export default function CaixaPage() {
       toast.error('Valor maior que o saldo em caixa')
       return
     }
+    if (!caixaAberto) return
+
     setIsLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      adicionarMovimentacao({
+      const { data, error } = await caixaService.adicionarMovimentacao({
+        caixa_id: caixaAberto.id,
         tipo: movTipo,
         valor: movTipo === 'sangria' ? -valor : valor,
         descricao: `${movTipo === 'sangria' ? 'Sangria' : 'Suprimento'} - ${movDescricao}`,
-        usuario: 'Admin',
       })
+      if (error) {
+        toast.error('Erro ao registrar movimentação: ' + error)
+        return
+      }
+      if (data) {
+        setMovimentacoes(prev => [...prev, data])
+      }
       toast.success(`${movTipo === 'sangria' ? 'Sangria' : 'Suprimento'} registrado!`)
       setDialogMovOpen(false)
       setMovValor('')
@@ -189,18 +234,37 @@ export default function CaixaPage() {
       toast.error('Informe o valor contado no caixa')
       return
     }
+    if (!caixaAberto) return
+
     setIsLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      const diferenca = contado - saldoAtual
+      const totalEsperado = saldoAtual
+      const diferenca = contado - totalEsperado
+
+      const { error } = await caixaService.fechar(caixaAberto.id, contado, {
+        total_vendas: totalVendas,
+        total_os: totalOS,
+        total_entradas: totalEntradas,
+        total_saidas: totalSaidas,
+        total_esperado: totalEsperado,
+        diferenca,
+      })
+
+      if (error) {
+        toast.error('Erro ao fechar caixa: ' + error)
+        return
+      }
+
       if (Math.abs(diferenca) > 0.01) {
         toast.warning(`Diferenca de ${formatCurrency(diferenca)} no fechamento`)
       } else {
         toast.success('Caixa fechado sem diferenca!')
       }
-      fecharCaixa(contado)
+      setCaixaAberto(null)
+      setMovimentacoes([])
       setDialogFecharOpen(false)
       setValorContado('')
+      await fetchHistorico()
     } catch {
       toast.error('Erro ao fechar caixa')
     } finally {
@@ -250,6 +314,17 @@ export default function CaixaPage() {
         {c.icon}
         {c.label}
       </Badge>
+    )
+  }
+
+  if (isLoadingPage) {
+    return (
+      <div className="flex flex-col">
+        <Header title="Caixa" />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
     )
   }
 
@@ -409,7 +484,7 @@ export default function CaixaPage() {
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Dinheiro</div>
-                      <div className="font-bold">{formatCurrency(totaisPagamento.dinheiro || 0)}</div>
+                      <div className="font-bold">{formatCurrency(0)}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-lg border p-3">
@@ -418,7 +493,7 @@ export default function CaixaPage() {
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">PIX</div>
-                      <div className="font-bold">{formatCurrency(totaisPagamento.pix || 0)}</div>
+                      <div className="font-bold">{formatCurrency(0)}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-lg border p-3">
@@ -427,7 +502,7 @@ export default function CaixaPage() {
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Debito</div>
-                      <div className="font-bold">{formatCurrency(totaisPagamento.debito || 0)}</div>
+                      <div className="font-bold">{formatCurrency(0)}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-lg border p-3">
@@ -436,7 +511,7 @@ export default function CaixaPage() {
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Credito</div>
-                      <div className="font-bold">{formatCurrency(totaisPagamento.credito || 0)}</div>
+                      <div className="font-bold">{formatCurrency(0)}</div>
                     </div>
                   </div>
                 </div>
@@ -482,22 +557,20 @@ export default function CaixaPage() {
                       </TableRow>
                     ) : (
                       [...movimentacoes]
-                        .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+                        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                         .map((mov) => (
                           <TableRow key={mov.id}>
                             <TableCell className="font-mono text-sm">
-                              {formatTime(mov.data)}
+                              {formatTime(mov.created_at)}
                             </TableCell>
                             <TableCell>{getTipoBadge(mov.tipo)}</TableCell>
                             <TableCell className="max-w-[250px] truncate">
-                              {mov.descricao}
+                              {mov.descricao || '-'}
                             </TableCell>
                             <TableCell>
-                              {getFormaPagamentoIcon(mov.forma_pagamento) || (
-                                <span className="text-muted-foreground">-</span>
-                              )}
+                              <span className="text-muted-foreground">-</span>
                             </TableCell>
-                            <TableCell className="text-sm">{mov.usuario}</TableCell>
+                            <TableCell className="text-sm">{mov.usuario_id || '-'}</TableCell>
                             <TableCell className="text-right font-bold">
                               <span className={mov.valor >= 0 ? 'text-green-600' : 'text-red-600'}>
                                 {mov.valor >= 0 ? '+' : ''}{formatCurrency(mov.valor)}
@@ -544,7 +617,7 @@ export default function CaixaPage() {
                             {formatDate(caixa.data_abertura)}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {formatTime(caixa.data_abertura)} - {formatTime(caixa.data_fechamento)}
+                            {formatTime(caixa.data_abertura)} - {caixa.data_fechamento ? formatTime(caixa.data_fechamento) : '-'}
                           </TableCell>
                           <TableCell className="text-right">
                             {formatCurrency(caixa.valor_abertura)}
@@ -556,15 +629,15 @@ export default function CaixaPage() {
                             {formatCurrency(caixa.total_os)}
                           </TableCell>
                           <TableCell className="text-right text-red-600">
-                            -{formatCurrency(caixa.total_sangrias)}
+                            -{formatCurrency(caixa.total_saidas)}
                           </TableCell>
                           <TableCell className="text-right text-green-600 font-bold">
-                            {formatCurrency(caixa.lucro_liquido)}
+                            {formatCurrency(caixa.total_vendas + caixa.total_os)}
                           </TableCell>
                           <TableCell className="text-right font-bold">
-                            {formatCurrency(caixa.valor_fechamento)}
+                            {formatCurrency(caixa.valor_fechamento ?? 0)}
                           </TableCell>
-                          <TableCell className="text-sm">{caixa.usuario}</TableCell>
+                          <TableCell className="text-sm">{caixa.usuario_fechamento_id || '-'}</TableCell>
                         </TableRow>
                       ))
                     )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Header } from '@/components/layout/Header'
 import { usePermissao } from '@/hooks/usePermissao'
 import { Button } from '@/components/ui/button'
@@ -36,112 +36,12 @@ import {
   AlertTriangle,
   Shield,
   X,
+  Loader2,
 } from 'lucide-react'
 import { format } from 'date-fns'
-
-// Mock data de logs
-const mockLogs = [
-  {
-    id: '1',
-    tipo: 'audit' as const,
-    categoria: 'auth',
-    mensagem: 'Login realizado',
-    usuario: 'Bruno (Admin)',
-    pagina: '/login',
-    detalhes: { usuario_id: '1', ip: '192.168.1.1' },
-    created_at: '2026-01-29T15:30:00',
-  },
-  {
-    id: '2',
-    tipo: 'info' as const,
-    categoria: 'venda',
-    mensagem: 'Venda #145 finalizada',
-    usuario: 'Bruno (Admin)',
-    pagina: '/vendas',
-    detalhes: { venda_id: '145', valor: 89.90, forma_pagamento: 'pix' },
-    created_at: '2026-01-29T14:22:00',
-  },
-  {
-    id: '3',
-    tipo: 'warning' as const,
-    categoria: 'estoque',
-    mensagem: 'Produto "Carregador USB-C" com estoque baixo (3 unidades)',
-    usuario: 'Sistema',
-    pagina: '/estoque',
-    detalhes: { produto_id: '1', estoque_atual: 3, estoque_minimo: 5 },
-    created_at: '2026-01-29T13:45:00',
-  },
-  {
-    id: '4',
-    tipo: 'erro' as const,
-    categoria: 'sistema',
-    mensagem: 'Erro ao conectar com servidor de impressão',
-    usuario: 'Funcionário 1',
-    pagina: '/vendas',
-    detalhes: { error_name: 'ConnectionError', error_message: 'ECONNREFUSED', stack_trace: 'at PrintService.connect...' },
-    created_at: '2026-01-29T12:10:00',
-  },
-  {
-    id: '5',
-    tipo: 'audit' as const,
-    categoria: 'os',
-    mensagem: 'OS #1001 status alterado para "Em Andamento"',
-    usuario: 'Bruno (Admin)',
-    pagina: '/ordens-servico/1',
-    detalhes: { os_id: '1', status_anterior: 'em_analise', status_novo: 'em_andamento' },
-    created_at: '2026-01-29T11:30:00',
-  },
-  {
-    id: '6',
-    tipo: 'info' as const,
-    categoria: 'auth',
-    mensagem: 'Logout realizado',
-    usuario: 'Funcionário 1',
-    pagina: '/dashboard',
-    detalhes: {},
-    created_at: '2026-01-29T10:00:00',
-  },
-  {
-    id: '7',
-    tipo: 'audit' as const,
-    categoria: 'venda',
-    mensagem: 'Venda #144 finalizada',
-    usuario: 'Bruno (Admin)',
-    pagina: '/vendas',
-    detalhes: { venda_id: '144', valor: 250.00, forma_pagamento: 'credito' },
-    created_at: '2026-01-28T16:45:00',
-  },
-  {
-    id: '8',
-    tipo: 'warning' as const,
-    categoria: 'sistema',
-    mensagem: 'Tentativa de acesso a rota restrita',
-    usuario: 'Funcionário 1',
-    pagina: '/configuracoes',
-    detalhes: { rota: '/configuracoes', perfil: 'funcionario' },
-    created_at: '2026-01-28T15:20:00',
-  },
-  {
-    id: '9',
-    tipo: 'info' as const,
-    categoria: 'estoque',
-    mensagem: 'Entrada de estoque: 20 unidades de "Película iPhone 15"',
-    usuario: 'Bruno (Admin)',
-    pagina: '/estoque',
-    detalhes: { produto_id: '3', quantidade: 20, tipo: 'entrada' },
-    created_at: '2026-01-28T14:00:00',
-  },
-  {
-    id: '10',
-    tipo: 'erro' as const,
-    categoria: 'sistema',
-    mensagem: 'Promise rejeitada: Network Error',
-    usuario: 'Sistema',
-    pagina: '/dashboard',
-    detalhes: { error_name: 'AxiosError', error_message: 'Network Error' },
-    created_at: '2026-01-28T09:30:00',
-  },
-]
+import { toast } from 'sonner'
+import { logsService } from '@/services/logs.service'
+import type { LogSistema } from '@/types/database'
 
 const tipoBadge: Record<string, { label: string; variant: string; icon: React.ReactNode }> = {
   erro: { label: 'Erro', variant: 'bg-red-100 text-red-800', icon: <AlertCircle className="h-3 w-3" /> },
@@ -160,10 +60,35 @@ const categoriaLabels: Record<string, string> = {
 
 export default function LogsPage() {
   const { isAdmin } = usePermissao()
+  const [logs, setLogs] = useState<LogSistema[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [filtroTipo, setFiltroTipo] = useState<string>('todos')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todos')
   const [busca, setBusca] = useState('')
-  const [logSelecionado, setLogSelecionado] = useState<typeof mockLogs[0] | null>(null)
+  const [logSelecionado, setLogSelecionado] = useState<LogSistema | null>(null)
+
+  const fetchLogs = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const filtros: { tipo?: string; categoria?: string; busca?: string } = {}
+      if (filtroTipo !== 'todos') filtros.tipo = filtroTipo
+      if (filtroCategoria !== 'todos') filtros.categoria = filtroCategoria
+      if (busca.trim()) filtros.busca = busca.trim()
+
+      const { data, error } = await logsService.listar(filtros)
+      if (error) toast.error('Erro ao carregar logs: ' + error)
+      setLogs(data)
+    } catch {
+      toast.error('Erro ao carregar logs')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [filtroTipo, filtroCategoria, busca])
+
+  useEffect(() => {
+    if (!isAdmin) return
+    fetchLogs()
+  }, [fetchLogs, isAdmin])
 
   if (!isAdmin) {
     return (
@@ -184,15 +109,13 @@ export default function LogsPage() {
     )
   }
 
-  const logsFiltrados = mockLogs.filter((log) => {
-    if (filtroTipo !== 'todos' && log.tipo !== filtroTipo) return false
-    if (filtroCategoria !== 'todos' && log.categoria !== filtroCategoria) return false
+  // Client-side filter for busca (the service also does server-side ilike on mensagem)
+  const logsFiltrados = logs.filter((log) => {
     if (busca) {
       const term = busca.toLowerCase()
       return (
         log.mensagem.toLowerCase().includes(term) ||
-        log.usuario.toLowerCase().includes(term) ||
-        log.pagina.toLowerCase().includes(term)
+        (log.pagina && log.pagina.toLowerCase().includes(term))
       )
     }
     return true
@@ -256,63 +179,73 @@ export default function LogsPage() {
         {/* Contagem */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <ScrollText className="h-4 w-4" />
-          {logsFiltrados.length} registro{logsFiltrados.length !== 1 ? 's' : ''} encontrado{logsFiltrados.length !== 1 ? 's' : ''}
+          {isLoading ? 'Carregando...' : `${logsFiltrados.length} registro${logsFiltrados.length !== 1 ? 's' : ''} encontrado${logsFiltrados.length !== 1 ? 's' : ''}`}
         </div>
 
         {/* Tabela */}
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[160px]">Data/Hora</TableHead>
-                  <TableHead className="w-[100px]">Tipo</TableHead>
-                  <TableHead className="w-[130px]">Categoria</TableHead>
-                  <TableHead>Mensagem</TableHead>
-                  <TableHead className="w-[140px]">Usuário</TableHead>
-                  <TableHead className="w-[120px]">Página</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {logsFiltrados.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      Nenhum log encontrado com os filtros aplicados
-                    </TableCell>
+                    <TableHead className="w-[160px]">Data/Hora</TableHead>
+                    <TableHead className="w-[100px]">Tipo</TableHead>
+                    <TableHead className="w-[130px]">Categoria</TableHead>
+                    <TableHead>Mensagem</TableHead>
+                    <TableHead className="w-[140px]">Usuário</TableHead>
+                    <TableHead className="w-[120px]">Página</TableHead>
                   </TableRow>
-                ) : (
-                  logsFiltrados.map((log) => (
-                    <TableRow
-                      key={log.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => setLogSelecionado(log)}
-                    >
-                      <TableCell className="text-sm font-mono">
-                        {format(new Date(log.created_at), 'dd/MM/yy HH:mm')}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${tipoBadge[log.tipo].variant} gap-1`}>
-                          {tipoBadge[log.tipo].icon}
-                          {tipoBadge[log.tipo].label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {categoriaLabels[log.categoria] || log.categoria}
-                      </TableCell>
-                      <TableCell className="text-sm max-w-[300px] truncate">
-                        {log.mensagem}
-                      </TableCell>
-                      <TableCell className="text-sm">{log.usuario}</TableCell>
-                      <TableCell className="text-sm font-mono text-muted-foreground">
-                        {log.pagina}
+                </TableHeader>
+                <TableBody>
+                  {logsFiltrados.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        Nenhum log encontrado com os filtros aplicados
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  ) : (
+                    logsFiltrados.map((log) => (
+                      <TableRow
+                        key={log.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => setLogSelecionado(log)}
+                      >
+                        <TableCell className="text-sm font-mono">
+                          {format(new Date(log.created_at), 'dd/MM/yy HH:mm')}
+                        </TableCell>
+                        <TableCell>
+                          {tipoBadge[log.tipo] ? (
+                            <Badge className={`${tipoBadge[log.tipo].variant} gap-1`}>
+                              {tipoBadge[log.tipo].icon}
+                              {tipoBadge[log.tipo].label}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">{log.tipo}</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {(log.categoria && categoriaLabels[log.categoria]) || log.categoria || '-'}
+                        </TableCell>
+                        <TableCell className="text-sm max-w-[300px] truncate">
+                          {log.mensagem}
+                        </TableCell>
+                        <TableCell className="text-sm">{log.usuario_id || '-'}</TableCell>
+                        <TableCell className="text-sm font-mono text-muted-foreground">
+                          {log.pagina || '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Dialog Detalhes do Log */}
@@ -321,7 +254,7 @@ export default function LogsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               Detalhes do Log
-              {logSelecionado && (
+              {logSelecionado && tipoBadge[logSelecionado.tipo] && (
                 <Badge className={tipoBadge[logSelecionado.tipo].variant}>
                   {tipoBadge[logSelecionado.tipo].label}
                 </Badge>
@@ -340,16 +273,16 @@ export default function LogsPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Categoria</p>
                   <p className="font-medium">
-                    {categoriaLabels[logSelecionado.categoria] || logSelecionado.categoria}
+                    {(logSelecionado.categoria && categoriaLabels[logSelecionado.categoria]) || logSelecionado.categoria || '-'}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Usuário</p>
-                  <p className="font-medium">{logSelecionado.usuario}</p>
+                  <p className="font-medium">{logSelecionado.usuario_id || '-'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Página</p>
-                  <p className="font-medium font-mono text-sm">{logSelecionado.pagina}</p>
+                  <p className="font-medium font-mono text-sm">{logSelecionado.pagina || '-'}</p>
                 </div>
               </div>
 

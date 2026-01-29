@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
@@ -41,120 +41,66 @@ import {
   Phone,
   FileDown,
   UserCheck,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { usePermissao } from '@/hooks/usePermissao'
-
-// Clientes mockados
-const clientesMock = [
-  {
-    id: '1',
-    nome: 'Joao Silva',
-    telefone: '(48) 99999-1111',
-    email: 'joao@email.com',
-    cpf: '123.456.789-00',
-    data_nascimento: '1990-03-15',
-    endereço: 'Rua das Flores, 123 - Centro',
-    cidade: 'Florianopolis',
-    total_compras: 5,
-    total_os: 3,
-    valor_total: 1250.00,
-    created_at: '2024-01-10',
-  },
-  {
-    id: '2',
-    nome: 'Maria Santos',
-    telefone: '(48) 99999-2222',
-    email: 'maria@email.com',
-    cpf: '987.654.321-00',
-    data_nascimento: '1985-01-27',
-    endereço: 'Av. Brasil, 456 - Bairro Novo',
-    cidade: 'Florianopolis',
-    total_compras: 12,
-    total_os: 8,
-    valor_total: 3500.00,
-    created_at: '2023-06-15',
-  },
-  {
-    id: '3',
-    nome: 'Pedro Oliveira',
-    telefone: '(48) 99999-3333',
-    email: 'pedro@email.com',
-    cpf: '456.789.123-00',
-    data_nascimento: '1992-07-20',
-    endereço: 'Rua Principal, 789',
-    cidade: 'Sao Jose',
-    total_compras: 2,
-    total_os: 1,
-    valor_total: 450.00,
-    created_at: '2024-01-20',
-  },
-  {
-    id: '4',
-    nome: 'Ana Costa',
-    telefone: '(48) 99999-4444',
-    email: 'ana@email.com',
-    cpf: '321.654.987-00',
-    data_nascimento: '1988-01-28',
-    endereço: 'Rua das Palmeiras, 321',
-    cidade: 'Florianopolis',
-    total_compras: 8,
-    total_os: 5,
-    valor_total: 2100.00,
-    created_at: '2023-09-01',
-  },
-  {
-    id: '5',
-    nome: 'Carlos Ferreira',
-    telefone: '(48) 99999-5555',
-    email: 'carlos@email.com',
-    cpf: '654.321.987-00',
-    data_nascimento: '1995-12-10',
-    endereço: 'Av. Central, 555',
-    cidade: 'Palhoca',
-    total_compras: 3,
-    total_os: 2,
-    valor_total: 890.00,
-    created_at: '2024-01-05',
-  },
-]
+import { clientesService } from '@/services/clientes.service'
+import type { Cliente } from '@/types/database'
 
 export default function ClientesPage() {
   const { podeExcluirRegistros } = usePermissao()
-  const [clientes, setClientes] = useState(clientesMock)
+  const [clientes, setClientes] = useState<Cliente[]>([])
+  const [aniversariantes, setAniversariantes] = useState<Cliente[]>([])
   const [busca, setBusca] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
   const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false)
   const [clienteParaDeletar, setClienteParaDeletar] = useState<string | null>(null)
 
-  // Filtrar clientes
-  const clientesFiltrados = clientes.filter(cliente =>
-    cliente.nome.toLowerCase().includes(busca.toLowerCase()) ||
-    cliente.telefone.includes(busca) ||
-    cliente.cpf.includes(busca) ||
-    cliente.email.toLowerCase().includes(busca.toLowerCase())
-  )
-
-  // Aniversariantes da semana
-  const hoje = new Date()
-  const aniversariantes = clientes.filter(cliente => {
-    if (!cliente.data_nascimento) return false
-    const nascimento = new Date(cliente.data_nascimento)
-    const diaCliente = nascimento.getDate()
-    const mêsCliente = nascimento.getMonth()
-
-    // Verificar se o aniversário esta nos próximos 7 dias
-    for (let i = 0; i < 7; i++) {
-      const dia = new Date(hoje)
-      dia.setDate(dia.getDate() + i)
-      if (dia.getDate() === diaCliente && dia.getMonth() === mêsCliente) {
-        return true
+  const carregarClientes = useCallback(async (termoBusca?: string) => {
+    setIsLoading(true)
+    try {
+      const { data, error } = await clientesService.listar(termoBusca)
+      if (error) {
+        toast.error('Erro ao carregar clientes: ' + error)
+        return
       }
+      setClientes(data || [])
+    } catch {
+      toast.error('Erro ao carregar clientes')
+    } finally {
+      setIsLoading(false)
     }
-    return false
-  })
+  }, [])
+
+  const carregarAniversariantes = useCallback(async () => {
+    try {
+      const { data, error } = await clientesService.aniversariantes()
+      if (error) return
+      setAniversariantes(data || [])
+    } catch {
+      // silently fail for birthday section
+    }
+  }, [])
+
+  // Initial load
+  useEffect(() => {
+    carregarClientes()
+    carregarAniversariantes()
+  }, [carregarClientes, carregarAniversariantes])
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      carregarClientes(busca || undefined)
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [busca, carregarClientes])
+
+  const hoje = new Date()
 
   // Verificar se e aniversário hoje
-  const ehAniversárioHoje = (dataNascimento: string) => {
+  const ehAniversarioHoje = (dataNascimento: string) => {
     const nascimento = new Date(dataNascimento)
     return nascimento.getDate() === hoje.getDate() &&
            nascimento.getMonth() === hoje.getMonth()
@@ -165,32 +111,28 @@ export default function ClientesPage() {
     return new Date(dateString).toLocaleDateString('pt-BR')
   }
 
-  // Formatar moeda
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value)
-  }
-
   // Confirmar exclusão
   const confirmarDelete = (id: string) => {
-    const cliente = clientes.find(c => c.id === id)
-    if (cliente && (cliente.total_compras > 0 || cliente.total_os > 0)) {
-      toast.error('Não é possível excluir cliente com compras ou OS vinculadas')
-      return
-    }
     setClienteParaDeletar(id)
     setDialogDeleteOpen(true)
   }
 
   // Deletar cliente
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!clienteParaDeletar) return
-    setClientes(clientes.filter(c => c.id !== clienteParaDeletar))
-    toast.success('Cliente excluído')
-    setDialogDeleteOpen(false)
-    setClienteParaDeletar(null)
+    try {
+      const { error } = await clientesService.excluir(clienteParaDeletar)
+      if (error) {
+        toast.error('Erro ao excluir cliente: ' + error)
+        return
+      }
+      toast.success('Cliente excluído')
+      setDialogDeleteOpen(false)
+      setClienteParaDeletar(null)
+      carregarClientes(busca || undefined)
+    } catch {
+      toast.error('Erro ao excluir cliente')
+    }
   }
 
   // Exportar CSV
@@ -198,12 +140,12 @@ export default function ClientesPage() {
     const headers = ['Nome', 'Telefone', 'Email', 'CPF', 'Data Nascimento', 'Endereço', 'Cidade']
     const rows = clientes.map(c => [
       c.nome,
-      c.telefone,
-      c.email,
-      c.cpf,
+      c.telefone || '',
+      c.email || '',
+      c.cpf || '',
       c.data_nascimento ? formatDate(c.data_nascimento) : '',
-      c.endereço,
-      c.cidade,
+      c.endereco || '',
+      c.cidade || '',
     ])
 
     const csv = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n')
@@ -268,9 +210,9 @@ export default function ClientesPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {clientes.filter(c => c.total_compras > 0 || c.total_os > 0).length}
+                {clientes.length}
               </div>
-              <p className="text-xs text-muted-foreground">Com compras ou OS</p>
+              <p className="text-xs text-muted-foreground">Cadastrados e ativos</p>
             </CardContent>
           </Card>
 
@@ -320,13 +262,13 @@ export default function ClientesPage() {
                 {aniversariantes.map(cliente => (
                   <Link key={cliente.id} href={`/clientes/${cliente.id}`}>
                     <Badge
-                      variant={ehAniversárioHoje(cliente.data_nascimento) ? 'default' : 'outline'}
+                      variant={cliente.data_nascimento && ehAniversarioHoje(cliente.data_nascimento) ? 'default' : 'outline'}
                       className="cursor-pointer hover:bg-primary/20 py-1.5 px-3"
                     >
-                      {ehAniversárioHoje(cliente.data_nascimento) && (
+                      {cliente.data_nascimento && ehAniversarioHoje(cliente.data_nascimento) && (
                         <Cake className="mr-1 h-3 w-3" />
                       )}
-                      {cliente.nome} - {formatDate(cliente.data_nascimento)}
+                      {cliente.nome} - {cliente.data_nascimento ? formatDate(cliente.data_nascimento) : ''}
                     </Badge>
                   </Link>
                 ))}
@@ -338,27 +280,30 @@ export default function ClientesPage() {
         {/* Tabela de Clientes */}
         <Card>
           <CardContent className="p-0">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-48">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Contato</TableHead>
                   <TableHead>CPF</TableHead>
-                  <TableHead className="text-center">Compras</TableHead>
-                  <TableHead className="text-center">OS</TableHead>
-                  <TableHead className="text-right">Total Gasto</TableHead>
+                  <TableHead>Cidade</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {clientesFiltrados.length === 0 ? (
+                {clientes.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                       {busca ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado.'}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  clientesFiltrados.map((cliente) => (
+                  clientes.map((cliente) => (
                     <TableRow key={cliente.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -370,7 +315,7 @@ export default function ClientesPage() {
                           <div>
                             <div className="font-medium flex items-center gap-2">
                               {cliente.nome}
-                              {cliente.data_nascimento && ehAniversárioHoje(cliente.data_nascimento) && (
+                              {cliente.data_nascimento && ehAniversarioHoje(cliente.data_nascimento) && (
                                 <Badge variant="default" className="text-xs">
                                   <Cake className="mr-1 h-3 w-3" />
                                   Aniversário!
@@ -378,26 +323,20 @@ export default function ClientesPage() {
                               )}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              {cliente.cidade}
+                              {cliente.cidade || ''}
                             </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm">{cliente.telefone}</div>
-                        <div className="text-xs text-muted-foreground">{cliente.email}</div>
+                        <div className="text-sm">{cliente.telefone || ''}</div>
+                        <div className="text-xs text-muted-foreground">{cliente.email || ''}</div>
                       </TableCell>
                       <TableCell className="font-mono text-sm">
-                        {cliente.cpf}
+                        {cliente.cpf || ''}
                       </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="outline">{cliente.total_compras}</Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="outline">{cliente.total_os}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(cliente.valor_total)}
+                      <TableCell className="text-sm">
+                        {cliente.cidade || ''}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -436,6 +375,7 @@ export default function ClientesPage() {
                 )}
               </TableBody>
             </Table>
+            )}
           </CardContent>
         </Card>
 
