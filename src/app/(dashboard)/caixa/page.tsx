@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -26,13 +26,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   DollarSign,
   TrendingUp,
   TrendingDown,
@@ -48,100 +41,70 @@ import {
   AlertTriangle,
   CheckCircle,
   Receipt,
+  Wallet,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useCaixaStore } from '@/store/useStore'
+import type { MovimentacaoCaixaLocal } from '@/store/useStore'
 
-// Tipos
-type StatusCaixa = 'aberto' | 'fechado'
-type TipoMovimentação = 'suprimento' | 'sangria'
-type FormaPagamento = 'dinheiro' | 'pix' | 'débito' | 'crédito'
-
-// Movimentações do caixa mockadas
-const movimentaçõesCaixaMock = [
-  { id: '1', tipo: 'abertura' as const, valor: 200.00, descrição: 'Abertura de caixa', usuário: 'Admin', data: '2024-01-27T08:00:00' },
-  { id: '2', tipo: 'venda' as const, valor: 49.90, descrição: 'Venda #V001 - Carregador USB-C', forma_pagamento: 'pix' as FormaPagamento, usuário: 'Admin', data: '2024-01-27T09:15:00' },
-  { id: '3', tipo: 'venda' as const, valor: 89.90, descrição: 'Venda #V002 - Fone Bluetooth', forma_pagamento: 'crédito' as FormaPagamento, usuário: 'Admin', data: '2024-01-27T10:30:00' },
-  { id: '4', tipo: 'venda' as const, valor: 25.00, descrição: 'Venda #V003 - Cabo Lightning', forma_pagamento: 'dinheiro' as FormaPagamento, usuário: 'Funcionário', data: '2024-01-27T11:00:00' },
-  { id: '5', tipo: 'os' as const, valor: 350.00, descrição: 'OS #OS001 - Troca de Tela iPhone 13', forma_pagamento: 'pix' as FormaPagamento, usuário: 'Admin', data: '2024-01-27T11:45:00' },
-  { id: '6', tipo: 'sangria' as const, valor: -100.00, descrição: 'Sangria - Pagamento fornecedor', usuário: 'Admin', data: '2024-01-27T12:00:00' },
-  { id: '7', tipo: 'venda' as const, valor: 35.00, descrição: 'Venda #V004 - Capa iPhone 14', forma_pagamento: 'débito' as FormaPagamento, usuário: 'Funcionário', data: '2024-01-27T13:20:00' },
-  { id: '8', tipo: 'suprimento' as const, valor: 50.00, descrição: 'Suprimento - Troco', usuário: 'Admin', data: '2024-01-27T14:00:00' },
-  { id: '9', tipo: 'os' as const, valor: 180.00, descrição: 'OS #OS002 - Troca de Bateria Samsung', forma_pagamento: 'dinheiro' as FormaPagamento, usuário: 'Funcionário', data: '2024-01-27T15:30:00' },
-]
-
-// Histórico de caixas anteriores
-const históricoCaixasMock = [
-  { id: '1', data_abertura: '2024-01-26T08:00:00', data_fechamento: '2024-01-26T18:00:00', valor_abertura: 200.00, valor_fechamento: 1250.00, total_vendas: 1150.00, total_os: 520.00, total_sangrias: -200.00, total_suprimentos: 80.00, usuário: 'Admin', status: 'fechado' as StatusCaixa },
-  { id: '2', data_abertura: '2024-01-25T08:00:00', data_fechamento: '2024-01-25T18:00:00', valor_abertura: 150.00, valor_fechamento: 980.00, total_vendas: 890.00, total_os: 350.00, total_sangrias: -150.00, total_suprimentos: 0, usuário: 'Admin', status: 'fechado' as StatusCaixa },
-  { id: '3', data_abertura: '2024-01-24T08:00:00', data_fechamento: '2024-01-24T18:00:00', valor_abertura: 200.00, valor_fechamento: 1580.00, total_vendas: 1320.00, total_os: 680.00, total_sangrias: -300.00, total_suprimentos: 100.00, usuário: 'Admin', status: 'fechado' as StatusCaixa },
-]
+type TipoMovimentacao = 'suprimento' | 'sangria'
 
 export default function CaixaPage() {
-  // Estado do caixa
-  const [statusCaixa, setStatusCaixa] = useState<StatusCaixa>('aberto')
-  const [valorAbertura, setValorAbertura] = useState(200.00)
-  const [horaAbertura, setHoraAbertura] = useState('2024-01-27T08:00:00')
-  const [movimentações, setMovimentações] = useState(movimentaçõesCaixaMock)
+  const {
+    statusCaixa,
+    valorAbertura,
+    horaAbertura,
+    movimentacoes,
+    historicoCaixas,
+    abrirCaixa,
+    fecharCaixa,
+    adicionarMovimentacao,
+    getTotalVendas,
+    getTotalOS,
+    getTotalSangrias,
+    getTotalSuprimentos,
+    getTotalCusto,
+    getLucroLiquido,
+    getSaldoAtual,
+    isCaixaAberto,
+    getTotalPorFormaPagamento,
+    getQtdVendas,
+    getQtdOS,
+  } = useCaixaStore()
 
   // Dialogs
   const [dialogAbrirOpen, setDialogAbrirOpen] = useState(false)
   const [dialogFecharOpen, setDialogFecharOpen] = useState(false)
   const [dialogMovOpen, setDialogMovOpen] = useState(false)
-  const [movTipo, setMovTipo] = useState<TipoMovimentação>('suprimento')
+  const [movTipo, setMovTipo] = useState<TipoMovimentacao>('suprimento')
 
   // Form abertura
   const [formValorAbertura, setFormValorAbertura] = useState('')
 
-  // Form movimentação
+  // Form movimentacao
   const [movValor, setMovValor] = useState('')
-  const [movDescrição, setMovDescrição] = useState('')
+  const [movDescricao, setMovDescricao] = useState('')
 
   // Form fechamento
   const [valorContado, setValorContado] = useState('')
 
   const [isLoading, setIsLoading] = useState(false)
 
-  // Calculos do caixa atual
-  const totalVendas = movimentações
-    .filter(m => m.tipo === 'venda')
-    .reduce((acc, m) => acc + m.valor, 0)
+  // Valores calculados
+  const totalVendas = getTotalVendas()
+  const totalOS = getTotalOS()
+  const totalSangrias = getTotalSangrias()
+  const totalSuprimentos = getTotalSuprimentos()
+  const totalCusto = getTotalCusto()
+  const lucroLiquido = getLucroLiquido()
+  const saldoAtual = getSaldoAtual()
+  const qtdVendas = getQtdVendas()
+  const qtdOS = getQtdOS()
+  const totaisPagamento = getTotalPorFormaPagamento()
 
-  const totalOS = movimentações
-    .filter(m => m.tipo === 'os')
-    .reduce((acc, m) => acc + m.valor, 0)
-
-  const totalSangrias = movimentações
-    .filter(m => m.tipo === 'sangria')
-    .reduce((acc, m) => acc + Math.abs(m.valor), 0)
-
-  const totalSuprimentos = movimentações
-    .filter(m => m.tipo === 'suprimento')
-    .reduce((acc, m) => acc + m.valor, 0)
-
-  const totalEntradas = totalVendas + totalOS + totalSuprimentos
-  const totalSaidas = totalSangrias
-  const saldoAtual = valorAbertura + totalEntradas - totalSaidas
-
-  // Totais por forma de pagamento
-  const totalDinheiro = movimentações
-    .filter(m => (m as any).forma_pagamento === 'dinheiro')
-    .reduce((acc, m) => acc + m.valor, 0)
-
-  const totalPix = movimentações
-    .filter(m => (m as any).forma_pagamento === 'pix')
-    .reduce((acc, m) => acc + m.valor, 0)
-
-  const totalDébito = movimentações
-    .filter(m => (m as any).forma_pagamento === 'débito')
-    .reduce((acc, m) => acc + m.valor, 0)
-
-  const totalCrédito = movimentações
-    .filter(m => (m as any).forma_pagamento === 'crédito')
-    .reduce((acc, m) => acc + m.valor, 0)
-
-  // Quantidade de vendas/OS
-  const qtdVendas = movimentações.filter(m => m.tipo === 'venda').length
-  const qtdOS = movimentações.filter(m => m.tipo === 'os').length
+  // Lucro de ontem para comparacao
+  const lucroOntem = historicoCaixas.length > 0 ? historicoCaixas[0].lucro_liquido : 0
+  const diferencaLucro = lucroLiquido - lucroOntem
 
   // Formatar moeda
   const formatCurrency = (value: number) => {
@@ -151,7 +114,6 @@ export default function CaixaPage() {
     }).format(value)
   }
 
-  // Formatar data
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString('pt-BR')
   }
@@ -171,23 +133,10 @@ export default function CaixaPage() {
       toast.error('Informe um valor valido para abertura')
       return
     }
-
     setIsLoading(true)
     try {
       await new Promise(resolve => setTimeout(resolve, 500))
-
-      setValorAbertura(valor)
-      setHoraAbertura(new Date().toISOString())
-      setStatusCaixa('aberto')
-      setMovimentações([{
-        id: String(Date.now()),
-        tipo: 'abertura',
-        valor,
-        descrição: 'Abertura de caixa',
-        usuário: 'Admin',
-        data: new Date().toISOString(),
-      }])
-
+      abrirCaixa(valor, 'Admin')
       toast.success('Caixa aberto com sucesso!')
       setDialogAbrirOpen(false)
       setFormValorAbertura('')
@@ -198,42 +147,36 @@ export default function CaixaPage() {
     }
   }
 
-  // Registrar movimentação (suprimento/sangria)
-  const handleRegistrarMovimentação = async () => {
+  // Registrar movimentacao (suprimento/sangria)
+  const handleRegistrarMovimentacao = async () => {
     const valor = parseFloat(movValor)
     if (isNaN(valor) || valor <= 0) {
       toast.error('Informe um valor valido')
       return
     }
-    if (!movDescrição.trim()) {
-      toast.error('Informe a descrição')
+    if (!movDescricao.trim()) {
+      toast.error('Informe a descricao')
       return
     }
     if (movTipo === 'sangria' && valor > saldoAtual) {
       toast.error('Valor maior que o saldo em caixa')
       return
     }
-
     setIsLoading(true)
     try {
       await new Promise(resolve => setTimeout(resolve, 500))
-
-      const novaMovimentação = {
-        id: String(Date.now()),
+      adicionarMovimentacao({
         tipo: movTipo,
         valor: movTipo === 'sangria' ? -valor : valor,
-        descrição: `${movTipo === 'sangria' ? 'Sangria' : 'Suprimento'} - ${movDescrição}`,
-        usuário: 'Admin',
-        data: new Date().toISOString(),
-      }
-      setMovimentações([...movimentações, novaMovimentação])
-
+        descricao: `${movTipo === 'sangria' ? 'Sangria' : 'Suprimento'} - ${movDescricao}`,
+        usuario: 'Admin',
+      })
       toast.success(`${movTipo === 'sangria' ? 'Sangria' : 'Suprimento'} registrado!`)
       setDialogMovOpen(false)
       setMovValor('')
-      setMovDescrição('')
+      setMovDescricao('')
     } catch {
-      toast.error('Erro ao registrar movimentação')
+      toast.error('Erro ao registrar movimentacao')
     } finally {
       setIsLoading(false)
     }
@@ -246,19 +189,16 @@ export default function CaixaPage() {
       toast.error('Informe o valor contado no caixa')
       return
     }
-
     setIsLoading(true)
     try {
       await new Promise(resolve => setTimeout(resolve, 500))
-
       const diferenca = contado - saldoAtual
       if (Math.abs(diferenca) > 0.01) {
         toast.warning(`Diferenca de ${formatCurrency(diferenca)} no fechamento`)
       } else {
         toast.success('Caixa fechado sem diferenca!')
       }
-
-      setStatusCaixa('fechado')
+      fecharCaixa(contado)
       setDialogFecharOpen(false)
       setValorContado('')
     } catch {
@@ -268,15 +208,15 @@ export default function CaixaPage() {
     }
   }
 
-  // Abrir dialog de movimentação
-  const abrirDialogMovimentação = (tipo: TipoMovimentação) => {
+  // Abrir dialog de movimentacao
+  const abrirDialogMovimentacao = (tipo: TipoMovimentacao) => {
     setMovTipo(tipo)
     setMovValor('')
-    setMovDescrição('')
+    setMovDescricao('')
     setDialogMovOpen(true)
   }
 
-  // Icone/badge do tipo de movimentação
+  // Badge do tipo de movimentacao
   const getTipoBadge = (tipo: string) => {
     const config: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
       abertura: { label: 'Abertura', className: 'bg-blue-100 text-blue-700', icon: <Unlock className="h-3 w-3" /> },
@@ -294,16 +234,17 @@ export default function CaixaPage() {
     )
   }
 
-  // Icone forma de pagamento
-  const getFormaPagamentoIcon = (forma?: FormaPagamento) => {
+  // Badge forma de pagamento
+  const getFormaPagamentoIcon = (forma?: string) => {
     if (!forma) return null
-    const config: Record<FormaPagamento, { label: string; icon: React.ReactNode }> = {
+    const config: Record<string, { label: string; icon: React.ReactNode }> = {
       dinheiro: { label: 'Dinheiro', icon: <Banknote className="h-3 w-3" /> },
       pix: { label: 'PIX', icon: <Smartphone className="h-3 w-3" /> },
-      débito: { label: 'Débito', icon: <CreditCard className="h-3 w-3" /> },
-      crédito: { label: 'Crédito', icon: <CreditCard className="h-3 w-3" /> },
+      debito: { label: 'Debito', icon: <CreditCard className="h-3 w-3" /> },
+      credito: { label: 'Credito', icon: <CreditCard className="h-3 w-3" /> },
     }
     const c = config[forma]
+    if (!c) return null
     return (
       <Badge variant="outline" className="gap-1">
         {c.icon}
@@ -313,12 +254,12 @@ export default function CaixaPage() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" data-tutorial="caixa-status">
       <Header title="Caixa" />
 
       <div className="flex-1 space-y-6 p-4 lg:p-6">
-        {/* Status e Ações do Caixa */}
-        <Card className={statusCaixa === 'aberto' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
+        {/* Status e Acoes do Caixa */}
+        <Card className={statusCaixa === 'aberto' ? 'border-green-200 bg-green-50 dark:bg-green-950/20' : 'border-red-200 bg-red-50 dark:bg-red-950/20'}>
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -340,36 +281,23 @@ export default function CaixaPage() {
                   )}
                 </div>
               </div>
-
               <div className="flex gap-2">
                 {statusCaixa === 'fechado' ? (
-                  <Button
-                    onClick={() => setDialogAbrirOpen(true)}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
+                  <Button onClick={() => setDialogAbrirOpen(true)} className="bg-green-600 hover:bg-green-700">
                     <Unlock className="mr-2 h-4 w-4" />
                     Abrir Caixa
                   </Button>
                 ) : (
                   <>
-                    <Button
-                      variant="outline"
-                      onClick={() => abrirDialogMovimentação('suprimento')}
-                    >
+                    <Button variant="outline" onClick={() => abrirDialogMovimentacao('suprimento')}>
                       <ArrowUpCircle className="mr-2 h-4 w-4 text-blue-600" />
                       Suprimento
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => abrirDialogMovimentação('sangria')}
-                    >
+                    <Button variant="outline" onClick={() => abrirDialogMovimentacao('sangria')}>
                       <ArrowDownCircle className="mr-2 h-4 w-4 text-red-600" />
                       Sangria
                     </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => setDialogFecharOpen(true)}
-                    >
+                    <Button variant="destructive" onClick={() => setDialogFecharOpen(true)}>
                       <Lock className="mr-2 h-4 w-4" />
                       Fechar Caixa
                     </Button>
@@ -382,17 +310,17 @@ export default function CaixaPage() {
 
         {statusCaixa === 'aberto' && (
           <>
-            {/* Cards de Resumo */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Cards de Resumo - 5 colunas incluindo Lucro Liquido */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
+                    <Wallet className="h-4 w-4" />
                     Saldo Atual
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">{formatCurrency(saldoAtual)}</div>
+                  <div className="text-2xl font-bold text-blue-600">{formatCurrency(saldoAtual)}</div>
                   <p className="text-xs text-muted-foreground">Abertura: {formatCurrency(valorAbertura)}</p>
                 </CardContent>
               </Card>
@@ -400,7 +328,7 @@ export default function CaixaPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
+                    <DollarSign className="h-4 w-4" />
                     Vendas
                   </CardTitle>
                 </CardHeader>
@@ -414,7 +342,7 @@ export default function CaixaPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Receipt className="h-4 w-4" />
-                    Ordens de Serviço
+                    Ordens de Servico
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -435,6 +363,37 @@ export default function CaixaPage() {
                   <p className="text-xs text-muted-foreground">Suprimentos: {formatCurrency(totalSuprimentos)}</p>
                 </CardContent>
               </Card>
+
+              {/* NOVO: Card de Lucro Liquido */}
+              <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-green-700 dark:text-green-400 flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4" />
+                    Lucro Liquido
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">{formatCurrency(lucroLiquido)}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Custo: {formatCurrency(totalCusto)}
+                  </p>
+                  {historicoCaixas.length > 0 && (
+                    <div className="flex items-center gap-1 mt-1 text-xs">
+                      {diferencaLucro >= 0 ? (
+                        <>
+                          <TrendingUp className="h-3 w-3 text-green-600" />
+                          <span className="text-green-600">+{formatCurrency(diferencaLucro)} vs ontem</span>
+                        </>
+                      ) : (
+                        <>
+                          <TrendingDown className="h-3 w-3 text-red-600" />
+                          <span className="text-red-600">{formatCurrency(diferencaLucro)} vs ontem</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             {/* Resumo por Forma de Pagamento */}
@@ -450,7 +409,7 @@ export default function CaixaPage() {
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Dinheiro</div>
-                      <div className="font-bold">{formatCurrency(totalDinheiro)}</div>
+                      <div className="font-bold">{formatCurrency(totaisPagamento.dinheiro || 0)}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-lg border p-3">
@@ -459,7 +418,7 @@ export default function CaixaPage() {
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">PIX</div>
-                      <div className="font-bold">{formatCurrency(totalPix)}</div>
+                      <div className="font-bold">{formatCurrency(totaisPagamento.pix || 0)}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-lg border p-3">
@@ -467,8 +426,8 @@ export default function CaixaPage() {
                       <CreditCard className="h-5 w-5 text-purple-600" />
                     </div>
                     <div>
-                      <div className="text-sm text-muted-foreground">Débito</div>
-                      <div className="font-bold">{formatCurrency(totalDébito)}</div>
+                      <div className="text-sm text-muted-foreground">Debito</div>
+                      <div className="font-bold">{formatCurrency(totaisPagamento.debito || 0)}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-lg border p-3">
@@ -476,8 +435,8 @@ export default function CaixaPage() {
                       <CreditCard className="h-5 w-5 text-orange-600" />
                     </div>
                     <div>
-                      <div className="text-sm text-muted-foreground">Crédito</div>
-                      <div className="font-bold">{formatCurrency(totalCrédito)}</div>
+                      <div className="text-sm text-muted-foreground">Credito</div>
+                      <div className="font-bold">{formatCurrency(totaisPagamento.credito || 0)}</div>
                     </div>
                   </div>
                 </div>
@@ -487,20 +446,20 @@ export default function CaixaPage() {
         )}
 
         {/* Tabs */}
-        <Tabs defaultValue="movimentações">
+        <Tabs defaultValue="movimentacoes">
           <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="movimentações">
+            <TabsTrigger value="movimentacoes">
               <Clock className="mr-2 h-4 w-4" />
-              Movimentações do Dia
+              Movimentacoes do Dia
             </TabsTrigger>
-            <TabsTrigger value="histórico">
+            <TabsTrigger value="historico">
               <History className="mr-2 h-4 w-4" />
-              Histórico de Caixas
+              Historico de Caixas
             </TabsTrigger>
           </TabsList>
 
-          {/* Tab Movimentações do Dia */}
-          <TabsContent value="movimentações">
+          {/* Tab Movimentacoes do Dia */}
+          <TabsContent value="movimentacoes" data-tutorial="caixa-movimentacoes">
             <Card>
               <CardContent className="p-0">
                 <Table>
@@ -508,21 +467,21 @@ export default function CaixaPage() {
                     <TableRow>
                       <TableHead>Hora</TableHead>
                       <TableHead>Tipo</TableHead>
-                      <TableHead>Descrição</TableHead>
+                      <TableHead>Descricao</TableHead>
                       <TableHead>Pagamento</TableHead>
-                      <TableHead>Usuário</TableHead>
+                      <TableHead>Usuario</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {movimentações.length === 0 ? (
+                    {movimentacoes.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                          Nenhuma movimentação registrada.
+                          Nenhuma movimentacao registrada.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      [...movimentações]
+                      [...movimentacoes]
                         .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
                         .map((mov) => (
                           <TableRow key={mov.id}>
@@ -531,14 +490,14 @@ export default function CaixaPage() {
                             </TableCell>
                             <TableCell>{getTipoBadge(mov.tipo)}</TableCell>
                             <TableCell className="max-w-[250px] truncate">
-                              {mov.descrição}
+                              {mov.descricao}
                             </TableCell>
                             <TableCell>
-                              {getFormaPagamentoIcon((mov as any).forma_pagamento) || (
+                              {getFormaPagamentoIcon(mov.forma_pagamento) || (
                                 <span className="text-muted-foreground">-</span>
                               )}
                             </TableCell>
-                            <TableCell className="text-sm">{mov.usuário}</TableCell>
+                            <TableCell className="text-sm">{mov.usuario}</TableCell>
                             <TableCell className="text-right font-bold">
                               <span className={mov.valor >= 0 ? 'text-green-600' : 'text-red-600'}>
                                 {mov.valor >= 0 ? '+' : ''}{formatCurrency(mov.valor)}
@@ -553,8 +512,8 @@ export default function CaixaPage() {
             </Card>
           </TabsContent>
 
-          {/* Tab Histórico de Caixas */}
-          <TabsContent value="histórico">
+          {/* Tab Historico de Caixas */}
+          <TabsContent value="historico">
             <Card>
               <CardContent className="p-0">
                 <Table>
@@ -566,19 +525,20 @@ export default function CaixaPage() {
                       <TableHead className="text-right">Vendas</TableHead>
                       <TableHead className="text-right">OS</TableHead>
                       <TableHead className="text-right">Sangrias</TableHead>
+                      <TableHead className="text-right">Lucro</TableHead>
                       <TableHead className="text-right">Fechamento</TableHead>
-                      <TableHead>Usuário</TableHead>
+                      <TableHead>Usuario</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {históricoCaixasMock.length === 0 ? (
+                    {historicoCaixas.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                          Nenhum histórico de caixa.
+                        <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+                          Nenhum historico de caixa.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      históricoCaixasMock.map((caixa) => (
+                      historicoCaixas.map((caixa) => (
                         <TableRow key={caixa.id}>
                           <TableCell className="font-medium">
                             {formatDate(caixa.data_abertura)}
@@ -596,12 +556,15 @@ export default function CaixaPage() {
                             {formatCurrency(caixa.total_os)}
                           </TableCell>
                           <TableCell className="text-right text-red-600">
-                            {formatCurrency(caixa.total_sangrias)}
+                            -{formatCurrency(caixa.total_sangrias)}
+                          </TableCell>
+                          <TableCell className="text-right text-green-600 font-bold">
+                            {formatCurrency(caixa.lucro_liquido)}
                           </TableCell>
                           <TableCell className="text-right font-bold">
                             {formatCurrency(caixa.valor_fechamento)}
                           </TableCell>
-                          <TableCell className="text-sm">{caixa.usuário}</TableCell>
+                          <TableCell className="text-sm">{caixa.usuario}</TableCell>
                         </TableRow>
                       ))
                     )}
@@ -628,9 +591,7 @@ export default function CaixaPage() {
               <div className="space-y-2">
                 <Label>Valor de Abertura (R$)</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    R$
-                  </span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
                   <Input
                     type="number"
                     step="0.01"
@@ -641,20 +602,12 @@ export default function CaixaPage() {
                     className="pl-10 text-lg"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Valor em dinheiro disponível para troco
-                </p>
+                <p className="text-xs text-muted-foreground">Valor em dinheiro disponivel para troco</p>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogAbrirOpen(false)}>
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleAbrirCaixa}
-                disabled={isLoading}
-                className="bg-green-600 hover:bg-green-700"
-              >
+              <Button variant="outline" onClick={() => setDialogAbrirOpen(false)}>Cancelar</Button>
+              <Button onClick={handleAbrirCaixa} disabled={isLoading} className="bg-green-600 hover:bg-green-700">
                 {isLoading ? 'Abrindo...' : 'Abrir Caixa'}
               </Button>
             </DialogFooter>
@@ -682,9 +635,7 @@ export default function CaixaPage() {
               <div className="space-y-2">
                 <Label>Valor (R$) *</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    R$
-                  </span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
                   <Input
                     type="number"
                     step="0.01"
@@ -697,26 +648,23 @@ export default function CaixaPage() {
                 </div>
                 {movTipo === 'sangria' && (
                   <p className="text-xs text-muted-foreground">
-                    Saldo disponível: {formatCurrency(saldoAtual)}
+                    Saldo disponivel: {formatCurrency(saldoAtual)}
                   </p>
                 )}
               </div>
-
               <div className="space-y-2">
-                <Label>Descrição *</Label>
+                <Label>Descricao *</Label>
                 <Input
                   placeholder={movTipo === 'suprimento' ? 'Ex: Troco adicional' : 'Ex: Pagamento fornecedor'}
-                  value={movDescrição}
-                  onChange={(e) => setMovDescrição(e.target.value)}
+                  value={movDescricao}
+                  onChange={(e) => setMovDescricao(e.target.value)}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogMovOpen(false)}>
-                Cancelar
-              </Button>
+              <Button variant="outline" onClick={() => setDialogMovOpen(false)}>Cancelar</Button>
               <Button
-                onClick={handleRegistrarMovimentação}
+                onClick={handleRegistrarMovimentacao}
                 disabled={isLoading}
                 variant={movTipo === 'sangria' ? 'destructive' : 'default'}
                 className={movTipo === 'suprimento' ? 'bg-blue-600 hover:bg-blue-700' : ''}
@@ -764,9 +712,18 @@ export default function CaixaPage() {
                   <span className="text-red-600">-{formatCurrency(totalSangrias)}</span>
                 </div>
                 <Separator />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Custo dos Produtos</span>
+                  <span className="text-orange-600">-{formatCurrency(totalCusto)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-green-600">
+                  <span>Lucro Liquido</span>
+                  <span>{formatCurrency(lucroLiquido)}</span>
+                </div>
+                <Separator />
                 <div className="flex justify-between font-bold">
                   <span>Saldo Esperado</span>
-                  <span className="text-green-600">{formatCurrency(saldoAtual)}</span>
+                  <span className="text-blue-600">{formatCurrency(saldoAtual)}</span>
                 </div>
               </div>
 
@@ -774,9 +731,7 @@ export default function CaixaPage() {
               <div className="space-y-2">
                 <Label>Valor Contado no Caixa (R$) *</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    R$
-                  </span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
                   <Input
                     type="number"
                     step="0.01"
@@ -817,14 +772,8 @@ export default function CaixaPage() {
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogFecharOpen(false)}>
-                Cancelar
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleFecharCaixa}
-                disabled={isLoading}
-              >
+              <Button variant="outline" onClick={() => setDialogFecharOpen(false)}>Cancelar</Button>
+              <Button variant="destructive" onClick={handleFecharCaixa} disabled={isLoading}>
                 {isLoading ? 'Fechando...' : 'Confirmar Fechamento'}
               </Button>
             </DialogFooter>

@@ -1,0 +1,16 @@
+{
+  "name": "Sistema Loja Celular",
+  "short_name": "LojaCell",
+  "description": "Sistema de gestão para loja de celulares",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

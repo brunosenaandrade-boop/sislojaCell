@@ -42,7 +42,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useCarrinhoStore, useAuthStore } from '@/store/useStore'
+import { useCarrinhoStore, useAuthStore, useCaixaStore } from '@/store/useStore'
 import { CupomVenda } from '@/components/print/CupomVenda'
 
 // Produtos mockados
@@ -93,6 +93,8 @@ export default function VendasPage() {
     getCustoTotal,
     getLucroTotal,
   } = useCarrinhoStore()
+
+  const { registrarVenda, isCaixaAberto } = useCaixaStore()
 
   const [busca, setBusca] = useState('')
   const [buscaCliente, setBuscaCliente] = useState('')
@@ -178,6 +180,9 @@ export default function VendasPage() {
       toast.error('Adicione produtos ao carrinho')
       return
     }
+    if (!isCaixaAberto()) {
+      toast.warning('O caixa não está aberto. A venda não será registrada no controle de caixa.')
+    }
     setDialogFinalizarOpen(true)
   }
 
@@ -204,6 +209,23 @@ export default function VendasPage() {
 
       console.log('Venda:', venda)
       await new Promise(resolve => setTimeout(resolve, 800))
+
+      // Registrar no caixa se estiver aberto
+      if (isCaixaAberto()) {
+        const formaPgMap: Record<string, 'dinheiro' | 'pix' | 'debito' | 'credito'> = {
+          'dinheiro': 'dinheiro',
+          'pix': 'pix',
+          'débito': 'debito',
+          'crédito': 'credito',
+        }
+        registrarVenda({
+          valor: venda.valor_total,
+          custo: venda.valor_custo,
+          formaPagamento: formaPgMap[formaPagamento!] || 'dinheiro',
+          descricao: `Venda #${venda.número} - ${itens.map(i => i.nome).join(', ')}`,
+          vendaId: String(venda.número),
+        })
+      }
 
       setVendaFinalizada(venda)
       toast.success('Venda finalizada com sucesso!')
@@ -313,7 +335,7 @@ export default function VendasPage() {
             {/* Coluna Esquerda - Produtos */}
             <div className="flex-1 flex flex-col p-4 overflow-hidden">
               {/* Busca de produtos */}
-              <div className="relative mb-4">
+              <div className="relative mb-4" data-tutorial="pdv-search">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   ref={searchRef}
@@ -377,7 +399,7 @@ export default function VendasPage() {
               )}
 
               {/* Carrinho */}
-              <Card className="flex-1 flex flex-col overflow-hidden">
+              <Card className="flex-1 flex flex-col overflow-hidden" data-tutorial="pdv-cart">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5" />
@@ -510,6 +532,7 @@ export default function VendasPage() {
                   className="w-full h-14 text-lg"
                   onClick={handleAbrirFinalizar}
                   disabled={itens.length === 0}
+                  data-tutorial="pdv-finalizar"
                 >
                   <DollarSign className="mr-2 h-5 w-5" />
                   Finalizar Venda (F4)

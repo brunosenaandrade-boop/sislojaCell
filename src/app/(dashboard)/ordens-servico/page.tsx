@@ -294,7 +294,7 @@ export default function OrdensServiçoPage() {
         </div>
 
         {/* Tabela de OS */}
-        <Card>
+        <Card data-tutorial="os-list">
           <CardContent className="p-0">
             <Table>
               <TableHeader>

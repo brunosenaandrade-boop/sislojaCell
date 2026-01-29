@@ -164,7 +164,7 @@ export function Sidebar() {
         </div>
 
         {/* Menu */}
-        <nav className="flex-1 overflow-y-auto p-2">
+        <nav className="flex-1 overflow-y-auto p-2" data-tutorial="sidebar-nav">
           <ul className="space-y-1">
             {filteredMenuItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/')

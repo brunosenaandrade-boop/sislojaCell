@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuthStore, useCaixaStore, useUIStore } from '@/store/useStore'
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -29,7 +30,7 @@ interface HeaderProps {
 
 export function Header({ title }: HeaderProps) {
   const { usuario, logout } = useAuthStore()
-  const { caixaAtual } = useCaixaStore()
+  const { isCaixaAberto } = useCaixaStore()
   const { toggleSidebar } = useUIStore()
 
   const handleLogout = () => {
@@ -54,14 +55,17 @@ export function Header({ title }: HeaderProps) {
 
         <div>
           {title && <h1 className="text-lg font-semibold">{title}</h1>}
-          <p className="text-sm text-muted-foreground capitalize">{hoje}</p>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-muted-foreground capitalize">{hoje}</p>
+            <Breadcrumbs />
+          </div>
         </div>
       </div>
 
       {/* Right */}
       <div className="flex items-center gap-2">
         {/* Status do Caixa */}
-        {caixaAtual ? (
+        {isCaixaAberto() ? (
           <Badge variant="default" className="gap-1">
             <DollarSign className="h-3 w-3" />
             Caixa Aberto

@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useAuthStore } from '@/store/useStore'
+import { AnimatedCounter } from '@/components/ui/animated-counter'
 import { Header } from '@/components/layout/Header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -80,6 +82,7 @@ const statusLabels: Record<string, string> = {
 }
 
 export default function DashboardPage() {
+  const { usuario } = useAuthStore()
   const [data, setData] = useState(mockDashboard)
   const [isLoading, setIsLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -102,8 +105,29 @@ export default function DashboardPage() {
       <Header title="Dashboard" />
 
       <div className="flex-1 space-y-6 p-4 lg:p-6">
+        {/* Saudação */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">
+              {new Date().getHours() < 12 ? 'Bom dia' : new Date().getHours() < 18 ? 'Boa tarde' : 'Boa noite'}, {usuario?.nome?.split(' ')[0] || 'Usuário'}!
+            </h2>
+            <p className="text-muted-foreground">Aqui está o resumo do seu dia</p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/vendas">
+              <Button size="sm"><ShoppingCart className="mr-2 h-4 w-4" />Nova Venda</Button>
+            </Link>
+            <Link href="/ordens-servico">
+              <Button size="sm" variant="outline"><FileText className="mr-2 h-4 w-4" />Nova OS</Button>
+            </Link>
+            <Link href="/caixa">
+              <Button size="sm" variant="outline"><DollarSign className="mr-2 h-4 w-4" />Caixa</Button>
+            </Link>
+          </div>
+        </div>
+
         {/* Cards principais */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" data-tutorial="dashboard-kpis">
           {/* Vendas do dia */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -113,7 +137,7 @@ export default function DashboardPage() {
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(data.vendas_dia)}</div>
+              <AnimatedCounter value={data.vendas_dia} formatter={formatCurrency} className="text-2xl font-bold" />
               <p className="text-xs text-muted-foreground">
                 {data.quantidade_vendas} vendas realizadas
               </p>
@@ -129,9 +153,7 @@ export default function DashboardPage() {
               <TrendingDown className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">
-                {formatCurrency(data.custo_dia)}
-              </div>
+              <AnimatedCounter value={data.custo_dia} formatter={formatCurrency} className="text-2xl font-bold text-red-600" />
               <p className="text-xs text-muted-foreground">
                 Custo total das vendas
               </p>
@@ -147,9 +169,7 @@ export default function DashboardPage() {
               <TrendingUp className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(data.lucro_dia)}
-              </div>
+              <AnimatedCounter value={data.lucro_dia} formatter={formatCurrency} className="text-2xl font-bold text-green-600" />
               <p className="text-xs text-green-600/80">
                 Margem: {((data.lucro_dia / data.vendas_dia) * 100).toFixed(1)}%
               </p>
@@ -165,7 +185,7 @@ export default function DashboardPage() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{data.os_abertas}</div>
+              <AnimatedCounter value={data.os_abertas} className="text-2xl font-bold" />
               <p className="text-xs text-muted-foreground">
                 {data.os_finalizadas} finalizadas hoje
               </p>

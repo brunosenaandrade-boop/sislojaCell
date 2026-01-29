@@ -8,6 +8,10 @@ import { usePermissao } from '@/hooks/usePermissao'
 import { setupGlobalErrorHandler } from '@/services/logger'
 import { cn } from '@/lib/utils'
 import { Toaster } from '@/components/ui/sonner'
+import { TutorialProvider } from '@/components/tutorial/TutorialProvider'
+import { TutorialOverlay } from '@/components/tutorial/TutorialOverlay'
+import { TutorialCard } from '@/components/tutorial/TutorialCard'
+import { HelpButton } from '@/components/tutorial/HelpButton'
 
 const rotasRestritas = ['/configuracoes', '/relatorios', '/logs']
 
@@ -32,17 +36,22 @@ export default function DashboardLayout({
   }, [pathname, isAdmin, router])
 
   return (
-    <div className="flex h-screen overflow-hidden bg-muted/30">
-      <Sidebar />
-      <main
-        className={cn(
-          'flex-1 overflow-y-auto transition-all duration-300',
-          sidebarOpen ? 'lg:ml-0' : 'lg:ml-0'
-        )}
-      >
-        {children}
-      </main>
-      <Toaster position="top-right" richColors />
-    </div>
+    <TutorialProvider>
+      <div className="flex h-screen overflow-hidden bg-muted/30">
+        <Sidebar />
+        <main
+          className={cn(
+            'flex-1 overflow-y-auto transition-all duration-300',
+            sidebarOpen ? 'lg:ml-0' : 'lg:ml-0'
+          )}
+        >
+          {children}
+        </main>
+        <Toaster position="top-right" richColors />
+        <TutorialOverlay />
+        <TutorialCard />
+        <HelpButton />
+      </div>
+    </TutorialProvider>
   )
 }
