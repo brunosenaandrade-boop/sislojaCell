@@ -293,7 +293,7 @@ export default function ServiçosPage() {
               </SelectContent>
             </Select>
           </div>
-          <Link href="/serviços/novo">
+          <Link href="/servicos/novo">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               Novo Serviço
@@ -439,7 +439,7 @@ export default function ServiçosPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <Link href={`/serviços/${serviço.id}/editar`}>
+                            <Link href={`/servicos/${serviço.id}/editar`}>
                               <DropdownMenuItem>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Editar

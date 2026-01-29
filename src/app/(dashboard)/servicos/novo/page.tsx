@@ -104,7 +104,7 @@ export default function NovoServiçoPage() {
       await new Promise(resolve => setTimeout(resolve, 800))
 
       toast.success('Serviço cadastrado com sucesso!')
-      router.push('/serviços')
+      router.push('/servicos')
     } catch (error) {
       toast.error('Erro ao cadastrar serviço')
     } finally {
@@ -119,7 +119,7 @@ export default function NovoServiçoPage() {
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Ações */}
         <div className="flex items-center justify-between">
-          <Link href="/serviços">
+          <Link href="/servicos">
             <Button variant="outline">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
