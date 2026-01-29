@@ -109,7 +109,7 @@ export default function EditarServiçoPage() {
       return
     }
     if (!nivel) {
-      toast.error('Selecione o nivel do serviço')
+      toast.error('Selecione o nível do serviço')
       return
     }
     if (preçoNum <= 0) {
@@ -222,10 +222,10 @@ export default function EditarServiçoPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="nivel">Nivel de Complexidade *</Label>
+                    <Label htmlFor="nivel">Nível de Complexidade *</Label>
                     <Select value={nivel} onValueChange={setNivel}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione o nivel" />
+                        <SelectValue placeholder="Selecione o nível" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="básico">
@@ -385,7 +385,7 @@ export default function EditarServiçoPage() {
                     )}
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Nivel</span>
+                    <span className="text-muted-foreground">Nível</span>
                     {nivel ? (
                       <Badge
                         variant={nivel === 'básico' ? 'secondary' : 'default'}

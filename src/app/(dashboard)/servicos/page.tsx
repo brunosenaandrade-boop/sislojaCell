@@ -127,8 +127,8 @@ const serviçosMock = [
   },
   {
     id: '7',
-    nome: 'Troca de Botoes',
-    descrição: 'Substituição de botoes de volume, power ou home',
+    nome: 'Troca de Botões',
+    descrição: 'Substituição de botões de volume, power ou home',
     tipo: 'celular' as TipoServiço,
     nivel: 'básico' as NivelServiço,
     preço_base: 60.00,
@@ -284,7 +284,7 @@ export default function ServiçosPage() {
             </Select>
             <Select value={filtroNivel} onValueChange={setFiltroNivel}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Nivel" />
+                <SelectValue placeholder="Nível" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos</SelectItem>
@@ -379,7 +379,7 @@ export default function ServiçosPage() {
                 <TableRow>
                   <TableHead>Serviço</TableHead>
                   <TableHead>Tipo</TableHead>
-                  <TableHead>Nivel</TableHead>
+                  <TableHead>Nível</TableHead>
                   <TableHead className="text-center">
                     <Clock className="h-4 w-4 inline mr-1" />
                     Tempo

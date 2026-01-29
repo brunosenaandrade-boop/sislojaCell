@@ -130,7 +130,7 @@ export default function CaixaPage() {
   const handleAbrirCaixa = async () => {
     const valor = parseFloat(formValorAbertura)
     if (isNaN(valor) || valor < 0) {
-      toast.error('Informe um valor valido para abertura')
+      toast.error('Informe um valor válido para abertura')
       return
     }
     setIsLoading(true)
@@ -151,11 +151,11 @@ export default function CaixaPage() {
   const handleRegistrarMovimentacao = async () => {
     const valor = parseFloat(movValor)
     if (isNaN(valor) || valor <= 0) {
-      toast.error('Informe um valor valido')
+      toast.error('Informe um valor válido')
       return
     }
     if (!movDescricao.trim()) {
-      toast.error('Informe a descricao')
+      toast.error('Informe a descrição')
       return
     }
     if (movTipo === 'sangria' && valor > saldoAtual) {
@@ -176,7 +176,7 @@ export default function CaixaPage() {
       setMovValor('')
       setMovDescricao('')
     } catch {
-      toast.error('Erro ao registrar movimentacao')
+      toast.error('Erro ao registrar movimentação')
     } finally {
       setIsLoading(false)
     }
@@ -258,7 +258,7 @@ export default function CaixaPage() {
       <Header title="Caixa" />
 
       <div className="flex-1 space-y-6 p-4 lg:p-6">
-        {/* Status e Acoes do Caixa */}
+        {/* Status e Ações do Caixa */}
         <Card className={statusCaixa === 'aberto' ? 'border-green-200 bg-green-50 dark:bg-green-950/20' : 'border-red-200 bg-red-50 dark:bg-red-950/20'}>
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -310,7 +310,7 @@ export default function CaixaPage() {
 
         {statusCaixa === 'aberto' && (
           <>
-            {/* Cards de Resumo - 5 colunas incluindo Lucro Liquido */}
+            {/* Cards de Resumo - 5 colunas incluindo Lucro Líquido */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <Card>
                 <CardHeader className="pb-2">
@@ -342,7 +342,7 @@ export default function CaixaPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Receipt className="h-4 w-4" />
-                    Ordens de Servico
+                    Ordens de Serviço
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -364,12 +364,12 @@ export default function CaixaPage() {
                 </CardContent>
               </Card>
 
-              {/* NOVO: Card de Lucro Liquido */}
+              {/* NOVO: Card de Lucro Líquido */}
               <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-green-700 dark:text-green-400 flex items-center gap-2">
                     <TrendingUp className="h-4 w-4" />
-                    Lucro Liquido
+                    Lucro Líquido
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -450,15 +450,15 @@ export default function CaixaPage() {
           <TabsList className="grid w-full grid-cols-2 max-w-md">
             <TabsTrigger value="movimentacoes">
               <Clock className="mr-2 h-4 w-4" />
-              Movimentacoes do Dia
+              Movimentações do Dia
             </TabsTrigger>
             <TabsTrigger value="historico">
               <History className="mr-2 h-4 w-4" />
-              Historico de Caixas
+              Histórico de Caixas
             </TabsTrigger>
           </TabsList>
 
-          {/* Tab Movimentacoes do Dia */}
+          {/* Tab Movimentações do Dia */}
           <TabsContent value="movimentacoes" data-tutorial="caixa-movimentacoes">
             <Card>
               <CardContent className="p-0">
@@ -467,7 +467,7 @@ export default function CaixaPage() {
                     <TableRow>
                       <TableHead>Hora</TableHead>
                       <TableHead>Tipo</TableHead>
-                      <TableHead>Descricao</TableHead>
+                      <TableHead>Descrição</TableHead>
                       <TableHead>Pagamento</TableHead>
                       <TableHead>Usuario</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
@@ -477,7 +477,7 @@ export default function CaixaPage() {
                     {movimentacoes.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                          Nenhuma movimentacao registrada.
+                          Nenhuma movimentação registrada.
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -512,7 +512,7 @@ export default function CaixaPage() {
             </Card>
           </TabsContent>
 
-          {/* Tab Historico de Caixas */}
+          {/* Tab Histórico de Caixas */}
           <TabsContent value="historico">
             <Card>
               <CardContent className="p-0">
@@ -534,7 +534,7 @@ export default function CaixaPage() {
                     {historicoCaixas.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
-                          Nenhum historico de caixa.
+                          Nenhum histórico de caixa.
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -602,7 +602,7 @@ export default function CaixaPage() {
                     className="pl-10 text-lg"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">Valor em dinheiro disponivel para troco</p>
+                <p className="text-xs text-muted-foreground">Valor em dinheiro disponível para troco</p>
               </div>
             </div>
             <DialogFooter>
@@ -648,12 +648,12 @@ export default function CaixaPage() {
                 </div>
                 {movTipo === 'sangria' && (
                   <p className="text-xs text-muted-foreground">
-                    Saldo disponivel: {formatCurrency(saldoAtual)}
+                    Saldo disponível: {formatCurrency(saldoAtual)}
                   </p>
                 )}
               </div>
               <div className="space-y-2">
-                <Label>Descricao *</Label>
+                <Label>Descrição *</Label>
                 <Input
                   placeholder={movTipo === 'suprimento' ? 'Ex: Troco adicional' : 'Ex: Pagamento fornecedor'}
                   value={movDescricao}
@@ -717,7 +717,7 @@ export default function CaixaPage() {
                   <span className="text-orange-600">-{formatCurrency(totalCusto)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-green-600">
-                  <span>Lucro Liquido</span>
+                  <span>Lucro Líquido</span>
                   <span>{formatCurrency(lucroLiquido)}</span>
                 </div>
                 <Separator />

@@ -597,12 +597,12 @@ export default function NovaOSPage() {
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
                         <Plus className="mr-2 h-4 w-4" />
-                        Peca
+                        Peça
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Adicionar Peca/Produto</DialogTitle>
+                        <DialogTitle>Adicionar Peça/Produto</DialogTitle>
                         <DialogDescription>
                           Selecione a peça ou produto utilizado
                         </DialogDescription>
@@ -634,7 +634,7 @@ export default function NovaOSPage() {
                 {itensOS.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                     <p>Nenhum item adicionado</p>
-                    <p className="text-sm">Adicione serviços e peças usando os botoes acima</p>
+                    <p className="text-sm">Adicione serviços e peças usando os botões acima</p>
                   </div>
                 ) : (
                   <Table>
@@ -653,7 +653,7 @@ export default function NovaOSPage() {
                         <TableRow key={item.id}>
                           <TableCell>
                             <Badge variant={item.tipo === 'serviço' ? 'default' : 'secondary'}>
-                              {item.tipo === 'serviço' ? 'Serviço' : 'Peca'}
+                              {item.tipo === 'serviço' ? 'Serviço' : 'Peça'}
                             </Badge>
                           </TableCell>
                           <TableCell>{item.nome}</TableCell>

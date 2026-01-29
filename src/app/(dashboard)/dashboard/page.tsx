@@ -72,8 +72,8 @@ const statusColors: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   aberta: 'Aberta',
-  em_analise: 'Em Analise',
-  aguardando_peca: 'Aguardando Peca',
+  em_analise: 'Em Análise',
+  aguardando_peca: 'Aguardando Peça',
   aguardando_aprovação: 'Aguardando Aprovação',
   em_andamento: 'Em Andamento',
   finalizada: 'Finalizada',
@@ -206,7 +206,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-orange-700">
-                  <strong>{data.produtos_estoque_baixo}</strong> produtos estao com estoque baixo
+                  <strong>{data.produtos_estoque_baixo}</strong> produtos estão com estoque baixo
                 </p>
                 <Link href="/estoque?filter=baixo">
                   <Button variant="link" className="h-auto p-0 text-orange-700">
@@ -288,11 +288,11 @@ export default function DashboardPage() {
 
         {/* Listas */}
         <div className="grid gap-4 lg:grid-cols-2">
-          {/* Ultimas Vendas */}
+          {/* Últimas Vendas */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Ultimas Vendas</CardTitle>
+                <CardTitle>Últimas Vendas</CardTitle>
                 <CardDescription>Vendas realizadas hoje</CardDescription>
               </div>
               <Link href="/vendas">
@@ -324,7 +324,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Ultimas OS */}
+          {/* Últimas OS */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>

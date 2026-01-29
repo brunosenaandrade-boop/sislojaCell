@@ -15,7 +15,7 @@ export interface TutorialStep {
 export const tutorialSteps: TutorialStep[] = [
   {
     id: 'sidebar-nav',
-    title: 'Navegacao Lateral',
+    title: 'Navegação Lateral',
     description:
       'Use o menu lateral para navegar entre as diferentes secoes do sistema: Dashboard, Clientes, Produtos, Vendas, Caixa e muito mais.',
     targetSelector: '[data-tutorial="sidebar-nav"]',
@@ -27,7 +27,7 @@ export const tutorialSteps: TutorialStep[] = [
     id: 'dashboard-kpis',
     title: 'Resumo do Dia',
     description:
-      'Aqui voce encontra os principais indicadores do seu negocio: vendas do dia, custo, lucro liquido e ordens de servico em andamento.',
+      'Aqui você encontra os principais indicadores do seu negócio: vendas do dia, custo, lucro líquido e ordens de serviço em andamento.',
     targetSelector: '[data-tutorial="dashboard-kpis"]',
     page: '/dashboard',
     position: 'bottom',
@@ -37,7 +37,7 @@ export const tutorialSteps: TutorialStep[] = [
     id: 'pdv-search',
     title: 'Busca de Produtos',
     description:
-      'Digite o nome ou codigo do produto para adiciona-lo ao carrinho. Use o atalho F2 para focar rapidamente neste campo.',
+      'Digite o nome ou código do produto para adicioná-lo ao carrinho. Use o atalho F2 para focar rapidamente neste campo.',
     targetSelector: '[data-tutorial="pdv-search"]',
     page: '/vendas',
     position: 'bottom',
@@ -47,7 +47,7 @@ export const tutorialSteps: TutorialStep[] = [
     id: 'pdv-cart',
     title: 'Carrinho de Compras',
     description:
-      'Os produtos adicionados aparecem aqui. Voce pode alterar quantidades, remover itens e acompanhar o total da venda em tempo real.',
+      'Os produtos adicionados aparecem aqui. Você pode alterar quantidades, remover itens e acompanhar o total da venda em tempo real.',
     targetSelector: '[data-tutorial="pdv-cart"]',
     page: '/vendas',
     position: 'top',
@@ -75,9 +75,9 @@ export const tutorialSteps: TutorialStep[] = [
   },
   {
     id: 'caixa-movimentacoes',
-    title: 'Movimentacoes do Caixa',
+    title: 'Movimentações do Caixa',
     description:
-      'Acompanhe todas as entradas e saidas do caixa: vendas, ordens de servico, suprimentos e sangrias registradas no dia.',
+      'Acompanhe todas as entradas e saidas do caixa: vendas, ordens de serviço, suprimentos e sangrias registradas no dia.',
     targetSelector: '[data-tutorial="caixa-movimentacoes"]',
     page: '/caixa',
     position: 'top',
@@ -85,9 +85,9 @@ export const tutorialSteps: TutorialStep[] = [
   },
   {
     id: 'os-list',
-    title: 'Ordens de Servico',
+    title: 'Ordens de Serviço',
     description:
-      'Gerencie todas as ordens de servico: filtre por status, busque por cliente ou aparelho e acompanhe o progresso de cada reparo.',
+      'Gerencie todas as ordens de serviço: filtre por status, busque por cliente ou aparelho e acompanhe o progresso de cada reparo.',
     targetSelector: '[data-tutorial="os-list"]',
     page: '/ordens-servico',
     position: 'top',
@@ -121,7 +121,7 @@ export const quickTipsByPage: Record<string, { title: string; tips: string[] }> 
       'Pressione F2 para focar na busca de produtos.',
       'Pressione F4 para abrir a finalizacao da venda.',
       'Pressione Escape para limpar a busca.',
-      'Voce pode selecionar um cliente antes de finalizar (opcional).',
+      'Você pode selecionar um cliente antes de finalizar (opcional).',
       'O lucro estimado e exibido em tempo real no resumo.',
     ],
   },
@@ -131,16 +131,16 @@ export const quickTipsByPage: Record<string, { title: string; tips: string[] }> 
       'Abra o caixa no inicio do dia com o valor de troco.',
       'Registre suprimentos e sangrias para manter o controle.',
       'Ao fechar, informe o valor contado para conferencia automatica.',
-      'O historico de caixas anteriores fica na aba "Historico".',
+      'O histórico de caixas anteriores fica na aba "Histórico".',
     ],
   },
   '/ordens-servico': {
-    title: 'Dicas de Ordens de Servico',
+    title: 'Dicas de Ordens de Serviço',
     tips: [
       'Filtre as OS por status para encontrar rapidamente.',
       'Cada OS pode ser visualizada, editada ou impressa.',
       'OS com status "Finalizada" podem ser cobradas e entregues.',
-      'Use a busca para encontrar por numero, cliente ou aparelho.',
+      'Use a busca para encontrar por número, cliente ou aparelho.',
     ],
   },
   '/estoque': {
@@ -155,7 +155,7 @@ export const quickTipsByPage: Record<string, { title: string; tips: string[] }> 
   '/clientes': {
     title: 'Dicas de Clientes',
     tips: [
-      'Cadastre clientes para associar vendas e ordens de servico.',
+      'Cadastre clientes para associar vendas e ordens de serviço.',
       'Busque por nome, telefone ou CPF.',
       'Clientes inativos podem ser reativados a qualquer momento.',
     ],

@@ -77,7 +77,7 @@ export function Header({ title }: HeaderProps) {
           </Badge>
         )}
 
-        {/* Notificacoes */}
+        {/* Notificações */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {/* Badge de notificacao */}
@@ -113,7 +113,7 @@ export function Header({ title }: HeaderProps) {
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4" />
-              <span>Configuracoes</span>
+              <span>Configurações</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-red-600">

@@ -49,8 +49,8 @@ import type { OrdemServico, StatusOS } from '@/types/database'
 // Configurações de status
 const statusConfig: Record<StatusOS, { label: string; color: string; icon: React.ReactNode }> = {
   aberta: { label: 'Aberta', color: 'bg-blue-100 text-blue-800', icon: <FileText className="h-3 w-3" /> },
-  em_analise: { label: 'Em Analise', color: 'bg-yellow-100 text-yellow-800', icon: <Search className="h-3 w-3" /> },
-  aguardando_peca: { label: 'Aguardando Peca', color: 'bg-orange-100 text-orange-800', icon: <Clock className="h-3 w-3" /> },
+  em_analise: { label: 'Em Análise', color: 'bg-yellow-100 text-yellow-800', icon: <Search className="h-3 w-3" /> },
+  aguardando_peca: { label: 'Aguardando Peça', color: 'bg-orange-100 text-orange-800', icon: <Clock className="h-3 w-3" /> },
   aguardando_aprovacao: { label: 'Aguardando Aprovação', color: 'bg-purple-100 text-purple-800', icon: <AlertCircle className="h-3 w-3" /> },
   em_andamento: { label: 'Em Andamento', color: 'bg-cyan-100 text-cyan-800', icon: <Clock className="h-3 w-3" /> },
   finalizada: { label: 'Finalizada', color: 'bg-green-100 text-green-800', icon: <CheckCircle className="h-3 w-3" /> },
@@ -275,8 +275,8 @@ export default function OrdensServiçoPage() {
               <SelectContent>
                 <SelectItem value="todos">Todos os status</SelectItem>
                 <SelectItem value="aberta">Aberta</SelectItem>
-                <SelectItem value="em_analise">Em Analise</SelectItem>
-                <SelectItem value="aguardando_peca">Aguardando Peca</SelectItem>
+                <SelectItem value="em_analise">Em Análise</SelectItem>
+                <SelectItem value="aguardando_peca">Aguardando Peça</SelectItem>
                 <SelectItem value="aguardando_aprovacao">Aguardando Aprovação</SelectItem>
                 <SelectItem value="em_andamento">Em Andamento</SelectItem>
                 <SelectItem value="finalizada">Finalizada</SelectItem>

@@ -70,7 +70,7 @@ export function HelpButton() {
 
             {!pageTips && (
               <p className="text-xs text-muted-foreground text-center py-2">
-                Nenhuma dica disponivel para esta pagina.
+                Nenhuma dica disponível para esta página.
               </p>
             )}
           </div>

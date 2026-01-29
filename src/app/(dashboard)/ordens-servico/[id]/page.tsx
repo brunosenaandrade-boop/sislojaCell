@@ -70,8 +70,8 @@ import { useAuthStore } from '@/store/useStore'
 // Configurações de status
 const statusConfig: Record<StatusOS, { label: string; color: string; icon: React.ReactNode }> = {
   aberta: { label: 'Aberta', color: 'bg-blue-100 text-blue-800', icon: <FileText className="h-4 w-4" /> },
-  em_analise: { label: 'Em Analise', color: 'bg-yellow-100 text-yellow-800', icon: <Clock className="h-4 w-4" /> },
-  aguardando_peca: { label: 'Aguardando Peca', color: 'bg-orange-100 text-orange-800', icon: <Clock className="h-4 w-4" /> },
+  em_analise: { label: 'Em Análise', color: 'bg-yellow-100 text-yellow-800', icon: <Clock className="h-4 w-4" /> },
+  aguardando_peca: { label: 'Aguardando Peça', color: 'bg-orange-100 text-orange-800', icon: <Clock className="h-4 w-4" /> },
   aguardando_aprovacao: { label: 'Aguardando Aprovação', color: 'bg-purple-100 text-purple-800', icon: <AlertCircle className="h-4 w-4" /> },
   em_andamento: { label: 'Em Andamento', color: 'bg-cyan-100 text-cyan-800', icon: <Wrench className="h-4 w-4" /> },
   finalizada: { label: 'Finalizada', color: 'bg-green-100 text-green-800', icon: <CheckCircle className="h-4 w-4" /> },
@@ -554,7 +554,7 @@ export default function VisualizarOSPage() {
                               {item.tipo === 'serviço' ? (
                                 <><Wrench className="mr-1 h-3 w-3" /> Serviço</>
                               ) : (
-                                <><Package className="mr-1 h-3 w-3" /> Peca</>
+                                <><Package className="mr-1 h-3 w-3" /> Peça</>
                               )}
                             </Badge>
                           </TableCell>

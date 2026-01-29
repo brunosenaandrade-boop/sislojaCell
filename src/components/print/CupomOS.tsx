@@ -75,7 +75,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
     switch (tipo) {
       case 'entrada': return 'COMPROVANTE DE ENTRADA'
       case 'entrega': return 'COMPROVANTE DE ENTREGA'
-      default: return 'ORDEM DE SERVICO'
+      default: return 'ORDEM DE SERVIÇO'
     }
   }
 
@@ -197,7 +197,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
       {/* Serviços realizados (entrega) */}
       {tipo === 'entrega' && os.itens && os.itens.length > 0 && (
         <div className="mb-2">
-          <p className="font-bold">SERVICOS REALIZADOS:</p>
+          <p className="font-bold">SERVIÇOS REALIZADOS:</p>
           {os.itens.map(item => (
             <div key={item.id} className="flex justify-between text-[10px]">
               <span>{item.quantidade}x {item.nome}</span>
@@ -212,7 +212,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
         <>
           <div className="border-t border-dashed border-black my-2" />
           <div className="mb-2">
-            <p className="font-bold">SERVICOS/PECAS:</p>
+            <p className="font-bold">SERVIÇOS/PEÇAS:</p>
             {os.itens.map(item => (
               <div key={item.id} className="flex justify-between text-[10px]">
                 <span>{item.quantidade}x {item.nome}</span>

@@ -74,7 +74,7 @@ const vendasMensais = [
 const osPorStatus = [
   { status: 'Aberta', quantidade: 4, valor_total: 780.00 },
   { status: 'Em Andamento', quantidade: 6, valor_total: 1450.00 },
-  { status: 'Aguardando Peca', quantidade: 3, valor_total: 920.00 },
+  { status: 'Aguardando Peça', quantidade: 3, valor_total: 920.00 },
   { status: 'Aguardando Cliente', quantidade: 2, valor_total: 350.00 },
   { status: 'Finalizada', quantidade: 45, valor_total: 12500.00 },
   { status: 'Entregue', quantidade: 38, valor_total: 10200.00 },
@@ -107,7 +107,7 @@ const serviçosMaisRealizados = [
   { posicao: 3, nome: 'Troca de Tela', tipo: 'Celular', nivel: 'Avançado', quantidade: 45, valor_total: 6750.00 },
   { posicao: 4, nome: 'Troca Pasta Térmica', tipo: 'Videogame', nivel: 'Básico', quantidade: 41, valor_total: 4100.00 },
   { posicao: 5, nome: 'Troca Conector Carga', tipo: 'Celular', nivel: 'Avançado', quantidade: 32, valor_total: 3200.00 },
-  { posicao: 6, nome: 'Troca de Botoes', tipo: 'Celular', nivel: 'Básico', quantidade: 23, valor_total: 1380.00 },
+  { posicao: 6, nome: 'Troca de Botões', tipo: 'Celular', nivel: 'Básico', quantidade: 23, valor_total: 1380.00 },
   { posicao: 7, nome: 'Reparo de Placa', tipo: 'Videogame', nivel: 'Avançado', quantidade: 18, valor_total: 4500.00 },
   { posicao: 8, nome: 'Reparo HDMI', tipo: 'Videogame', nivel: 'Avançado', quantidade: 12, valor_total: 2160.00 },
 ]
@@ -195,10 +195,10 @@ export default function RelatóriosPage() {
         rows = vendasMensais.map(v => [v.mês, String(v.vendas), v.valor_bruto.toFixed(2), v.custo.toFixed(2), v.lucro.toFixed(2)])
       }
     } else if (tipo === 'produtos') {
-      headers = ['Posicao', 'Produto', 'Categoria', 'Qtd Vendida', 'Valor Total', 'Lucro']
+      headers = ['Posição', 'Produto', 'Categoria', 'Qtd Vendida', 'Valor Total', 'Lucro']
       rows = produtosMaisVendidos.map(p => [String(p.posicao), p.nome, p.categoria, String(p.quantidade), p.valor_total.toFixed(2), p.lucro.toFixed(2)])
     } else if (tipo === 'serviços') {
-      headers = ['Posicao', 'Serviço', 'Tipo', 'Nivel', 'Qtd Realizada', 'Valor Total']
+      headers = ['Posição', 'Serviço', 'Tipo', 'Nível', 'Qtd Realizada', 'Valor Total']
       rows = serviçosMaisRealizados.map(s => [String(s.posicao), s.nome, s.tipo, s.nivel, String(s.quantidade), s.valor_total.toFixed(2)])
     } else if (tipo === 'aniversariantes') {
       headers = ['Nome', 'Telefone', 'Data Nascimento', 'Idade', 'Total Gasto']
@@ -595,7 +595,7 @@ export default function RelatóriosPage() {
                       <TableHead className="w-[60px]">#</TableHead>
                       <TableHead>Serviço</TableHead>
                       <TableHead>Tipo</TableHead>
-                      <TableHead>Nivel</TableHead>
+                      <TableHead>Nível</TableHead>
                       <TableHead className="text-center">Qtd Realizada</TableHead>
                       <TableHead className="text-right">Faturamento</TableHead>
                     </TableRow>

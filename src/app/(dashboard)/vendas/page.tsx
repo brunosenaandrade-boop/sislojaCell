@@ -143,7 +143,7 @@ export default function VendasPage() {
 
     const itemExistente = itens.find(i => i.produto_id === produto.id)
     if (itemExistente && itemExistente.quantidade >= produto.estoque) {
-      toast.error('Quantidade maxima atingida (estoque)')
+      toast.error('Quantidade máxima atingida (estoque)')
       return
     }
 
