@@ -285,7 +285,7 @@ export default function OrdensServiçoPage() {
               </SelectContent>
             </Select>
           </div>
-          <Link href="/ordens-serviço/nova">
+          <Link href="/ordens-servico/nova">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               Nova OS
@@ -382,13 +382,13 @@ export default function OrdensServiçoPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <Link href={`/ordens-serviço/${os.id}`}>
+                            <Link href={`/ordens-servico/${os.id}`}>
                               <DropdownMenuItem>
                                 <Eye className="mr-2 h-4 w-4" />
                                 Visualizar
                               </DropdownMenuItem>
                             </Link>
-                            <Link href={`/ordens-serviço/${os.id}/editar`}>
+                            <Link href={`/ordens-servico/${os.id}/editar`}>
                               <DropdownMenuItem>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Editar

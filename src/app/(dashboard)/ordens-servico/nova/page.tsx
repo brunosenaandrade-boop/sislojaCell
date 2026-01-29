@@ -247,7 +247,7 @@ export default function NovaOSPage() {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       toast.success('Ordem de Serviço criada com sucesso!')
-      router.push('/ordens-serviço')
+      router.push('/ordens-servico')
     } catch (error) {
       toast.error('Erro ao criar OS')
       console.error(error)
@@ -276,7 +276,7 @@ export default function NovaOSPage() {
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Ações */}
         <div className="flex items-center justify-between">
-          <Link href="/ordens-serviço">
+          <Link href="/ordens-servico">
             <Button variant="outline">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar

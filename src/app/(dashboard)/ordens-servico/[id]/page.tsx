@@ -246,7 +246,7 @@ export default function VisualizarOSPage() {
         <div className="flex-1 space-y-6 p-4 lg:p-6">
           {/* Ações */}
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <Link href="/ordens-serviço">
+            <Link href="/ordens-servico">
               <Button variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar
@@ -275,7 +275,7 @@ export default function VisualizarOSPage() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Link href={`/ordens-serviço/${os.id}/editar`}>
+              <Link href={`/ordens-servico/${os.id}/editar`}>
                 <Button variant="outline">
                   <Edit className="mr-2 h-4 w-4" />
                   Editar

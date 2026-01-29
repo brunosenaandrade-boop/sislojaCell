@@ -448,7 +448,7 @@ export default function ClienteDetalhePage() {
                             <TableRow key={os.id}>
                               <TableCell>
                                 <Link
-                                  href={`/ordens-serviço/${os.id}`}
+                                  href={`/ordens-servico/${os.id}`}
                                   className="font-mono text-primary hover:underline flex items-center gap-1"
                                 >
                                   {os.id}
@@ -480,7 +480,7 @@ export default function ClienteDetalhePage() {
                   Nova Venda
                 </Button>
               </Link>
-              <Link href="/ordens-serviço/nova" className="flex-1">
+              <Link href="/ordens-servico/nova" className="flex-1">
                 <Button variant="outline" className="w-full">
                   <Wrench className="mr-2 h-4 w-4" />
                   Nova OS

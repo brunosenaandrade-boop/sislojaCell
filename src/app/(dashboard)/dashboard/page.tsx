@@ -331,7 +331,7 @@ export default function DashboardPage() {
                 <CardTitle>Ordens de Serviço</CardTitle>
                 <CardDescription>OS em andamento</CardDescription>
               </div>
-              <Link href="/ordens-serviço">
+              <Link href="/ordens-servico">
                 <Button variant="outline" size="sm">
                   Ver todas
                 </Button>
