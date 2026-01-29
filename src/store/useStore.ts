@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Usuario, Empresa, Caixa } from '@/types/database'
+import type { Usuario, Empresa } from '@/types/database'
 
 // ============================================
 // STORE DE AUTENTICAÇÃO/USUÁRIO
@@ -342,3 +342,50 @@ export const useCarrinhoStore = create<CarrinhoState>((set, get) => ({
 
   getLucroTotal: () => get().getTotal() - get().getCustoTotal(),
 }))
+
+// ============================================
+// STORE DE CONFIGURAÇÕES DE IMPRESSÃO
+// ============================================
+
+interface PrintConfigState {
+  logoBase64: string | null
+  tipoImpressora: string
+  larguraPapel: string
+  mostrarLogo: boolean
+  mostrarEndereco: boolean
+  mostrarTelefone: boolean
+  mensagemCupom: string
+
+  setLogoBase64: (logo: string | null) => void
+  setTipoImpressora: (tipo: string) => void
+  setLarguraPapel: (largura: string) => void
+  setMostrarLogo: (mostrar: boolean) => void
+  setMostrarEndereco: (mostrar: boolean) => void
+  setMostrarTelefone: (mostrar: boolean) => void
+  setMensagemCupom: (mensagem: string) => void
+}
+
+export const usePrintConfigStore = create<PrintConfigState>()(
+  persist(
+    (set) => ({
+      logoBase64: null,
+      tipoImpressora: 'térmica',
+      larguraPapel: '80',
+      mostrarLogo: true,
+      mostrarEndereco: true,
+      mostrarTelefone: true,
+      mensagemCupom: 'Obrigado pela preferência!',
+
+      setLogoBase64: (logoBase64) => set({ logoBase64 }),
+      setTipoImpressora: (tipoImpressora) => set({ tipoImpressora }),
+      setLarguraPapel: (larguraPapel) => set({ larguraPapel }),
+      setMostrarLogo: (mostrarLogo) => set({ mostrarLogo }),
+      setMostrarEndereco: (mostrarEndereco) => set({ mostrarEndereco }),
+      setMostrarTelefone: (mostrarTelefone) => set({ mostrarTelefone }),
+      setMensagemCupom: (mensagemCupom) => set({ mensagemCupom }),
+    }),
+    {
+      name: 'print-config-storage',
+    }
+  )
+)

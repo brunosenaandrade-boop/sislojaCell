@@ -38,10 +38,10 @@ interface CupomVendaProps {
 const formasPagamentoLabel: Record<string, string> = {
   dinheiro: 'DINHEIRO',
   pix: 'PIX',
-  débito: 'CARTAO DEBITO',
-  crédito: 'CARTAO CREDITO',
-  debito: 'CARTAO DEBITO',
-  credito: 'CARTAO CREDITO',
+  débito: 'CARTÃO DÉBITO',
+  crédito: 'CARTÃO CRÉDITO',
+  debito: 'CARTÃO DÉBITO',
+  credito: 'CARTÃO CRÉDITO',
 }
 
 const larguraClasses: Record<string, string> = {
@@ -106,7 +106,7 @@ export function CupomVenda({ venda, empresa, config, operador }: CupomVendaProps
 
       {/* Título */}
       <div className="text-center mb-2">
-        <h2 className="font-bold">CUPOM NAO FISCAL</h2>
+        <h2 className="font-bold">CUPOM NÃO FISCAL</h2>
         <p className="text-lg font-bold">VENDA #{venda.número}</p>
       </div>
 

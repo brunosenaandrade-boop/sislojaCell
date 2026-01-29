@@ -123,3 +123,54 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ============================================ */
+/* ESTILOS DE IMPRESSÃO                         */
+/* ============================================ */
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12px !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Esconder tudo que não é o conteúdo de impressão */
+  .print\:hidden,
+  header,
+  nav,
+  aside,
+  footer,
+  .sidebar,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Mostrar conteúdo de impressão */
+  .print\:block {
+    display: block !important;
+  }
+
+  /* Garantir fundo branco e bordas visíveis */
+  * {
+    box-shadow: none !important;
+  }
+
+  /* Evitar quebra de página dentro de elementos */
+  .avoid-break {
+    break-inside: avoid;
+  }
+
+  /* Garantir que imagens de logo apareçam */
+  img {
+    max-width: 100% !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

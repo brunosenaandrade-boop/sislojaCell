@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Header } from '@/components/layout/Header'
 import { getClient } from '@/lib/supabase/client'
-import { useAuthStore } from '@/store/useStore'
+import { useAuthStore, usePrintConfigStore } from '@/store/useStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -68,28 +68,30 @@ interface UsuarioItem {
 export default function ConfiguraçõesPage() {
   const supabase = getClient()
   const { empresa } = useAuthStore()
+  const printConfig = usePrintConfigStore()
+
   // Dados da empresa
-  const [nomeEmpresa, setNomeEmpresa] = useState('Assistencia Tech SC')
+  const [nomeEmpresa, setNomeEmpresa] = useState('Assistência Tech SC')
   const [cnpj, setCnpj] = useState('12.345.678/0001-90')
   const [telefoneEmpresa, setTelefoneEmpresa] = useState('(48) 3333-1111')
   const [whatsapp, setWhatsapp] = useState('(48) 99999-0000')
   const [emailEmpresa, setEmailEmpresa] = useState('contato@assistenciatechsc.com.br')
   const [endereçoEmpresa, setEndereçoEmpresa] = useState('Rua Principal, 100 - Centro')
-  const [cidadeEmpresa, setCidadeEmpresa] = useState('Florianopolis')
+  const [cidadeEmpresa, setCidadeEmpresa] = useState('Florianópolis')
   const [estadoEmpresa, setEstadoEmpresa] = useState('SC')
   const [cepEmpresa, setCepEmpresa] = useState('88000-000')
 
-  // Logo
-  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  // Logo - inicializa do store
+  const [logoPreview, setLogoPreview] = useState<string | null>(printConfig.logoBase64)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Impressão
-  const [tipoImpressora, setTipoImpressora] = useState('térmica')
-  const [larguraPapel, setLarguraPapel] = useState('80')
-  const [mostrarLogo, setMostrarLogo] = useState(true)
-  const [mostrarEndereço, setMostrarEndereço] = useState(true)
-  const [mostrarTelefone, setMostrarTelefone] = useState(true)
-  const [mensagemCupom, setMensagemCupom] = useState('Obrigado pela preferência!')
+  // Impressão - inicializa do store
+  const [tipoImpressora, setTipoImpressora] = useState(printConfig.tipoImpressora)
+  const [larguraPapel, setLarguraPapel] = useState(printConfig.larguraPapel)
+  const [mostrarLogo, setMostrarLogo] = useState(printConfig.mostrarLogo)
+  const [mostrarEndereço, setMostrarEndereço] = useState(printConfig.mostrarEndereco)
+  const [mostrarTelefone, setMostrarTelefone] = useState(printConfig.mostrarTelefone)
+  const [mensagemCupom, setMensagemCupom] = useState(printConfig.mensagemCupom)
 
   // Usuários
   const [usuários, setUsuários] = useState<UsuarioItem[]>([])
@@ -149,18 +151,20 @@ export default function ConfiguraçõesPage() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Selecione uma imagem valida')
+      toast.error('Selecione uma imagem válida')
       return
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('A imagem deve ter no maximo 2MB')
+      toast.error('A imagem deve ter no máximo 2MB')
       return
     }
 
     const reader = new FileReader()
     reader.onloadend = () => {
-      setLogoPreview(reader.result as string)
+      const base64 = reader.result as string
+      setLogoPreview(base64)
+      printConfig.setLogoBase64(base64)
       toast.success('Logo carregada!')
     }
     reader.readAsDataURL(file)
@@ -188,7 +192,13 @@ export default function ConfiguraçõesPage() {
   const handleSalvarImpressão = async () => {
     setIsLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
+      printConfig.setTipoImpressora(tipoImpressora)
+      printConfig.setLarguraPapel(larguraPapel)
+      printConfig.setMostrarLogo(mostrarLogo)
+      printConfig.setMostrarEndereco(mostrarEndereço)
+      printConfig.setMostrarTelefone(mostrarTelefone)
+      printConfig.setMensagemCupom(mensagemCupom)
+      await new Promise(resolve => setTimeout(resolve, 300))
       toast.success('Configurações de impressão salvas!')
     } catch {
       toast.error('Erro ao salvar')
@@ -566,6 +576,7 @@ export default function ConfiguraçõesPage() {
                         className="w-full text-red-600"
                         onClick={() => {
                           setLogoPreview(null)
+                          printConfig.setLogoBase64(null)
                           toast.success('Logo removida')
                         }}
                       >
@@ -575,7 +586,7 @@ export default function ConfiguraçõesPage() {
                     )}
 
                     <p className="text-xs text-muted-foreground text-center">
-                      Formatos: PNG, JPG, SVG. Maximo 2MB.
+                      Formatos: PNG, JPG, SVG. Máximo 2MB.
                     </p>
                   </CardContent>
                 </Card>
@@ -676,7 +687,7 @@ export default function ConfiguraçõesPage() {
                       onChange={(e) => setMensagemCupom(e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Exibida no rodape do cupom
+                      Exibida no rodapé do cupom
                     </p>
                   </div>
 
@@ -692,7 +703,7 @@ export default function ConfiguraçõesPage() {
               {/* Preview do Cupom */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Pre-visualização do Cupom</CardTitle>
+                  <CardTitle>Pré-visualização do Cupom</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div
@@ -732,7 +743,7 @@ export default function ConfiguraçõesPage() {
 
                     <div className="border-t border-dashed my-2" />
 
-                    <div className="text-center font-bold mb-1">CUPOM NAO FISCAL</div>
+                    <div className="text-center font-bold mb-1">CUPOM NÃO FISCAL</div>
                     <div className="text-center mb-2">27/01/2024 15:30</div>
 
                     <div className="border-t border-dashed my-2" />

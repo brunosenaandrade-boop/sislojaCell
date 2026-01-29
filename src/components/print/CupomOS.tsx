@@ -22,6 +22,9 @@ interface CupomOSProps {
     imei?: string
     senha_aparelho?: string
     senha_aparelho_masked?: string
+    tipo_desbloqueio?: 'sem_senha' | 'padrao' | 'pin' | 'senha'
+    padrao_desbloqueio?: number[]
+    pin_desbloqueio?: string
     condicao_entrada?: string
     acessórios?: string
     problema_relatado: string
@@ -127,7 +130,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
       <div className="text-center text-[10px] mb-2">
         <p>Data: {format(new Date(os.data_entrada), "dd/MM/yyyy 'as' HH:mm", { locale: ptBR })}</p>
         {os.data_previsao && (
-          <p>Previsao: {format(new Date(os.data_previsao), 'dd/MM/yyyy', { locale: ptBR })}</p>
+          <p>Previsão: {format(new Date(os.data_previsao), 'dd/MM/yyyy', { locale: ptBR })}</p>
         )}
         {operador && <p>Operador: {operador}</p>}
       </div>
@@ -152,8 +155,46 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
         {os.imei && <p>IMEI: {os.imei}</p>}
       </div>
 
-      {/* Senha - para entrada mostra visível, para entrega mostra mascarada */}
-      {tipo === 'entrada' && os.senha_aparelho && (
+      {/* Desbloqueio do aparelho */}
+      {tipo === 'entrada' && os.tipo_desbloqueio && os.tipo_desbloqueio !== 'sem_senha' && (
+        <div className="border border-black p-2 my-2 bg-gray-100">
+          <p className="font-bold text-center">DESBLOQUEIO DO APARELHO</p>
+          {os.tipo_desbloqueio === 'padrao' && os.padrao_desbloqueio && (
+            <>
+              <p className="text-center text-[10px] mb-1">Padrão de desenho:</p>
+              <div className="text-center font-mono text-sm font-bold">
+                {/* Representação textual do padrão no grid 3x3 */}
+                {[0, 1, 2].map(row => (
+                  <div key={row}>
+                    {[1, 2, 3].map(col => {
+                      const point = row * 3 + col
+                      const order = os.padrao_desbloqueio!.indexOf(point)
+                      return (
+                        <span key={col} className="inline-block w-6 text-center">
+                          {order >= 0 ? order + 1 : '·'}
+                        </span>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+              <p className="text-center text-[10px] mt-1">
+                Sequência: {os.padrao_desbloqueio.join(' → ')}
+              </p>
+            </>
+          )}
+          {os.tipo_desbloqueio === 'pin' && os.pin_desbloqueio && (
+            <p className="text-center text-base font-bold">PIN: {os.pin_desbloqueio}</p>
+          )}
+          {os.tipo_desbloqueio === 'senha' && os.senha_aparelho && (
+            <p className="text-center text-base font-bold">{os.senha_aparelho}</p>
+          )}
+          <p className="text-center text-[10px]">(Guarde este comprovante)</p>
+        </div>
+      )}
+
+      {/* Fallback para OS antigas sem tipo_desbloqueio */}
+      {tipo === 'entrada' && !os.tipo_desbloqueio && os.senha_aparelho && (
         <div className="border border-black p-2 my-2 bg-gray-100">
           <p className="font-bold text-center">SENHA DO APARELHO</p>
           <p className="text-center text-base font-bold">{os.senha_aparelho}</p>
@@ -171,7 +212,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
       {/* Condição de Entrada (entrada e completa) */}
       {tipo !== 'entrega' && os.condicao_entrada && (
         <div className="mb-2">
-          <p className="font-bold">CONDICAO:</p>
+          <p className="font-bold">CONDIÇÃO:</p>
           <p className="text-[10px]">{os.condicao_entrada}</p>
         </div>
       )}
@@ -179,7 +220,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
       {/* Acessórios */}
       {tipo !== 'entrega' && os.acessórios && (
         <div className="mb-2">
-          <p className="font-bold">ACESSORIOS:</p>
+          <p className="font-bold">ACESSÓRIOS:</p>
           <p className="text-[10px]">{os.acessórios}</p>
         </div>
       )}
