@@ -81,17 +81,31 @@ export default function ConfiguraçõesPage() {
   const [estadoEmpresa, setEstadoEmpresa] = useState('SC')
   const [cepEmpresa, setCepEmpresa] = useState('88000-000')
 
-  // Logo - inicializa do store
-  const [logoPreview, setLogoPreview] = useState<string | null>(printConfig.logoBase64)
+  // Logo
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Impressão - inicializa do store
-  const [tipoImpressora, setTipoImpressora] = useState(printConfig.tipoImpressora)
-  const [larguraPapel, setLarguraPapel] = useState(printConfig.larguraPapel)
-  const [mostrarLogo, setMostrarLogo] = useState(printConfig.mostrarLogo)
-  const [mostrarEndereço, setMostrarEndereço] = useState(printConfig.mostrarEndereco)
-  const [mostrarTelefone, setMostrarTelefone] = useState(printConfig.mostrarTelefone)
-  const [mensagemCupom, setMensagemCupom] = useState(printConfig.mensagemCupom)
+  // Impressão
+  const [tipoImpressora, setTipoImpressora] = useState('térmica')
+  const [larguraPapel, setLarguraPapel] = useState('80')
+  const [mostrarLogo, setMostrarLogo] = useState(true)
+  const [mostrarEndereço, setMostrarEndereço] = useState(true)
+  const [mostrarTelefone, setMostrarTelefone] = useState(true)
+  const [mensagemCupom, setMensagemCupom] = useState('Obrigado pela preferência!')
+
+  // Sincronizar estado local com store após hidratação do localStorage
+  const [storeHydrated, setStoreHydrated] = useState(false)
+  useEffect(() => {
+    if (storeHydrated) return
+    setLogoPreview(printConfig.logoBase64)
+    setTipoImpressora(printConfig.tipoImpressora)
+    setLarguraPapel(printConfig.larguraPapel)
+    setMostrarLogo(printConfig.mostrarLogo)
+    setMostrarEndereço(printConfig.mostrarEndereco)
+    setMostrarTelefone(printConfig.mostrarTelefone)
+    setMensagemCupom(printConfig.mensagemCupom)
+    setStoreHydrated(true)
+  }, [printConfig, storeHydrated])
 
   // Usuários
   const [usuários, setUsuários] = useState<UsuarioItem[]>([])
