@@ -56,6 +56,8 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { configuracoesService } from '@/services/configuracoes.service'
+import { CupomVenda } from '@/components/print/CupomVenda'
+import { CupomOS } from '@/components/print/CupomOS'
 import type { Empresa, Usuario } from '@/types/database'
 
 interface UsuarioItem {
@@ -126,6 +128,7 @@ export default function ConfiguracoesPage() {
   const [usuarioParaDeletar, setUsuarioParaDeletar] = useState<string | null>(null)
 
   const [isLoading, setIsLoading] = useState(false)
+  const [previewTipo, setPreviewTipo] = useState<'venda' | 'os-entrada' | 'os-entrega'>('venda')
 
   // Fetch empresa data
   const fetchEmpresa = useCallback(async () => {
@@ -780,78 +783,149 @@ export default function ConfiguracoesPage() {
               {/* Preview do Cupom */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Pré-visualização do Cupom</CardTitle>
+                  <CardTitle>Pré-visualização</CardTitle>
+                  <CardDescription>Veja como ficará o cupom impresso</CardDescription>
+                  <div className="flex gap-1 pt-2">
+                    <Button
+                      size="sm"
+                      variant={previewTipo === 'venda' ? 'default' : 'outline'}
+                      onClick={() => setPreviewTipo('venda')}
+                    >
+                      Venda
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={previewTipo === 'os-entrada' ? 'default' : 'outline'}
+                      onClick={() => setPreviewTipo('os-entrada')}
+                    >
+                      OS Entrada
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={previewTipo === 'os-entrega' ? 'default' : 'outline'}
+                      onClick={() => setPreviewTipo('os-entrega')}
+                    >
+                      OS Entrega
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div
-                    className="mx-auto bg-white border-2 border-dashed rounded-lg p-4 font-mono text-xs"
-                    style={{ maxWidth: tipoImpressora === 'térmica' ? (larguraPapel === '58' ? '200px' : '280px') : '100%' }}
-                  >
-                    {mostrarLogo && (
-                      <div className="text-center mb-2">
-                        {logoPreview ? (
-                          <img src={logoPreview} alt="Logo" className="h-10 mx-auto" />
-                        ) : (
-                          <div className="h-10 bg-muted rounded flex items-center justify-center text-muted-foreground">
-                            [LOGO]
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="text-center mb-2">
-                      <div className="font-bold text-sm">{nomeEmpresa || 'Nome da Empresa'}</div>
-                      {cnpj && <div>CNPJ: {cnpj}</div>}
+                  <div className="overflow-auto max-h-[600px] border rounded-lg bg-gray-50 p-2">
+                    <div style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}>
+                      {previewTipo === 'venda' && (
+                        <CupomVenda
+                          venda={{
+                            numero: 1234,
+                            cliente: { nome: 'Maria Silva', telefone: '(11) 98765-4321' },
+                            itens: [
+                              { produto_id: '1', descricao: 'Carregador USB-C', quantidade: 1, valor_unitario: 49.90, valor_total: 49.90 },
+                              { produto_id: '2', descricao: 'Cabo Lightning 1m', quantidade: 1, valor_unitario: 25.00, valor_total: 25.00 },
+                            ],
+                            valor_total: 74.90,
+                            forma_pagamento: 'pix',
+                            data: new Date().toISOString(),
+                          }}
+                          empresa={{
+                            id: '', nome: nomeEmpresa || 'Nome da Empresa',
+                            nome_fantasia: nomeEmpresa || 'Nome da Empresa',
+                            cnpj: cnpj || undefined, telefone: telefoneEmpresa || undefined,
+                            whatsapp: whatsapp || undefined, endereco: enderecoEmpresa || undefined,
+                            cidade: cidadeEmpresa || undefined, estado: estadoEmpresa || undefined,
+                            cep: cepEmpresa || undefined, logo_url: logoPreview || undefined,
+                            cor_primaria: '#2563eb', cor_secundaria: '#1e40af',
+                            ativo: true, created_at: '', updated_at: '',
+                          } as Empresa}
+                          operador="Operador"
+                          config={{
+                            largura: larguraPapel as '58' | '80' | 'A4',
+                            mostrarLogo,
+                            mostrarEndereco,
+                            mostrarTelefone,
+                            mensagemCupom,
+                          }}
+                        />
+                      )}
+                      {previewTipo === 'os-entrada' && (
+                        <CupomOS
+                          os={{
+                            numero: 567,
+                            status: 'aberta',
+                            marca: 'Samsung',
+                            modelo: 'Galaxy S24',
+                            cor: 'Preto',
+                            imei: '123456789012345',
+                            problema_relatado: 'Tela quebrada - display nao funciona apos queda',
+                            condicao_entrada: 'Tela trincada, traseira com riscos leves',
+                            acessorios: 'Capinha silicone, pelicula',
+                            valor_servicos: 250,
+                            valor_produtos: 100,
+                            valor_desconto: 0,
+                            valor_total: 350,
+                            data_entrada: new Date().toISOString(),
+                            data_previsao: new Date(Date.now() + 3 * 86400000).toISOString(),
+                            cliente: { nome: 'Joao Santos', telefone: '(11) 99999-0000', cpf: '123.456.789-00' },
+                          }}
+                          tipo="entrada"
+                          empresa={{
+                            id: '', nome: nomeEmpresa || 'Nome da Empresa',
+                            nome_fantasia: nomeEmpresa || 'Nome da Empresa',
+                            cnpj: cnpj || undefined, telefone: telefoneEmpresa || undefined,
+                            whatsapp: whatsapp || undefined, endereco: enderecoEmpresa || undefined,
+                            cidade: cidadeEmpresa || undefined, estado: estadoEmpresa || undefined,
+                            cep: cepEmpresa || undefined, logo_url: logoPreview || undefined,
+                            cor_primaria: '#2563eb', cor_secundaria: '#1e40af',
+                            ativo: true, created_at: '', updated_at: '',
+                          } as Empresa}
+                          operador="Operador"
+                          config={{
+                            largura: larguraPapel as '58' | '80' | 'A4',
+                            mostrarLogo,
+                            mostrarEndereco,
+                            mostrarTelefone,
+                          }}
+                        />
+                      )}
+                      {previewTipo === 'os-entrega' && (
+                        <CupomOS
+                          os={{
+                            numero: 567,
+                            status: 'entregue',
+                            marca: 'Samsung',
+                            modelo: 'Galaxy S24',
+                            cor: 'Preto',
+                            problema_relatado: 'Tela quebrada',
+                            valor_servicos: 250,
+                            valor_produtos: 100,
+                            valor_desconto: 0,
+                            valor_total: 350,
+                            data_entrada: new Date().toISOString(),
+                            cliente: { nome: 'Joao Santos', telefone: '(11) 99999-0000' },
+                            itens: [
+                              { id: '1', tipo: 'servico', descricao: 'Troca de tela', quantidade: 1, valor_unitario: 250 },
+                              { id: '2', tipo: 'produto', descricao: 'Tela Galaxy S24 Original', quantidade: 1, valor_unitario: 100 },
+                            ],
+                          }}
+                          tipo="entrega"
+                          empresa={{
+                            id: '', nome: nomeEmpresa || 'Nome da Empresa',
+                            nome_fantasia: nomeEmpresa || 'Nome da Empresa',
+                            cnpj: cnpj || undefined, telefone: telefoneEmpresa || undefined,
+                            whatsapp: whatsapp || undefined, endereco: enderecoEmpresa || undefined,
+                            cidade: cidadeEmpresa || undefined, estado: estadoEmpresa || undefined,
+                            cep: cepEmpresa || undefined, logo_url: logoPreview || undefined,
+                            cor_primaria: '#2563eb', cor_secundaria: '#1e40af',
+                            ativo: true, created_at: '', updated_at: '',
+                          } as Empresa}
+                          operador="Operador"
+                          config={{
+                            largura: larguraPapel as '58' | '80' | 'A4',
+                            mostrarLogo,
+                            mostrarEndereco,
+                            mostrarTelefone,
+                          }}
+                        />
+                      )}
                     </div>
-
-                    {mostrarEndereco && enderecoEmpresa && (
-                      <div className="text-center mb-1">
-                        <div>{enderecoEmpresa}</div>
-                        <div>{cidadeEmpresa}/{estadoEmpresa}</div>
-                      </div>
-                    )}
-
-                    {mostrarTelefone && (
-                      <div className="text-center mb-2">
-                        {telefoneEmpresa && <div>Tel: {telefoneEmpresa}</div>}
-                        {whatsapp && <div>WhatsApp: {whatsapp}</div>}
-                      </div>
-                    )}
-
-                    <div className="border-t border-dashed my-2" />
-
-                    <div className="text-center font-bold mb-1">CUPOM NÃO FISCAL</div>
-                    <div className="text-center mb-2">27/01/2024 15:30</div>
-
-                    <div className="border-t border-dashed my-2" />
-
-                    <div className="space-y-1">
-                      <div className="flex justify-between">
-                        <span>1x Carregador USB-C</span>
-                        <span>49,90</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>1x Cabo Lightning</span>
-                        <span>25,00</span>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-dashed my-2" />
-
-                    <div className="flex justify-between font-bold">
-                      <span>TOTAL</span>
-                      <span>R$ 74,90</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Pagamento</span>
-                      <span>PIX</span>
-                    </div>
-
-                    <div className="border-t border-dashed my-2" />
-
-                    {mensagemCupom && (
-                      <div className="text-center italic">{mensagemCupom}</div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
