@@ -72,24 +72,7 @@ export interface HistoricoCaixaLocal {
   status: 'fechado'
 }
 
-// Mock data pré-populado
-const mockMovimentacoes: MovimentacaoCaixaLocal[] = [
-  { id: '1', tipo: 'abertura', valor: 200.00, descricao: 'Abertura de caixa', usuario: 'Admin', data: '2026-01-29T08:00:00' },
-  { id: '2', tipo: 'venda', valor: 49.90, custo: 25.00, descricao: 'Venda #1001 - Carregador USB-C', forma_pagamento: 'pix', usuario: 'Admin', data: '2026-01-29T09:15:00' },
-  { id: '3', tipo: 'venda', valor: 89.90, custo: 45.00, descricao: 'Venda #1002 - Fone Bluetooth', forma_pagamento: 'credito', usuario: 'Admin', data: '2026-01-29T10:30:00' },
-  { id: '4', tipo: 'venda', valor: 25.00, custo: 8.00, descricao: 'Venda #1003 - Cabo Lightning', forma_pagamento: 'dinheiro', usuario: 'Funcionario', data: '2026-01-29T11:00:00' },
-  { id: '5', tipo: 'os', valor: 350.00, custo: 280.00, descricao: 'OS #1001 - Troca de Tela iPhone 13', forma_pagamento: 'pix', usuario: 'Admin', data: '2026-01-29T11:45:00' },
-  { id: '6', tipo: 'sangria', valor: -100.00, descricao: 'Sangria - Pagamento fornecedor', usuario: 'Admin', data: '2026-01-29T12:00:00' },
-  { id: '7', tipo: 'venda', valor: 35.00, custo: 15.00, descricao: 'Venda #1004 - Capa iPhone 14', forma_pagamento: 'debito', usuario: 'Funcionario', data: '2026-01-29T13:20:00' },
-  { id: '8', tipo: 'suprimento', valor: 50.00, descricao: 'Suprimento - Troco', usuario: 'Admin', data: '2026-01-29T14:00:00' },
-  { id: '9', tipo: 'os', valor: 180.00, custo: 80.00, descricao: 'OS #1002 - Troca de Bateria Samsung', forma_pagamento: 'dinheiro', usuario: 'Funcionario', data: '2026-01-29T15:30:00' },
-]
-
-const mockHistoricoCaixas: HistoricoCaixaLocal[] = [
-  { id: '1', data_abertura: '2026-01-28T08:00:00', data_fechamento: '2026-01-28T18:00:00', valor_abertura: 200.00, valor_fechamento: 1250.00, total_vendas: 1150.00, total_os: 520.00, total_sangrias: 200.00, total_suprimentos: 80.00, total_custo: 650.00, lucro_liquido: 1020.00, usuario: 'Admin', status: 'fechado' },
-  { id: '2', data_abertura: '2026-01-27T08:00:00', data_fechamento: '2026-01-27T18:00:00', valor_abertura: 150.00, valor_fechamento: 980.00, total_vendas: 890.00, total_os: 350.00, total_sangrias: 150.00, total_suprimentos: 0, total_custo: 520.00, lucro_liquido: 720.00, usuario: 'Admin', status: 'fechado' },
-  { id: '3', data_abertura: '2026-01-26T08:00:00', data_fechamento: '2026-01-26T18:00:00', valor_abertura: 200.00, valor_fechamento: 1580.00, total_vendas: 1320.00, total_os: 680.00, total_sangrias: 300.00, total_suprimentos: 100.00, total_custo: 780.00, lucro_liquido: 1220.00, usuario: 'Admin', status: 'fechado' },
-]
+// Estado inicial vazio (sem mock data em producao)
 
 interface CaixaState {
   statusCaixa: 'aberto' | 'fechado'
@@ -118,11 +101,11 @@ interface CaixaState {
 }
 
 export const useCaixaStore = create<CaixaState>((set, get) => ({
-  statusCaixa: 'aberto',
-  valorAbertura: 200.00,
-  horaAbertura: '2026-01-29T08:00:00',
-  movimentacoes: mockMovimentacoes,
-  historicoCaixas: mockHistoricoCaixas,
+  statusCaixa: 'fechado',
+  valorAbertura: 0,
+  horaAbertura: '',
+  movimentacoes: [],
+  historicoCaixas: [],
 
   abrirCaixa: (valor, usuario) => {
     set({

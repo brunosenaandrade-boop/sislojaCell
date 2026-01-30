@@ -1,6 +1,6 @@
 import type { Produto, CategoriaProduto } from '@/types/database'
 import type { ServiceResult } from './base'
-import { getSupabase, getEmpresaId, handleQuery } from './base'
+import { getSupabase, getEmpresaId, handleQuery, sanitizeSearch } from './base'
 
 export const produtosService = {
   async listar(busca?: string, categoriaId?: string): Promise<ServiceResult<Produto[]>> {
@@ -16,7 +16,10 @@ export const produtosService = {
         .order('nome')
 
       if (busca) {
-        query = query.or(`nome.ilike.%${busca}%,codigo.ilike.%${busca}%`)
+        const term = sanitizeSearch(busca)
+        if (term) {
+          query = query.or(`nome.ilike.%${term}%,codigo.ilike.%${term}%`)
+        }
       }
 
       if (categoriaId) {

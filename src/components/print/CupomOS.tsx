@@ -168,7 +168,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
                   <div key={row}>
                     {[1, 2, 3].map(col => {
                       const point = row * 3 + col
-                      const order = os.padrao_desbloqueio!.indexOf(point)
+                      const order = os.padrao_desbloqueio?.indexOf(point) ?? -1
                       return (
                         <span key={col} className="inline-block w-6 text-center">
                           {order >= 0 ? order + 1 : '·'}

@@ -263,7 +263,7 @@ export default function NovaOSPage() {
         data_entrada: new Date().toISOString(),
       }
 
-      const { data: osCriada, error } = await ordensServicoService.criar(osData as any)
+      const { data: osCriada, error } = await ordensServicoService.criar(osData)
       if (error) {
         toast.error('Erro ao criar OS: ' + error)
         return

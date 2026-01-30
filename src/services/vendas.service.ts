@@ -1,4 +1,4 @@
-import { getSupabase, getEmpresaId, getUsuarioId } from './base'
+import { getSupabase, getEmpresaId, getUsuarioId, sanitizeSearch } from './base'
 import type { Venda, ItemVenda } from '@/types/database'
 
 export const vendasService = {
@@ -98,9 +98,12 @@ export const vendasService = {
     }
 
     if (filtros?.busca) {
-      query = query.or(
-        `numero.cast(text).ilike.%${filtros.busca}%,cliente.nome.ilike.%${filtros.busca}%`
-      )
+      const term = sanitizeSearch(filtros.busca)
+      if (term) {
+        query = query.or(
+          `numero.cast(text).ilike.%${term}%,cliente.nome.ilike.%${term}%`
+        )
+      }
     }
 
     const { data, error } = await query

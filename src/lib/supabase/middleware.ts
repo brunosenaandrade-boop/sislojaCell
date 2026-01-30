@@ -5,9 +5,11 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  // Sem Supabase configurado, permite acesso livre (modo demo)
+  // Sem Supabase configurado, bloqueia acesso (redireciona para erro)
   if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder')) {
-    return NextResponse.next({ request })
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
   }
 
   let supabaseResponse = NextResponse.next({

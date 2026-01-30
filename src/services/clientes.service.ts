@@ -1,6 +1,6 @@
 import type { Cliente } from '@/types/database'
 import type { ServiceResult } from './base'
-import { getSupabase, getEmpresaId, handleQuery } from './base'
+import { getSupabase, getEmpresaId, handleQuery, sanitizeSearch } from './base'
 
 export const clientesService = {
   async listar(busca?: string): Promise<ServiceResult<Cliente[]>> {
@@ -16,9 +16,12 @@ export const clientesService = {
         .order('nome')
 
       if (busca) {
-        query = query.or(
-          `nome.ilike.%${busca}%,telefone.ilike.%${busca}%,cpf.ilike.%${busca}%,email.ilike.%${busca}%`
-        )
+        const term = sanitizeSearch(busca)
+        if (term) {
+          query = query.or(
+            `nome.ilike.%${term}%,telefone.ilike.%${term}%,cpf.ilike.%${term}%,email.ilike.%${term}%`
+          )
+        }
       }
 
       return query

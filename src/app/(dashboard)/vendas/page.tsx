@@ -86,7 +86,16 @@ export default function VendasPage() {
   const [dialogClienteOpen, setDialogClienteOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
-  const [vendaFinalizada, setVendaFinalizada] = useState<any>(null)
+  const [vendaFinalizada, setVendaFinalizada] = useState<{
+    numero: number
+    cliente: Cliente | null
+    itens: { produto_id: string; nome: string; descricao: string; quantidade: number; valor_unitario: number; valor_custo: number; valor_total: number }[]
+    valor_total: number
+    valor_custo: number
+    lucro: number
+    forma_pagamento: string
+    data: string
+  } | null>(null)
   const [showPrint, setShowPrint] = useState(false)
 
   // Dados carregados do Supabase
@@ -233,13 +242,13 @@ export default function VendasPage() {
       }
 
       const venda = {
-        numero: vendaCriada?.numero,
+        numero: vendaCriada?.numero ?? 0,
         cliente: clienteSelecionado,
-        itens: itens,
+        itens: itens.map(i => ({ ...i, descricao: i.nome })),
         valor_total: getTotal(),
         valor_custo: getCustoTotal(),
         lucro: getLucroTotal(),
-        forma_pagamento: formaPagamento,
+        forma_pagamento: formaPagamento || 'dinheiro',
         data: new Date().toISOString(),
       }
 

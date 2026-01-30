@@ -22,6 +22,11 @@ export interface ServiceResult<T> {
   error: string | null
 }
 
+// Sanitizar input de busca para uso em filtros Supabase
+export function sanitizeSearch(input: string): string {
+  return input.replace(/[%_\\'"()]/g, '').trim().slice(0, 100)
+}
+
 export async function handleQuery<T>(
   fn: () => Promise<{ data: T | null; error: { message: string } | null }>
 ): Promise<ServiceResult<T>> {
