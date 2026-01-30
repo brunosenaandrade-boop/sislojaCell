@@ -44,7 +44,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Rotas públicas que não precisam de autenticação
-  const publicRoutes = ['/login', '/recuperar-senha']
+  const publicRoutes = ['/login', '/recuperar-senha', '/cadastro', '/alterar-senha']
   const isPublicRoute = publicRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
   )
@@ -61,6 +61,26 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  // Rotas restritas a administradores
+  const adminRoutes = ['/configuracoes']
+  const isAdminRoute = adminRoutes.some(route =>
+    request.nextUrl.pathname.startsWith(route)
+  )
+
+  if (user && isAdminRoute) {
+    const { data: usuario } = await supabase
+      .from('usuarios')
+      .select('perfil')
+      .eq('auth_id', user.id)
+      .single()
+
+    if (!usuario || usuario.perfil !== 'admin') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   // IMPORTANTE: Você *deve* retornar o objeto supabaseResponse como está.

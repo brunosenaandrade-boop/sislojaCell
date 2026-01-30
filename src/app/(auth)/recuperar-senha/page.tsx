@@ -28,7 +28,7 @@ export default function RecuperarSenhaPage() {
 
     try {
       await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: `${window.location.origin}/alterar-senha`,
       })
 
       // Sempre mostra sucesso (não revela se email existe)

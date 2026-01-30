@@ -134,4 +134,72 @@ export const configuracoesService = {
         .single()
     )
   },
+
+  // ============================================
+  // LOGO (SUPABASE STORAGE)
+  // ============================================
+
+  async uploadLogo(file: File): Promise<{ data: string | null; error: string | null }> {
+    try {
+      const supabase = getSupabase()
+      const empresaId = getEmpresaId()
+
+      const ext = file.name.split('.').pop() || 'png'
+      const filePath = `${empresaId}/logo.${ext}`
+
+      // Upload para o bucket 'logos'
+      const { error: uploadError } = await supabase.storage
+        .from('logos')
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) return { data: null, error: uploadError.message }
+
+      // Obter URL publica
+      const { data: urlData } = supabase.storage
+        .from('logos')
+        .getPublicUrl(filePath)
+
+      const logoUrl = urlData.publicUrl
+
+      // Salvar URL na empresa
+      const { error: updateError } = await supabase
+        .from('empresas')
+        .update({ logo_url: logoUrl })
+        .eq('id', empresaId)
+
+      if (updateError) return { data: null, error: updateError.message }
+
+      return { data: logoUrl, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro ao fazer upload' }
+    }
+  },
+
+  async removeLogo(): Promise<{ error: string | null }> {
+    try {
+      const supabase = getSupabase()
+      const empresaId = getEmpresaId()
+
+      // Listar arquivos no diretorio da empresa
+      const { data: files } = await supabase.storage
+        .from('logos')
+        .list(empresaId)
+
+      if (files && files.length > 0) {
+        const filePaths = files.map((f: { name: string }) => `${empresaId}/${f.name}`)
+        await supabase.storage.from('logos').remove(filePaths)
+      }
+
+      // Limpar URL na empresa
+      const { error } = await supabase
+        .from('empresas')
+        .update({ logo_url: null })
+        .eq('id', empresaId)
+
+      if (error) return { error: error.message }
+      return { error: null }
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : 'Erro ao remover logo' }
+    }
+  },
 }

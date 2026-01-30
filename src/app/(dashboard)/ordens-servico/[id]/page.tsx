@@ -66,7 +66,7 @@ import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
 import type { OrdemServico, StatusOS } from '@/types/database'
 import { CupomOS } from '@/components/print/CupomOS'
-import { useAuthStore } from '@/store/useStore'
+import { useAuthStore, usePrintConfigStore } from '@/store/useStore'
 import { PatternLock } from '@/components/ui/pattern-lock'
 import { ordensServicoService } from '@/services/ordens-servico.service'
 
@@ -98,6 +98,7 @@ export default function VisualizarOSPage() {
   const params = useParams()
   const router = useRouter()
   const { empresa, usuario } = useAuthStore()
+  const printConfig = usePrintConfigStore()
   const [os, setOs] = useState<OrdemServico | null>(null)
   const [showSenha, setShowSenha] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -256,6 +257,12 @@ export default function VisualizarOSPage() {
             tipo={tipoPrint}
             empresa={empresa}
             operador={usuario?.nome}
+            config={{
+              largura: printConfig.larguraPapel as '58' | '80' | 'A4',
+              mostrarLogo: printConfig.mostrarLogo,
+              mostrarEndereco: printConfig.mostrarEndereco,
+              mostrarTelefone: printConfig.mostrarTelefone,
+            }}
           />
         </div>
       )}

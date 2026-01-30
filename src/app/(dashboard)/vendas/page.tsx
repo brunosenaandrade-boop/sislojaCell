@@ -43,7 +43,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useCarrinhoStore, useAuthStore, useCaixaStore } from '@/store/useStore'
+import { useCarrinhoStore, useAuthStore, useCaixaStore, usePrintConfigStore } from '@/store/useStore'
 import { CupomVenda } from '@/components/print/CupomVenda'
 import type { Produto, Cliente } from '@/types/database'
 import { produtosService } from '@/services/produtos.service'
@@ -76,6 +76,7 @@ export default function VendasPage() {
   } = useCarrinhoStore()
 
   const { registrarVenda, isCaixaAberto } = useCaixaStore()
+  const printConfig = usePrintConfigStore()
 
   const [busca, setBusca] = useState('')
   const [buscaCliente, setBuscaCliente] = useState('')
@@ -327,6 +328,13 @@ export default function VendasPage() {
             venda={vendaFinalizada}
             empresa={empresa}
             operador={usuario?.nome}
+            config={{
+              largura: printConfig.larguraPapel as '58' | '80' | 'A4',
+              mostrarLogo: printConfig.mostrarLogo,
+              mostrarEndereco: printConfig.mostrarEndereco,
+              mostrarTelefone: printConfig.mostrarTelefone,
+              mensagemCupom: printConfig.mensagemCupom,
+            }}
           />
         </div>
       )}

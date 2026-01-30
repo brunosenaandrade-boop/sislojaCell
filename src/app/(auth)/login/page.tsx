@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/useStore'
+import { authService } from '@/services/auth.service'
 import { logger } from '@/services/logger'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +15,6 @@ import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
-  const supabase = getClient()
   const { setUsuario, setEmpresa, setLoading } = useAuthStore()
 
   const [email, setEmail] = useState('')
@@ -28,63 +27,38 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // 1. Autenticar com Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password: senha,
-      })
+      const { data, error } = await authService.login(email, senha)
 
-      if (authError) {
-        throw authError
+      if (error) {
+        // Traduzir mensagens comuns do Supabase
+        let displayMessage = error
+        if (error.includes('Invalid login credentials')) {
+          displayMessage = 'Email ou senha incorretos'
+        } else if (error.includes('Email not confirmed')) {
+          displayMessage = 'Email não confirmado. Verifique sua caixa de entrada.'
+        }
+        toast.error(displayMessage)
+        await logger.error('Falha no login', new Error(error), 'auth', 'login')
+        return
       }
 
-      if (!authData.user) {
-        throw new Error('Usuário não encontrado')
+      if (!data) {
+        toast.error('Erro ao fazer login')
+        return
       }
 
-      // 2. Buscar dados do usuário no banco
-      const { data: usuario, error: usuarioError } = await supabase
-        .from('usuarios')
-        .select('*, empresa:empresas(*)')
-        .eq('auth_id', authData.user.id)
-        .single()
-
-      if (usuarioError || !usuario) {
-        throw new Error('Usuário não cadastrado no sistema')
-      }
-
-      if (!usuario.ativo) {
-        throw new Error('Usuário inativo. Entre em contato com o administrador.')
-      }
-
-      // 3. Atualizar último acesso
-      await supabase
-        .from('usuarios')
-        .update({ ultimo_acesso: new Date().toISOString() })
-        .eq('id', usuario.id)
-
-      // 4. Salvar no store
-      setUsuario(usuario)
-      setEmpresa(usuario.empresa)
+      // Salvar no store
+      setUsuario(data.usuario)
+      setEmpresa(data.empresa)
       setLoading(false)
 
-      // 5. Log de auditoria
-      await logger.audit('Login realizado', { usuario_id: usuario.id }, 'login')
+      // Log de auditoria
+      await logger.audit('Login realizado', { usuario_id: data.usuario.id }, 'login')
 
       toast.success('Login realizado com sucesso!')
       router.push('/dashboard')
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Erro ao fazer login'
-
-      // Traduzir mensagens comuns do Supabase
-      let displayMessage = message
-      if (message.includes('Invalid login credentials')) {
-        displayMessage = 'Email ou senha incorretos'
-      } else if (message.includes('Email not confirmed')) {
-        displayMessage = 'Email não confirmado. Verifique sua caixa de entrada.'
-      }
-
-      toast.error(displayMessage)
+      toast.error('Erro ao fazer login')
       await logger.error('Falha no login', error, 'auth', 'login')
     } finally {
       setIsLoading(false)
@@ -159,12 +133,22 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-4 text-center">
-            <Link href="/recuperar-senha">
-              <Button variant="link" className="text-sm text-muted-foreground">
-                Esqueci minha senha
-              </Button>
-            </Link>
+          <div className="mt-4 text-center space-y-1">
+            <div>
+              <Link href="/recuperar-senha">
+                <Button variant="link" className="text-sm text-muted-foreground">
+                  Esqueci minha senha
+                </Button>
+              </Link>
+            </div>
+            <div>
+              <span className="text-sm text-muted-foreground">Nao tem conta? </span>
+              <Link href="/cadastro">
+                <Button variant="link" className="text-sm p-0">
+                  Cadastre-se
+                </Button>
+              </Link>
+            </div>
           </div>
         </CardContent>
       </Card>

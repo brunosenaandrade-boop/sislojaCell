@@ -101,4 +101,68 @@ export const authService = {
       return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
     }
   },
+
+  async cadastrarEmpresa(dados: {
+    nomeEmpresa: string
+    nomeFantasia?: string
+    cnpj?: string
+    telefone?: string
+    nomeUsuario: string
+    email: string
+    senha: string
+  }): Promise<ServiceResult<{ usuario: Usuario; empresa: Empresa }>> {
+    try {
+      const supabase = getSupabase()
+
+      // 1. Criar usuario no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: dados.email,
+        password: dados.senha,
+      })
+
+      if (authError) {
+        if (authError.message.includes('already registered')) {
+          return { data: null, error: 'Este email ja esta cadastrado' }
+        }
+        return { data: null, error: authError.message }
+      }
+      if (!authData.user) return { data: null, error: 'Erro ao criar conta' }
+
+      // 2. Criar empresa
+      const { data: empresa, error: empresaError } = await supabase
+        .from('empresas')
+        .insert({
+          nome: dados.nomeEmpresa,
+          nome_fantasia: dados.nomeFantasia || dados.nomeEmpresa,
+          cnpj: dados.cnpj || null,
+          telefone: dados.telefone || null,
+          cor_primaria: '#2563eb',
+          cor_secundaria: '#1e40af',
+        })
+        .select()
+        .single()
+
+      if (empresaError) return { data: null, error: empresaError.message }
+
+      // 3. Criar usuario admin vinculado a empresa
+      const { data: usuario, error: usuarioError } = await supabase
+        .from('usuarios')
+        .insert({
+          auth_id: authData.user.id,
+          empresa_id: empresa.id,
+          nome: dados.nomeUsuario,
+          email: dados.email,
+          perfil: 'admin',
+          telefone: dados.telefone || null,
+        })
+        .select()
+        .single()
+
+      if (usuarioError) return { data: null, error: usuarioError.message }
+
+      return { data: { usuario, empresa }, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
+    }
+  },
 }

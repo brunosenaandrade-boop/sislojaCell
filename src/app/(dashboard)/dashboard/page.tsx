@@ -104,7 +104,10 @@ export default function DashboardPage() {
         setUltimasOS(osRes.data)
 
         if (vendasSemanaRes.error) toast.error('Erro ao carregar vendas da semana: ' + vendasSemanaRes.error)
-        setVendasSemana(vendasSemanaRes.data)
+        setVendasSemana(vendasSemanaRes.data.map(item => ({
+          ...item,
+          dia: format(new Date(item.dia + 'T12:00:00'), 'EEE dd/MM', { locale: ptBR }),
+        })))
       } catch {
         toast.error('Erro ao carregar dados do dashboard')
       } finally {

@@ -189,7 +189,7 @@ export default function ConfiguracoesPage() {
   }
 
   // Upload de logo
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -203,14 +203,23 @@ export default function ConfiguracoesPage() {
       return
     }
 
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      const base64 = reader.result as string
-      setLogoPreview(base64)
-      printConfig.setLogoBase64(base64)
-      toast.success('Logo carregada!')
+    setIsLoading(true)
+    try {
+      const { data: logoUrl, error } = await configuracoesService.uploadLogo(file)
+      if (error) {
+        toast.error('Erro ao enviar logo: ' + error)
+        return
+      }
+      if (logoUrl) {
+        setLogoPreview(logoUrl)
+        printConfig.setLogoBase64(logoUrl)
+        toast.success('Logo carregada!')
+      }
+    } catch {
+      toast.error('Erro ao enviar logo')
+    } finally {
+      setIsLoading(false)
     }
-    reader.readAsDataURL(file)
   }
 
   // Salvar dados da empresa
@@ -630,10 +639,22 @@ export default function ConfiguracoesPage() {
                       <Button
                         variant="ghost"
                         className="w-full text-red-600"
-                        onClick={() => {
-                          setLogoPreview(null)
-                          printConfig.setLogoBase64(null)
-                          toast.success('Logo removida')
+                        onClick={async () => {
+                          setIsLoading(true)
+                          try {
+                            const { error } = await configuracoesService.removeLogo()
+                            if (error) {
+                              toast.error('Erro ao remover: ' + error)
+                              return
+                            }
+                            setLogoPreview(null)
+                            printConfig.setLogoBase64(null)
+                            toast.success('Logo removida')
+                          } catch {
+                            toast.error('Erro ao remover logo')
+                          } finally {
+                            setIsLoading(false)
+                          }
                         }}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
