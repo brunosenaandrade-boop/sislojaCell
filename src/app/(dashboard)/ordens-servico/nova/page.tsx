@@ -235,6 +235,26 @@ export default function NovaOSPage() {
       return
     }
 
+    // Validar campos de desbloqueio
+    if (tipoDesbloqueio === 'padrao' && padraoDesbloqueio.length === 0) {
+      toast.error('Desenhe o padrão de desbloqueio do aparelho')
+      return
+    }
+    if (tipoDesbloqueio === 'pin' && !pinDesbloqueio.trim()) {
+      toast.error('Informe o PIN de desbloqueio do aparelho')
+      return
+    }
+    if (tipoDesbloqueio === 'senha' && !senhaAparelho.trim()) {
+      toast.error('Informe a senha de desbloqueio do aparelho')
+      return
+    }
+
+    // Avisar se não há itens (permitir salvar mesmo assim)
+    if (itensOS.length === 0) {
+      const confirmar = window.confirm('Nenhum serviço ou peça foi adicionado. Deseja salvar a OS mesmo assim?')
+      if (!confirmar) return
+    }
+
     setIsLoading(true)
 
     try {
@@ -333,7 +353,11 @@ export default function NovaOSPage() {
             </Button>
           </Link>
           <div className="flex gap-2">
-            <Button variant="outline">
+            <Button
+              variant="outline"
+              disabled
+              title="Salve a OS primeiro para imprimir"
+            >
               <Printer className="mr-2 h-4 w-4" />
               Imprimir Entrada
             </Button>

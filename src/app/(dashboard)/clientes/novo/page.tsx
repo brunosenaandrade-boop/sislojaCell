@@ -25,6 +25,7 @@ import { clientesService } from '@/services/clientes.service'
 export default function NovoClientePage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingCEP, setIsLoadingCEP] = useState(false)
 
   // Estados do formulario
   const [nome, setNome] = useState('')
@@ -71,6 +72,7 @@ export default function NovoClientePage() {
       return
     }
 
+    setIsLoadingCEP(true)
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
       const data = await response.json()
@@ -87,7 +89,26 @@ export default function NovoClientePage() {
       toast.success('Endereço preenchido!')
     } catch {
       toast.error('Erro ao buscar CEP')
+    } finally {
+      setIsLoadingCEP(false)
     }
+  }
+
+  // Validar CPF (dígitos verificadores)
+  const validarCPF = (cpfValue: string) => {
+    const numbers = cpfValue.replace(/\D/g, '')
+    if (numbers.length !== 11) return false
+    if (/^(\d)\1+$/.test(numbers)) return false
+    let sum = 0
+    for (let i = 0; i < 9; i++) sum += parseInt(numbers[i]) * (10 - i)
+    let rest = (sum * 10) % 11
+    if (rest === 10) rest = 0
+    if (rest !== parseInt(numbers[9])) return false
+    sum = 0
+    for (let i = 0; i < 10; i++) sum += parseInt(numbers[i]) * (11 - i)
+    rest = (sum * 10) % 11
+    if (rest === 10) rest = 0
+    return rest === parseInt(numbers[10])
   }
 
   // Salvar cliente
@@ -99,6 +120,14 @@ export default function NovoClientePage() {
     }
     if (!telefone.trim()) {
       toast.error('Informe o telefone do cliente')
+      return
+    }
+    if (cpf && !validarCPF(cpf)) {
+      toast.error('CPF inválido')
+      return
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('E-mail inválido')
       return
     }
 
@@ -277,8 +306,8 @@ export default function NovoClientePage() {
                         maxLength={9}
                         className="flex-1"
                       />
-                      <Button type="button" variant="outline" onClick={buscarCEP}>
-                        Buscar
+                      <Button type="button" variant="outline" onClick={buscarCEP} disabled={isLoadingCEP}>
+                        {isLoadingCEP ? 'Buscando...' : 'Buscar'}
                       </Button>
                     </div>
                   </div>

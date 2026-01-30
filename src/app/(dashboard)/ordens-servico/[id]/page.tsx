@@ -152,6 +152,12 @@ export default function VisualizarOSPage() {
   const handleAlterarStatus = async () => {
     if (!novoStatus || !os) return
 
+    // Confirmação extra para cancelamento
+    if (novoStatus === 'cancelada') {
+      const confirmar = window.confirm('Tem certeza que deseja CANCELAR esta OS? Esta ação não pode ser desfeita.')
+      if (!confirmar) return
+    }
+
     setIsSaving(true)
     try {
       const dados: { diagnostico?: string; solucao?: string; data_finalizacao?: string; data_entrega?: string } = {}
