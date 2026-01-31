@@ -5,8 +5,15 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  // Sem Supabase configurado, bloqueia acesso (redireciona para erro)
+  // Sem Supabase configurado, permite apenas rotas públicas
   if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder')) {
+    const publicRoutes = ['/login', '/recuperar-senha', '/cadastro', '/alterar-senha']
+    const isPublicRoute = publicRoutes.some(route =>
+      request.nextUrl.pathname.startsWith(route)
+    )
+    if (isPublicRoute) {
+      return NextResponse.next({ request })
+    }
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

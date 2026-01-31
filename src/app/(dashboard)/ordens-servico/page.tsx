@@ -314,10 +314,12 @@ export default function OrdensServicoPage() {
                                   Editar
                                 </DropdownMenuItem>
                               </Link>
-                              <DropdownMenuItem>
-                                <Printer className="mr-2 h-4 w-4" />
-                                Imprimir
-                              </DropdownMenuItem>
+                              <Link href={`/ordens-servico/${os.id}`}>
+                                <DropdownMenuItem>
+                                  <Printer className="mr-2 h-4 w-4" />
+                                  Imprimir
+                                </DropdownMenuItem>
+                              </Link>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

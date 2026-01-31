@@ -437,10 +437,12 @@ export default function NovaOSPage() {
                         )}
                       </div>
                     )}
-                    <Button variant="outline" className="w-full">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Cadastrar Novo Cliente
-                    </Button>
+                    <Link href="/clientes/novo">
+                      <Button variant="outline" className="w-full">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Cadastrar Novo Cliente
+                      </Button>
+                    </Link>
                   </div>
                 )}
               </CardContent>
