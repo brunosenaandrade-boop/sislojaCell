@@ -22,6 +22,9 @@ import {
   ScrollText,
   Shield,
   Building2,
+  ScrollText as ScrollTextAdmin,
+  UsersRound,
+  Bell,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -103,6 +106,18 @@ const menuItems: MenuItem[] = [
     title: 'Empresas',
     href: '/admin/empresas',
     icon: Building2,
+    requiredRole: 'superadmin',
+  },
+  {
+    title: 'Usuarios Global',
+    href: '/admin/usuarios',
+    icon: UsersRound,
+    requiredRole: 'superadmin',
+  },
+  {
+    title: 'Logs Global',
+    href: '/admin/logs',
+    icon: ScrollTextAdmin,
     requiredRole: 'superadmin',
   },
 ]
