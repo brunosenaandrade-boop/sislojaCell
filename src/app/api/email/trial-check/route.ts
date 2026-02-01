@@ -21,8 +21,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     }
 
-    // Validar secret do cron
-    const secret = request.headers.get('x-cron-secret')
+    // Validar secret do cron (obrigatório em produção)
+    const secret = request.headers.get('x-cron-secret') || request.headers.get('authorization')?.replace('Bearer ', '')
+    if (!CRON_SECRET && process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'CRON_SECRET não configurado' }, { status: 500 })
+    }
     if (CRON_SECRET && secret !== CRON_SECRET) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }

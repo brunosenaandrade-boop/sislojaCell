@@ -478,42 +478,36 @@ export default function CaixaPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-4">
-                  <div className="flex items-center gap-3 rounded-lg border p-3">
-                    <div className="w-10 h-10 rounded bg-green-100 flex items-center justify-center">
-                      <Banknote className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Dinheiro</div>
-                      <div className="font-bold">{formatCurrency(0)}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-lg border p-3">
-                    <div className="w-10 h-10 rounded bg-blue-100 flex items-center justify-center">
-                      <Smartphone className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">PIX</div>
-                      <div className="font-bold">{formatCurrency(0)}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-lg border p-3">
-                    <div className="w-10 h-10 rounded bg-purple-100 flex items-center justify-center">
-                      <CreditCard className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Debito</div>
-                      <div className="font-bold">{formatCurrency(0)}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-lg border p-3">
-                    <div className="w-10 h-10 rounded bg-orange-100 flex items-center justify-center">
-                      <CreditCard className="h-5 w-5 text-orange-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Credito</div>
-                      <div className="font-bold">{formatCurrency(0)}</div>
-                    </div>
-                  </div>
+                  {(() => {
+                    // Calcular totais por forma de pagamento das vendas
+                    const totais: Record<string, number> = { dinheiro: 0, pix: 0, debito: 0, credito: 0 }
+                    movimentacoes
+                      .filter(m => m.tipo === 'venda' && m.valor > 0)
+                      .forEach(m => {
+                        const forma = (m as unknown as { venda?: { forma_pagamento?: string } }).venda?.forma_pagamento || 'dinheiro'
+                        if (forma in totais) totais[forma] += m.valor
+                        else totais.dinheiro += m.valor
+                      })
+
+                    const formas = [
+                      { key: 'dinheiro', label: 'Dinheiro', icon: <Banknote className="h-5 w-5 text-green-600" />, bg: 'bg-green-100' },
+                      { key: 'pix', label: 'PIX', icon: <Smartphone className="h-5 w-5 text-blue-600" />, bg: 'bg-blue-100' },
+                      { key: 'debito', label: 'Debito', icon: <CreditCard className="h-5 w-5 text-purple-600" />, bg: 'bg-purple-100' },
+                      { key: 'credito', label: 'Credito', icon: <CreditCard className="h-5 w-5 text-orange-600" />, bg: 'bg-orange-100' },
+                    ]
+
+                    return formas.map(f => (
+                      <div key={f.key} className="flex items-center gap-3 rounded-lg border p-3">
+                        <div className={`w-10 h-10 rounded ${f.bg} flex items-center justify-center`}>
+                          {f.icon}
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">{f.label}</div>
+                          <div className="font-bold">{formatCurrency(totais[f.key])}</div>
+                        </div>
+                      </div>
+                    ))
+                  })()}
                 </div>
               </CardContent>
             </Card>

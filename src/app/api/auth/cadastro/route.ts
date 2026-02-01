@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServiceClient } from '../../superadmin/route-utils'
 import { emailService } from '@/services/email/resend'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 // ============================================
 // POST /api/auth/cadastro
 // Cadastro self-service com auto-confirmação de email
 // ============================================
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const TRIAL_DAYS = 7
+
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 5 cadastros por minuto por IP
+    const ip = getClientIp(request)
+    const rl = rateLimit(ip, { id: 'cadastro', limit: 5, windowSeconds: 60 })
+    if (!rl.success) {
+      return NextResponse.json({ error: 'Muitas tentativas. Aguarde um momento.' }, { status: 429 })
+    }
+
     const body = await request.json()
     const {
       nomeEmpresa,
@@ -33,6 +44,13 @@ export async function POST(request: NextRequest) {
     if (!nomeEmpresa || !nomeUsuario || !email || !senha) {
       return NextResponse.json(
         { error: 'Campos obrigatórios: nomeEmpresa, nomeUsuario, email, senha' },
+        { status: 400 }
+      )
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return NextResponse.json(
+        { error: 'Formato de email inválido' },
         { status: 400 }
       )
     }
@@ -71,9 +89,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 2. Criar empresa com trial de 7 dias
+    // 2. Criar empresa com trial
     const trialFim = new Date()
-    trialFim.setDate(trialFim.getDate() + 7)
+    trialFim.setDate(trialFim.getDate() + TRIAL_DAYS)
 
     const { data: empresa, error: empresaError } = await serviceClient
       .from('empresas')
@@ -122,30 +140,36 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Auto-setup: configurações + categorias padrão
-    await serviceClient.from('configuracoes').insert({
-      empresa_id: empresa.id,
-      impressora_termica: true,
-      largura_cupom: 80,
-      proxima_os: 1,
-      proxima_venda: 1,
-      mensagem_cupom: 'Obrigado pela preferência!',
-      mensagem_os_entrada: 'Guarde este comprovante.',
-      config_json: {},
-    })
+    // Se falhar, não faz rollback (conta funciona sem defaults)
+    try {
+      await serviceClient.from('configuracoes').insert({
+        empresa_id: empresa.id,
+        impressora_termica: true,
+        largura_cupom: 80,
+        proxima_os: 1,
+        proxima_venda: 1,
+        mensagem_cupom: 'Obrigado pela preferência!',
+        mensagem_os_entrada: 'Guarde este comprovante.',
+        config_json: {},
+      })
 
-    await serviceClient.from('categorias_produtos').insert([
-      { empresa_id: empresa.id, nome: 'Acessórios' },
-      { empresa_id: empresa.id, nome: 'Peças' },
-      { empresa_id: empresa.id, nome: 'Capas' },
-      { empresa_id: empresa.id, nome: 'Carregadores' },
-      { empresa_id: empresa.id, nome: 'Fones de Ouvido' },
-    ])
+      await serviceClient.from('categorias_produtos').insert([
+        { empresa_id: empresa.id, nome: 'Acessórios' },
+        { empresa_id: empresa.id, nome: 'Peças' },
+        { empresa_id: empresa.id, nome: 'Capas' },
+        { empresa_id: empresa.id, nome: 'Carregadores' },
+        { empresa_id: empresa.id, nome: 'Fones de Ouvido' },
+      ])
 
-    await serviceClient.from('categorias_servicos').insert([
-      { empresa_id: empresa.id, nome: 'Celular' },
-      { empresa_id: empresa.id, nome: 'Videogame' },
-      { empresa_id: empresa.id, nome: 'Tablet' },
-    ])
+      await serviceClient.from('categorias_servicos').insert([
+        { empresa_id: empresa.id, nome: 'Celular' },
+        { empresa_id: empresa.id, nome: 'Videogame' },
+        { empresa_id: empresa.id, nome: 'Tablet' },
+      ])
+    } catch {
+      // Defaults opcionais - conta funciona sem eles
+      console.warn('[Cadastro] Erro ao criar defaults para empresa', empresa.id)
+    }
 
     // 5. Se foi indicada, registrar indicação
     if (codigoIndicacao) {
@@ -158,7 +182,7 @@ export async function POST(request: NextRequest) {
       if (empresaOrigem) {
         const isSelf = empresaOrigem.id === empresa.id
         const sameEmail = empresaOrigem.email === email
-        const sameCnpj = cnpj && empresaOrigem.cnpj && empresaOrigem.cnpj === cnpj
+        const sameCnpj = !!(cnpj && empresaOrigem.cnpj && empresaOrigem.cnpj === cnpj)
 
         if (!isSelf && !sameEmail && !sameCnpj) {
           const { data: existente } = await serviceClient

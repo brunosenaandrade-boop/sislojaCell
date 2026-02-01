@@ -1,5 +1,11 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Política de Privacidade - SisLoja Cell',
+  description: 'Política de privacidade e proteção de dados do SisLoja Cell. Em conformidade com a LGPD.',
+}
 
 export default function PrivacidadePage() {
   return (

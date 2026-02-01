@@ -5,8 +5,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 export function createClient() {
   if (!supabaseUrl || !supabaseKey) {
-    // Durante o build ou sem env vars, retorna null
-    return null as unknown as ReturnType<typeof createBrowserClient>
+    throw new Error('Variáveis de ambiente NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY são obrigatórias')
   }
 
   return createBrowserClient(supabaseUrl, supabaseKey)
@@ -17,7 +16,7 @@ let client: ReturnType<typeof createBrowserClient> | null = null
 
 export function getClient() {
   if (!supabaseUrl || !supabaseKey) {
-    return null as unknown as ReturnType<typeof createBrowserClient>
+    throw new Error('Variáveis de ambiente NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY são obrigatórias')
   }
 
   // No servidor, sempre cria um novo

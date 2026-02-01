@@ -201,7 +201,7 @@ function PlanosContent() {
 
   const handleCopyReferral = () => {
     const code = empresa?.codigo_indicacao
-    if (code) {
+    if (code && typeof window !== 'undefined') {
       const url = `${window.location.origin}/cadastro?ref=${code}`
       navigator.clipboard.writeText(url)
       setCopied(true)
@@ -386,7 +386,7 @@ function PlanosContent() {
             </p>
             <div className="flex items-center gap-2">
               <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm">
-                {window.location.origin}/cadastro?ref={empresa.codigo_indicacao}
+                {typeof window !== 'undefined' ? window.location.origin : ''}/cadastro?ref={empresa.codigo_indicacao}
               </code>
               <Button variant="outline" size="sm" onClick={handleCopyReferral}>
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

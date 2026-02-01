@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { getServiceClient } from '../../superadmin/route-utils'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 // ============================================
 // POST /api/auth/criar-usuario
@@ -30,6 +31,13 @@ async function getAuthUser() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 10 requests por minuto por IP
+    const ip = getClientIp(request)
+    const rl = rateLimit(ip, { id: 'criar-usuario', limit: 10, windowSeconds: 60 })
+    if (!rl.success) {
+      return NextResponse.json({ error: 'Muitas tentativas. Aguarde um momento.' }, { status: 429 })
+    }
+
     // Verificar autenticação
     const user = await getAuthUser()
     if (!user) {

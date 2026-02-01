@@ -1,5 +1,11 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Termos de Uso - SisLoja Cell',
+  description: 'Termos de uso do SisLoja Cell - Sistema de gestão para lojas de celular.',
+}
 
 export default function TermosPage() {
   return (

@@ -40,12 +40,14 @@ export async function POST(request: NextRequest) {
     const supabase = getServiceClient()
 
     // 2.13 - Registrar webhook no log
-    await supabase.from('webhooks_log').insert({
+    const { data: logEntry } = await supabase.from('webhooks_log').insert({
       origem: 'asaas',
       evento,
       payload,
       processado: false,
-    })
+    }).select('id').single()
+
+    const logId = logEntry?.id
 
     // Processar evento
     let processado = false
@@ -93,13 +95,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Marcar como processado
-    if (processado) {
+    if (processado && logId) {
       await supabase
         .from('webhooks_log')
         .update({ processado: true })
-        .eq('evento', evento)
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .eq('id', logId)
     }
 
     return NextResponse.json({ received: true })

@@ -132,23 +132,31 @@ export async function POST() {
 
     const db = getServiceClient()
 
-    // Gerar código único
+    // Gerar código único com retry
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
     let codigo = ''
-    for (let i = 0; i < 6; i++) {
-      codigo += chars[Math.floor(Math.random() * chars.length)]
-    }
-    codigo = `REF-${codigo}`
+    let tentativas = 0
+    const MAX_TENTATIVAS = 5
 
-    // Verificar unicidade
-    const { data: existente } = await db
-      .from('empresas')
-      .select('id')
-      .eq('codigo_indicacao', codigo)
-      .maybeSingle()
+    do {
+      let raw = ''
+      for (let i = 0; i < 6; i++) {
+        raw += chars[Math.floor(Math.random() * chars.length)]
+      }
+      codigo = `REF-${raw}`
 
-    if (existente) {
-      codigo = `REF-${codigo.slice(4)}${chars[Math.floor(Math.random() * chars.length)]}`
+      const { data: existente } = await db
+        .from('empresas')
+        .select('id')
+        .eq('codigo_indicacao', codigo)
+        .maybeSingle()
+
+      if (!existente) break
+      tentativas++
+    } while (tentativas < MAX_TENTATIVAS)
+
+    if (tentativas >= MAX_TENTATIVAS) {
+      return NextResponse.json({ error: 'Erro ao gerar código. Tente novamente.' }, { status: 500 })
     }
 
     // Salvar

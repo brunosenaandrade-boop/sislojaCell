@@ -231,4 +231,37 @@ export const asaasService = {
       `/customers?externalReference=${externalReference}`
     )
   },
+
+  // Registrar webhook no Asaas
+  async registrarWebhook(dados: {
+    name: string
+    url: string
+    email: string
+    apiVersion?: number
+    enabled: boolean
+    interrupted: boolean
+    authToken: string
+    sendType: 'SEQUENTIALLY' | 'NON_SEQUENTIALLY'
+    events: string[]
+  }): Promise<AsaasResponse<{ id: string; url: string; enabled: boolean; events: string[] }>> {
+    return asaasRequest<{ id: string; url: string; enabled: boolean; events: string[] }>('/webhooks', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: dados.name,
+        url: dados.url,
+        email: dados.email,
+        apiVersion: dados.apiVersion || 3,
+        enabled: dados.enabled,
+        interrupted: dados.interrupted,
+        authToken: dados.authToken,
+        sendType: dados.sendType,
+        events: dados.events,
+      }),
+    })
+  },
+
+  // Listar webhooks configurados
+  async listarWebhooks(): Promise<AsaasResponse<{ data: { id: string; url: string; enabled: boolean; events: string[] }[] }>> {
+    return asaasRequest<{ data: { id: string; url: string; enabled: boolean; events: string[] }[] }>('/webhooks')
+  },
 }

@@ -5,6 +5,12 @@ import {
   ArrowLeft,
   ChevronDown,
 } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Preços - SisLoja Cell',
+  description: 'Plano anual R$ 1.800 ou 12x de R$ 150 no cartão. Trial grátis de 7 dias sem cartão de crédito. Sistema completo para lojas de celular.',
+}
 
 export default function PrecosPage() {
   return (
@@ -138,8 +144,8 @@ export default function PrecosPage() {
         {/* COMPARISON TABLE */}
         <div className="mx-auto mt-16 max-w-3xl">
           <h2 className="mb-8 text-center text-2xl font-bold">Comparação detalhada</h2>
-          <div className="overflow-hidden rounded-xl border">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-xl border">
+            <table className="w-full min-w-[500px] text-sm">
               <thead>
                 <tr className="border-b bg-gray-50">
                   <th className="px-6 py-4 text-left font-medium text-gray-700">Recurso</th>

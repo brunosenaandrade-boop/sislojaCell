@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
     const checkoutUrl = primeiraFatura?.invoiceUrl || null
 
     // Criar registro da assinatura no banco
-    await serviceClient.from('assinaturas').insert({
+    const { error: assinaturaDbErr } = await serviceClient.from('assinaturas').insert({
       empresa_id: empresa.id,
       plano_id: plano.id,
       status: 'pending',
@@ -170,9 +170,13 @@ export async function POST(request: NextRequest) {
       asaas_customer_id: asaasCustomerId,
     })
 
+    if (assinaturaDbErr) {
+      console.error('[Checkout] Erro ao salvar assinatura no banco:', assinaturaDbErr.message)
+    }
+
     // Registrar primeira fatura no banco
     if (primeiraFatura) {
-      await serviceClient.from('faturas').insert({
+      const { error: faturaDbErr } = await serviceClient.from('faturas').insert({
         empresa_id: empresa.id,
         valor,
         status: 'pending',
@@ -181,6 +185,10 @@ export async function POST(request: NextRequest) {
         link_boleto: primeiraFatura.bankSlipUrl || null,
         link_invoice: primeiraFatura.invoiceUrl || null,
       })
+
+      if (faturaDbErr) {
+        console.error('[Checkout] Erro ao salvar fatura no banco:', faturaDbErr.message)
+      }
     }
 
     // Atualizar plano da empresa
