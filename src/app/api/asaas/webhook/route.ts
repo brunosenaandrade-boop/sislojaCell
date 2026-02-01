@@ -287,14 +287,24 @@ async function handlePaymentOverdue(
   if (!empresa) return false
 
   // Se tem meses bônus, consumir um em vez de suspender
+  // Usa .gt() como guard atômico para evitar meses_bonus < 0 sob concorrência
   if (empresa.meses_bonus > 0) {
-    await supabase
+    const { count } = await supabase
       .from('empresas')
       .update({
         meses_bonus: empresa.meses_bonus - 1,
         status_assinatura: 'active',
       })
       .eq('id', empresa.id)
+      .gt('meses_bonus', 0)
+
+    // Se nenhuma row foi atualizada, o bônus já foi consumido por outro request
+    if (count === 0) {
+      await supabase
+        .from('empresas')
+        .update({ status_assinatura: 'overdue' })
+        .eq('id', empresa.id)
+    }
   } else {
     await supabase
       .from('empresas')
@@ -325,11 +335,25 @@ async function handlePaymentCancelled(
   if (!payment) return false
 
   const paymentId = payment.id as string
+  const customerId = payment.customer as string | undefined
 
   await supabase
     .from('faturas')
     .update({ status: 'cancelled' })
     .eq('asaas_payment_id', paymentId)
+
+  // Cancelar indicação pendente/aguardando se a empresa foi indicada
+  if (customerId) {
+    const { data: empresa } = await supabase
+      .from('empresas')
+      .select('id')
+      .eq('asaas_customer_id', customerId)
+      .single()
+
+    if (empresa) {
+      await cancelarIndicacaoPendente(supabase, empresa.id)
+    }
+  }
 
   return true
 }
@@ -373,58 +397,76 @@ async function verificarIndicacaoQualificada(
     )
 
     if (diasDesdeContratacao >= 30) {
-      // Qualificada! Creditar mês bônus
-      await supabase
-        .from('indicacoes')
-        .update({
-          status: 'qualificada',
-          data_qualificacao: agora.toISOString(),
-        })
-        .eq('id', indicacao.id)
-
-      // Incrementar meses_bonus da empresa origem
-      const { data: empresaOrigem } = await supabase
-        .from('empresas')
-        .select('id, meses_bonus')
-        .eq('id', indicacao.empresa_origem_id)
-        .single()
-
-      if (empresaOrigem) {
-        await supabase
-          .from('empresas')
-          .update({ meses_bonus: (empresaOrigem.meses_bonus || 0) + 1 })
-          .eq('id', empresaOrigem.id)
-
-        // Marcar como recompensada
-        await supabase
-          .from('indicacoes')
-          .update({
-            status: 'recompensada',
-            data_recompensa: agora.toISOString(),
-          })
-          .eq('id', indicacao.id)
-
-        // 10.8 - Email: indicação bem-sucedida
-        const { data: origemFull } = await supabase
-          .from('empresas')
-          .select('email, nome, nome_fantasia')
-          .eq('id', empresaOrigem.id)
-          .single()
-
-        const { data: indicadaFull } = await supabase
-          .from('empresas')
-          .select('nome, nome_fantasia')
-          .eq('id', empresaIndicadaId)
-          .single()
-
-        if (origemFull?.email) {
-          emailService.indicacaoSucesso(
-            origemFull.email,
-            origemFull.nome_fantasia || origemFull.nome,
-            indicadaFull?.nome_fantasia || indicadaFull?.nome || 'uma loja'
-          ).catch(() => {})
-        }
-      }
+      await qualificarERecompensarIndicacao(supabase, indicacao, empresaIndicadaId)
     }
   }
+}
+
+// Qualificar e recompensar indicação em operação única (evita estado intermediário)
+async function qualificarERecompensarIndicacao(
+  supabase: SupabaseClient,
+  indicacao: { id: string; empresa_origem_id: string },
+  empresaIndicadaId: string
+): Promise<void> {
+  const agora = new Date().toISOString()
+
+  // Marcar como recompensada diretamente (pula estado 'qualificada' intermediário)
+  const { error: updateErr } = await supabase
+    .from('indicacoes')
+    .update({
+      status: 'recompensada',
+      data_qualificacao: agora,
+      data_recompensa: agora,
+    })
+    .eq('id', indicacao.id)
+    .eq('status', 'aguardando') // Guard: só atualiza se ainda estiver aguardando
+
+  if (updateErr) return
+
+  // Incrementar meses_bonus da empresa origem
+  const { data: empresaOrigem } = await supabase
+    .from('empresas')
+    .select('id, meses_bonus')
+    .eq('id', indicacao.empresa_origem_id)
+    .single()
+
+  if (empresaOrigem) {
+    await supabase
+      .from('empresas')
+      .update({ meses_bonus: (empresaOrigem.meses_bonus || 0) + 1 })
+      .eq('id', empresaOrigem.id)
+
+    // 10.8 - Email: indicação bem-sucedida
+    const { data: origemFull } = await supabase
+      .from('empresas')
+      .select('email, nome, nome_fantasia')
+      .eq('id', empresaOrigem.id)
+      .single()
+
+    const { data: indicadaFull } = await supabase
+      .from('empresas')
+      .select('nome, nome_fantasia')
+      .eq('id', empresaIndicadaId)
+      .single()
+
+    if (origemFull?.email) {
+      emailService.indicacaoSucesso(
+        origemFull.email,
+        origemFull.nome_fantasia || origemFull.nome,
+        indicadaFull?.nome_fantasia || indicadaFull?.nome || 'uma loja'
+      ).catch(() => {})
+    }
+  }
+}
+
+// Cancelar indicação quando empresa indicada cancela/pede reembolso
+async function cancelarIndicacaoPendente(
+  supabase: SupabaseClient,
+  empresaIndicadaId: string
+): Promise<void> {
+  await supabase
+    .from('indicacoes')
+    .update({ status: 'cancelada' })
+    .eq('empresa_indicada_id', empresaIndicadaId)
+    .in('status', ['pendente', 'aguardando'])
 }
