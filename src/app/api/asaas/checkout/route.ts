@@ -156,8 +156,11 @@ export async function POST(request: NextRequest) {
     const { data: faturas } = await asaasService.listarFaturas(subscription.id)
     const primeiraFatura = faturas?.data?.[0]
 
-    // URL de pagamento: invoice URL da primeira fatura
-    const checkoutUrl = primeiraFatura?.invoiceUrl || null
+    // URL de pagamento: invoice URL da primeira fatura, fallback para link direto Asaas
+    const invoiceUrl = primeiraFatura?.invoiceUrl || null
+    const checkoutUrl = invoiceUrl
+      || `${process.env.ASAAS_API_URL?.replace('/api/v3', '')}/c/${subscription.id}`
+      || null
 
     // Criar registro da assinatura no banco
     const { error: assinaturaDbErr } = await serviceClient.from('assinaturas').insert({

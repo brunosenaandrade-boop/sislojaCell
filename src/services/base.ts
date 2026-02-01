@@ -22,9 +22,9 @@ export interface ServiceResult<T> {
   error: string | null
 }
 
-// Sanitizar input de busca para uso em filtros Supabase
+// Sanitizar input de busca para uso em filtros Supabase (ILIKE wildcards)
 export function sanitizeSearch(input: string): string {
-  return input.replace(/[%_\\'"()]/g, '').trim().slice(0, 100)
+  return input.replace(/[%_\\]/g, '').trim().slice(0, 100)
 }
 
 export async function handleQuery<T>(

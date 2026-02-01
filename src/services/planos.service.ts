@@ -91,7 +91,7 @@ export const planosService = {
   // Limite -1 = ilimitado
   async verificarLimite(recurso: Recurso, empresaId?: string): Promise<string | null> {
     const { data: usage, error } = await this.getUsage(empresaId)
-    if (error || !usage) return null // Em caso de erro, não bloqueia (fail-open)
+    if (error || !usage) return 'Não foi possível verificar limites do plano. Tente novamente.'
 
     switch (recurso) {
       case 'usuarios': {

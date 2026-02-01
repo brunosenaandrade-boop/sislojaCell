@@ -37,12 +37,15 @@ export async function PATCH(request: NextRequest) {
       : new Date()
     base.setDate(base.getDate() + dias)
 
+    // Só muda status para trial se não estiver active
+    const updateData: Record<string, unknown> = { trial_fim: base.toISOString() }
+    if (empresa.status_assinatura !== 'active') {
+      updateData.status_assinatura = 'trial'
+    }
+
     await db
       .from('empresas')
-      .update({
-        trial_fim: base.toISOString(),
-        status_assinatura: 'trial',
-      })
+      .update(updateData)
       .eq('id', empresa_id)
 
     return NextResponse.json({

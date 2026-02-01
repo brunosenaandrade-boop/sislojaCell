@@ -39,6 +39,26 @@ export async function POST(request: NextRequest) {
 
     const supabase = getServiceClient()
 
+    // Idempotency: verificar se este evento+payment já foi processado
+    const paymentData = payload.payment as Record<string, unknown> | undefined
+    const idempotencyKey = paymentData?.id ? `${evento}:${paymentData.id}` : null
+
+    if (idempotencyKey) {
+      const { data: jaProcessado } = await supabase
+        .from('webhooks_log')
+        .select('id')
+        .eq('origem', 'asaas')
+        .eq('evento', evento)
+        .eq('processado', true)
+        .contains('payload', { payment: { id: paymentData!.id } })
+        .limit(1)
+        .maybeSingle()
+
+      if (jaProcessado) {
+        return NextResponse.json({ received: true, duplicate: true })
+      }
+    }
+
     // 2.13 - Registrar webhook no log
     const { data: logEntry } = await supabase.from('webhooks_log').insert({
       origem: 'asaas',
@@ -82,9 +102,12 @@ export async function POST(request: NextRequest) {
         processado = await handlePaymentOverdue(supabase, payload)
         break
       }
-      case 'PAYMENT_DELETED':
-      case 'PAYMENT_REFUNDED': {
+      case 'PAYMENT_DELETED': {
         processado = await handlePaymentCancelled(supabase, payload)
+        break
+      }
+      case 'PAYMENT_REFUNDED': {
+        processado = await handlePaymentRefunded(supabase, payload)
         break
       }
 
@@ -457,6 +480,43 @@ async function qualificarERecompensarIndicacao(
       ).catch(() => {})
     }
   }
+}
+
+async function handlePaymentRefunded(
+  supabase: SupabaseClient,
+  payload: Record<string, unknown>
+): Promise<boolean> {
+  const payment = payload.payment as Record<string, unknown> | undefined
+  if (!payment) return false
+
+  const paymentId = payment.id as string
+  const customerId = payment.customer as string | undefined
+
+  // Marcar fatura como cancelada
+  await supabase
+    .from('faturas')
+    .update({ status: 'cancelled' })
+    .eq('asaas_payment_id', paymentId)
+
+  if (!customerId) return true
+
+  // Buscar empresa e suspender (reembolso = investigar)
+  const { data: empresa } = await supabase
+    .from('empresas')
+    .select('id, email, nome, nome_fantasia')
+    .eq('asaas_customer_id', customerId)
+    .single()
+
+  if (empresa) {
+    await supabase
+      .from('empresas')
+      .update({ status_assinatura: 'suspended' })
+      .eq('id', empresa.id)
+
+    await cancelarIndicacaoPendente(supabase, empresa.id)
+  }
+
+  return true
 }
 
 // Cancelar indicação quando empresa indicada cancela/pede reembolso

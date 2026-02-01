@@ -29,6 +29,18 @@ export const caixaService = {
     const empresaId = getEmpresaId()
     const usuarioId = getUsuarioId()
 
+    // Verificar se já existe caixa aberto
+    const { data: existente } = await supabase
+      .from('caixa')
+      .select('id')
+      .eq('empresa_id', empresaId)
+      .eq('status', 'aberto')
+      .maybeSingle()
+
+    if (existente) {
+      return { data: null, error: 'Já existe um caixa aberto. Feche-o antes de abrir outro.' }
+    }
+
     return handleQuery(() =>
       supabase
         .from('caixa')
@@ -95,16 +107,33 @@ export const caixaService = {
     const empresaId = getEmpresaId()
     const usuarioId = getUsuarioId()
 
-    // Validar que o caixa pertence à empresa
+    // Validar que o caixa pertence à empresa e está aberto
     const supabase = getSupabase()
     const { data: caixa } = await supabase
       .from('caixa')
-      .select('id')
+      .select('id, valor_abertura, status')
       .eq('id', mov.caixa_id)
       .eq('empresa_id', empresaId)
       .single()
 
     if (!caixa) return { data: null, error: 'Caixa não encontrado' }
+    if (caixa.status !== 'aberto') return { data: null, error: 'Caixa não está aberto' }
+
+    // Validar saldo para sangrias
+    if (mov.tipo === 'sangria') {
+      const { data: movimentacoes } = await supabase
+        .from('movimentacoes_caixa')
+        .select('tipo, valor')
+        .eq('caixa_id', mov.caixa_id)
+
+      const saldo = (caixa.valor_abertura || 0) + (movimentacoes || []).reduce((acc, m) => {
+        return acc + (m.tipo === 'sangria' ? -m.valor : m.valor)
+      }, 0)
+
+      if (mov.valor > saldo) {
+        return { data: null, error: `Saldo insuficiente. Saldo atual: R$ ${saldo.toFixed(2)}` }
+      }
+    }
 
     return handleQuery(() =>
       supabase
