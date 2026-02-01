@@ -66,9 +66,15 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && request.nextUrl.pathname === '/login') {
-    // Usuário autenticado tentando acessar login, redireciona para dashboard
+    // Usuário autenticado tentando acessar login - verificar se é superadmin
+    const { data: usuarioLogin } = await supabase
+      .from('usuarios')
+      .select('perfil')
+      .eq('auth_id', user.id)
+      .single()
+
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = usuarioLogin?.perfil === 'superadmin' ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
   }
 
@@ -78,17 +84,33 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   )
 
-  if (user && isAdminRoute) {
+  // Rotas restritas a superadmin
+  const superadminRoutes = ['/admin']
+  const isSuperadminRoute = superadminRoutes.some(route =>
+    request.nextUrl.pathname.startsWith(route)
+  )
+
+  if (user && (isAdminRoute || isSuperadminRoute)) {
     const { data: usuario } = await supabase
       .from('usuarios')
       .select('perfil')
       .eq('auth_id', user.id)
       .single()
 
-    if (!usuario || usuario.perfil !== 'admin') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
+    if (isSuperadminRoute) {
+      // /admin requer superadmin
+      if (!usuario || usuario.perfil !== 'superadmin') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
+    } else if (isAdminRoute) {
+      // /configuracoes requer admin ou superadmin
+      if (!usuario || (usuario.perfil !== 'admin' && usuario.perfil !== 'superadmin')) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
     }
   }
 

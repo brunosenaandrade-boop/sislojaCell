@@ -56,7 +56,7 @@ export default function LoginPage() {
       await logger.audit('Login realizado', { usuario_id: data.usuario.id }, 'login')
 
       toast.success('Login realizado com sucesso!')
-      router.push('/dashboard')
+      router.push(data.usuario.perfil === 'superadmin' ? '/admin' : '/dashboard')
     } catch (error: unknown) {
       toast.error('Erro ao fazer login')
       await logger.error('Falha no login', error, 'auth', 'login')

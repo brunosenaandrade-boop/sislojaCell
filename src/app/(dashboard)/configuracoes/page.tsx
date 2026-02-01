@@ -64,7 +64,7 @@ interface UsuarioItem {
   id: string
   nome: string
   email: string
-  perfil: 'admin' | 'funcionario'
+  perfil: 'admin' | 'funcionario' | 'superadmin'
   ativo: boolean
   ultimo_acesso: string
 }

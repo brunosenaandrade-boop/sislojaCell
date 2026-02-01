@@ -10,10 +10,14 @@ interface AuthState {
   usuario: Usuario | null
   empresa: Empresa | null
   isLoading: boolean
+  isImpersonating: boolean
+  originalEmpresa: Empresa | null
   setUsuario: (usuario: Usuario | null) => void
   setEmpresa: (empresa: Empresa | null) => void
   setLoading: (loading: boolean) => void
   logout: () => void
+  startImpersonation: (empresa: Empresa) => void
+  stopImpersonation: () => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -22,16 +26,30 @@ export const useAuthStore = create<AuthState>()(
       usuario: null,
       empresa: null,
       isLoading: true,
+      isImpersonating: false,
+      originalEmpresa: null,
       setUsuario: (usuario) => set({ usuario }),
       setEmpresa: (empresa) => set({ empresa }),
       setLoading: (isLoading) => set({ isLoading }),
-      logout: () => set({ usuario: null, empresa: null }),
+      logout: () => set({ usuario: null, empresa: null, isImpersonating: false, originalEmpresa: null }),
+      startImpersonation: (empresa) => set((state) => ({
+        isImpersonating: true,
+        originalEmpresa: state.empresa,
+        empresa,
+      })),
+      stopImpersonation: () => set((state) => ({
+        isImpersonating: false,
+        empresa: state.originalEmpresa,
+        originalEmpresa: null,
+      })),
     }),
     {
       name: 'auth-storage',
       partialize: (state) => ({
         usuario: state.usuario,
         empresa: state.empresa,
+        isImpersonating: state.isImpersonating,
+        originalEmpresa: state.originalEmpresa,
       }),
     }
   )

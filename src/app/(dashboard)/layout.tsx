@@ -12,8 +12,10 @@ import { TutorialProvider } from '@/components/tutorial/TutorialProvider'
 import { TutorialOverlay } from '@/components/tutorial/TutorialOverlay'
 import { TutorialCard } from '@/components/tutorial/TutorialCard'
 import { HelpButton } from '@/components/tutorial/HelpButton'
+import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner'
 
 const rotasRestritas = ['/configuracoes', '/relatorios', '/logs']
+const rotasSuperadmin = ['/admin']
 
 export default function DashboardLayout({
   children,
@@ -21,7 +23,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const { sidebarOpen } = useUIStore()
-  const { isAdmin } = usePermissao()
+  const { isAdmin, isSuperadmin } = usePermissao()
   const pathname = usePathname()
   const router = useRouter()
 
@@ -33,20 +35,26 @@ export default function DashboardLayout({
     if (!isAdmin && rotasRestritas.some((rota) => pathname.startsWith(rota))) {
       router.replace('/dashboard')
     }
-  }, [pathname, isAdmin, router])
+    if (!isSuperadmin && rotasSuperadmin.some((rota) => pathname.startsWith(rota))) {
+      router.replace('/dashboard')
+    }
+  }, [pathname, isAdmin, isSuperadmin, router])
 
   return (
     <TutorialProvider>
       <div className="flex h-screen overflow-hidden bg-muted/30">
         <Sidebar />
-        <main
-          className={cn(
-            'flex-1 overflow-y-auto transition-all duration-300',
-            sidebarOpen ? 'lg:ml-0' : 'lg:ml-0'
-          )}
-        >
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <ImpersonationBanner />
+          <main
+            className={cn(
+              'flex-1 overflow-y-auto transition-all duration-300',
+              sidebarOpen ? 'lg:ml-0' : 'lg:ml-0'
+            )}
+          >
+            {children}
+          </main>
+        </div>
         <Toaster position="top-right" richColors />
         <TutorialOverlay />
         <TutorialCard />

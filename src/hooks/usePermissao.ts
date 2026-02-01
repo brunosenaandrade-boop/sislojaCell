@@ -4,14 +4,17 @@ export function usePermissao() {
   const { usuario } = useAuthStore()
 
   const perfil = usuario?.perfil || 'funcionario'
-  const isAdmin = perfil === 'admin'
+  const isSuperadmin = perfil === 'superadmin'
+  const isAdmin = perfil === 'admin' || isSuperadmin
 
   return {
     isAdmin,
+    isSuperadmin,
     podeAcessarConfiguracoes: isAdmin,
     podeAcessarRelatorios: isAdmin,
     podeAcessarLogs: isAdmin,
     podeExcluirRegistros: isAdmin,
     podeGerenciarUsuarios: isAdmin,
+    podeAcessarAdmin: isSuperadmin,
   }
 }

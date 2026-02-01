@@ -20,6 +20,8 @@ import {
   ChevronLeft,
   Menu,
   ScrollText,
+  Shield,
+  Building2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -29,7 +31,7 @@ interface MenuItem {
   title: string
   href: string
   icon: React.ComponentType<{ className?: string }>
-  requiredRole?: 'admin'
+  requiredRole?: 'admin' | 'superadmin'
 }
 
 const menuItems: MenuItem[] = [
@@ -91,22 +93,37 @@ const menuItems: MenuItem[] = [
     icon: Settings,
     requiredRole: 'admin',
   },
+  {
+    title: 'Painel Admin',
+    href: '/admin',
+    icon: Shield,
+    requiredRole: 'superadmin',
+  },
+  {
+    title: 'Empresas',
+    href: '/admin/empresas',
+    icon: Building2,
+    requiredRole: 'superadmin',
+  },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
   const { usuario, empresa, logout } = useAuthStore()
   const { sidebarOpen, toggleSidebar } = useUIStore()
-  const { isAdmin } = usePermissao()
+  const { isAdmin, isSuperadmin } = usePermissao()
 
   const handleLogout = () => {
     logout()
     window.location.href = '/login'
   }
 
-  const filteredMenuItems = menuItems.filter(
-    (item) => !item.requiredRole || isAdmin
-  )
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (!item.requiredRole) return true
+    if (item.requiredRole === 'superadmin') return isSuperadmin
+    if (item.requiredRole === 'admin') return isAdmin
+    return false
+  })
 
   return (
     <>

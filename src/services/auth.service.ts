@@ -21,6 +21,21 @@ export const authService = {
       if (usuarioError) return { data: null, error: usuarioError.message }
       if (!usuario) return { data: null, error: 'Usuário não encontrado no sistema' }
 
+      // Superadmin não tem empresa vinculada
+      if (usuario.perfil === 'superadmin') {
+        const empresaPlaceholder = {
+          id: 'superadmin',
+          nome: 'Plataforma',
+          nome_fantasia: 'Painel Administrativo',
+          cor_primaria: '#dc2626',
+          cor_secundaria: '#991b1b',
+          ativo: true,
+          created_at: '',
+          updated_at: '',
+        }
+        return { data: { usuario, empresa: empresaPlaceholder as any }, error: null }
+      }
+
       const { data: empresa, error: empresaError } = await supabase
         .from('empresas')
         .select('*')

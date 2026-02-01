@@ -29,11 +29,11 @@ export interface Empresa {
 export interface Usuario {
   id: string
   auth_id?: string
-  empresa_id: string
+  empresa_id?: string | null
   nome: string
   email: string
   telefone?: string
-  perfil: 'admin' | 'funcionario'
+  perfil: 'admin' | 'funcionario' | 'superadmin'
   ativo: boolean
   ultimo_acesso?: string
   created_at: string
@@ -350,4 +350,29 @@ export interface RelatorioOS {
   os_canceladas: number
   valor_total: number
   tempo_medio_atendimento?: number
+}
+
+// ============================================
+// TIPOS SUPERADMIN
+// ============================================
+
+export interface EmpresaStats {
+  id: string
+  nome: string
+  nome_fantasia?: string
+  cnpj?: string
+  ativo: boolean
+  created_at: string
+  usuarios_count: number
+  os_count: number
+  vendas_count: number
+}
+
+export interface PlataformaStats {
+  total_empresas: number
+  empresas_ativas: number
+  total_usuarios: number
+  total_os: number
+  total_vendas: number
+  valor_total_vendas: number
 }
