@@ -1,5 +1,6 @@
 import { getSupabase, getEmpresaId, getUsuarioId, sanitizeSearch } from './base'
 import type { Venda, ItemVenda } from '@/types/database'
+import { planosService } from './planos.service'
 
 export const vendasService = {
   // ============================================
@@ -24,6 +25,10 @@ export const vendasService = {
       lucro_item: number
     }>
   }): Promise<{ data: Venda | null; error: string | null }> {
+    // Verificar limite do plano
+    const limiteErro = await planosService.verificarLimite('vendas_mes')
+    if (limiteErro) return { data: null, error: limiteErro }
+
     const supabase = getSupabase()
     const empresaId = getEmpresaId()
     const usuarioId = getUsuarioId()
@@ -116,6 +121,7 @@ export const vendasService = {
 
   async buscarPorId(id: string): Promise<{ data: Venda | null; error: string | null }> {
     const supabase = getSupabase()
+    const empresaId = getEmpresaId()
 
     const { data, error } = await supabase
       .from('vendas')
@@ -126,6 +132,7 @@ export const vendasService = {
         itens:itens_venda(*, produto:produtos(id,nome,codigo))
       `)
       .eq('id', id)
+      .eq('empresa_id', empresaId)
       .single()
 
     return { data, error: error?.message ?? null }

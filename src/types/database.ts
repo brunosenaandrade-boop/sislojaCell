@@ -22,6 +22,16 @@ export interface Empresa {
   cor_primaria: string
   cor_secundaria: string
   ativo: boolean
+  // Campos SaaS
+  asaas_customer_id?: string
+  plano: string
+  status_assinatura: StatusAssinatura
+  trial_fim?: string
+  assinatura_id?: string
+  codigo_indicacao?: string
+  indicada_por?: string
+  meses_bonus: number
+  onboarding_completo: boolean
   created_at: string
   updated_at: string
 }
@@ -362,6 +372,9 @@ export interface EmpresaStats {
   nome_fantasia?: string
   cnpj?: string
   ativo: boolean
+  plano: string
+  status_assinatura: StatusAssinatura
+  trial_fim?: string
   created_at: string
   usuarios_count: number
   os_count: number
@@ -375,4 +388,111 @@ export interface PlataformaStats {
   total_os: number
   total_vendas: number
   valor_total_vendas: number
+}
+
+// ============================================
+// TIPOS SAAS
+// ============================================
+
+export type StatusAssinatura = 'trial' | 'active' | 'overdue' | 'suspended' | 'cancelled' | 'expired'
+
+export type CicloAssinatura = 'MONTHLY' | 'QUARTERLY' | 'SEMIANNUALLY' | 'YEARLY'
+
+export type StatusFatura = 'pending' | 'confirmed' | 'received' | 'overdue' | 'refunded' | 'cancelled'
+
+export type StatusIndicacao = 'pendente' | 'aguardando' | 'qualificada' | 'recompensada' | 'cancelada'
+
+export interface Plano {
+  id: string
+  nome: string
+  slug: string
+  descricao?: string
+  preco_mensal: number
+  preco_anual: number
+  max_usuarios: number
+  max_produtos: number
+  max_os_mes: number
+  max_vendas_mes: number
+  features: Record<string, boolean | string>
+  destaque: boolean
+  ativo: boolean
+  ordem: number
+  created_at: string
+  updated_at: string
+}
+
+export interface Assinatura {
+  id: string
+  empresa_id: string
+  plano_id: string
+  status: StatusAssinatura
+  ciclo: CicloAssinatura
+  valor: number
+  data_inicio: string
+  data_fim?: string
+  data_cancelamento?: string
+  motivo_cancelamento?: string
+  asaas_subscription_id?: string
+  asaas_customer_id?: string
+  created_at: string
+  updated_at: string
+  // Relacionamentos
+  plano?: Plano
+  empresa?: Empresa
+}
+
+export interface Fatura {
+  id: string
+  assinatura_id?: string
+  empresa_id: string
+  valor: number
+  status: StatusFatura
+  data_vencimento: string
+  data_pagamento?: string
+  forma_pagamento?: string
+  asaas_payment_id?: string
+  link_boleto?: string
+  link_pix?: string
+  link_invoice?: string
+  created_at: string
+  updated_at: string
+  // Relacionamentos
+  assinatura?: Assinatura
+}
+
+export interface Indicacao {
+  id: string
+  empresa_origem_id: string
+  empresa_indicada_id?: string
+  codigo_indicacao: string
+  status: StatusIndicacao
+  data_cadastro_indicado?: string
+  data_contratacao_indicado?: string
+  data_qualificacao?: string
+  data_recompensa?: string
+  created_at: string
+  // Relacionamentos
+  empresa_origem?: Empresa
+  empresa_indicada?: Empresa
+}
+
+export interface WebhookLog {
+  id: string
+  origem: string
+  evento: string
+  payload: Record<string, unknown>
+  processado: boolean
+  erro?: string
+  created_at: string
+}
+
+export interface UsageInfo {
+  usuarios_count: number
+  usuarios_limit: number
+  produtos_count: number
+  produtos_limit: number
+  os_mes_count: number
+  os_mes_limit: number
+  vendas_mes_count: number
+  vendas_mes_limit: number
 }

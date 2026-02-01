@@ -1,6 +1,7 @@
 import type { Produto, CategoriaProduto } from '@/types/database'
 import type { ServiceResult } from './base'
 import { getSupabase, getEmpresaId, handleQuery, sanitizeSearch } from './base'
+import { planosService } from './planos.service'
 
 export const produtosService = {
   async listar(busca?: string, categoriaId?: string): Promise<ServiceResult<Produto[]>> {
@@ -33,15 +34,21 @@ export const produtosService = {
   async buscarPorId(id: string): Promise<ServiceResult<Produto>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('produtos')
         .select('*, categoria:categorias_produtos(*)')
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .single()
     })
   },
 
   async criar(produto: Partial<Omit<Produto, 'id' | 'empresa_id' | 'created_at' | 'updated_at' | 'categoria'>>): Promise<ServiceResult<Produto>> {
+    // Verificar limite do plano
+    const limiteErro = await planosService.verificarLimite('produtos')
+    if (limiteErro) return { data: null, error: limiteErro }
+
     return handleQuery(async () => {
       const supabase = getSupabase()
       const empresaId = getEmpresaId()
@@ -57,10 +64,12 @@ export const produtosService = {
   async atualizar(id: string, dados: Partial<Omit<Produto, 'id' | 'empresa_id' | 'created_at' | 'updated_at' | 'categoria'>>): Promise<ServiceResult<Produto>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('produtos')
         .update(dados)
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     })
@@ -69,10 +78,12 @@ export const produtosService = {
   async excluir(id: string): Promise<ServiceResult<Produto>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('produtos')
         .update({ ativo: false })
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     })
@@ -108,10 +119,12 @@ export const produtosService = {
   async atualizarCategoria(id: string, nome: string, descricao?: string): Promise<ServiceResult<CategoriaProduto>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('categorias_produtos')
         .update({ nome, descricao })
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     })
@@ -120,10 +133,12 @@ export const produtosService = {
   async excluirCategoria(id: string): Promise<ServiceResult<CategoriaProduto>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('categorias_produtos')
         .delete()
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     })

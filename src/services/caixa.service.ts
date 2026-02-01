@@ -60,6 +60,7 @@ export const caixaService = {
       diferenca: number
     }
   ): Promise<{ data: Caixa | null; error: string | null }> {
+    const empresaId = getEmpresaId()
     const usuarioId = getUsuarioId()
 
     return handleQuery(() =>
@@ -73,6 +74,7 @@ export const caixaService = {
           ...totais,
         })
         .eq('id', caixaId)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     )
@@ -90,10 +92,22 @@ export const caixaService = {
     venda_id?: string
     os_id?: string
   }): Promise<{ data: MovimentacaoCaixa | null; error: string | null }> {
+    const empresaId = getEmpresaId()
     const usuarioId = getUsuarioId()
 
+    // Validar que o caixa pertence à empresa
+    const supabase = getSupabase()
+    const { data: caixa } = await supabase
+      .from('caixa')
+      .select('id')
+      .eq('id', mov.caixa_id)
+      .eq('empresa_id', empresaId)
+      .single()
+
+    if (!caixa) return { data: null, error: 'Caixa não encontrado' }
+
     return handleQuery(() =>
-      getSupabase()
+      supabase
         .from('movimentacoes_caixa')
         .insert({
           ...mov,
@@ -106,6 +120,17 @@ export const caixaService = {
 
   async listarMovimentacoes(caixaId: string): Promise<{ data: MovimentacaoCaixa[]; error: string | null }> {
     const supabase = getSupabase()
+    const empresaId = getEmpresaId()
+
+    // Validar que o caixa pertence à empresa
+    const { data: caixa } = await supabase
+      .from('caixa')
+      .select('id')
+      .eq('id', caixaId)
+      .eq('empresa_id', empresaId)
+      .single()
+
+    if (!caixa) return { data: [], error: 'Caixa não encontrado' }
 
     const { data, error } = await supabase
       .from('movimentacoes_caixa')

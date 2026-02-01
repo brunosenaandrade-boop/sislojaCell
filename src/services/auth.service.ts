@@ -1,6 +1,28 @@
 import type { Usuario, Empresa } from '@/types/database'
 import type { ServiceResult } from './base'
 import { getSupabase } from './base'
+import { configuracoesService } from './configuracoes.service'
+
+async function setupEmpresaDefaults(supabase: ReturnType<typeof getSupabase>, empresaId: string) {
+  // Criar configurações padrão
+  await configuracoesService.criarConfiguracoes(empresaId)
+
+  // Criar categorias de produtos padrão
+  await supabase.from('categorias_produtos').insert([
+    { empresa_id: empresaId, nome: 'Acessórios' },
+    { empresa_id: empresaId, nome: 'Peças' },
+    { empresa_id: empresaId, nome: 'Capas' },
+    { empresa_id: empresaId, nome: 'Carregadores' },
+    { empresa_id: empresaId, nome: 'Fones de Ouvido' },
+  ])
+
+  // Criar categorias de serviços padrão
+  await supabase.from('categorias_servicos').insert([
+    { empresa_id: empresaId, nome: 'Celular' },
+    { empresa_id: empresaId, nome: 'Videogame' },
+    { empresa_id: empresaId, nome: 'Tablet' },
+  ])
+}
 
 export const authService = {
   async getUsuarioLogado(): Promise<ServiceResult<{ usuario: Usuario; empresa: Empresa }>> {
@@ -30,6 +52,10 @@ export const authService = {
           cor_primaria: '#dc2626',
           cor_secundaria: '#991b1b',
           ativo: true,
+          plano: 'enterprise',
+          status_assinatura: 'active' as const,
+          meses_bonus: 0,
+          onboarding_completo: true,
           created_at: '',
           updated_at: '',
         }
@@ -125,6 +151,8 @@ export const authService = {
     nomeUsuario: string
     email: string
     senha: string
+    codigoIndicacao?: string
+    indicadaPor?: string
   }): Promise<ServiceResult<{ usuario: Usuario; empresa: Empresa }>> {
     try {
       const supabase = getSupabase()
@@ -143,7 +171,10 @@ export const authService = {
       }
       if (!authData.user) return { data: null, error: 'Erro ao criar conta' }
 
-      // 2. Criar empresa
+      // 2. Criar empresa com trial de 7 dias
+      const trialFim = new Date()
+      trialFim.setDate(trialFim.getDate() + 7)
+
       const { data: empresa, error: empresaError } = await supabase
         .from('empresas')
         .insert({
@@ -153,6 +184,12 @@ export const authService = {
           telefone: dados.telefone || null,
           cor_primaria: '#2563eb',
           cor_secundaria: '#1e40af',
+          plano: 'free',
+          status_assinatura: 'trial',
+          trial_fim: trialFim.toISOString(),
+          meses_bonus: 0,
+          onboarding_completo: false,
+          indicada_por: dados.indicadaPor || null,
         })
         .select()
         .single()
@@ -174,6 +211,55 @@ export const authService = {
         .single()
 
       if (usuarioError) return { data: null, error: usuarioError.message }
+
+      // 4. Auto-setup: configurações + categorias padrão
+      await setupEmpresaDefaults(supabase, empresa.id)
+
+      // 5. Se foi indicada, registrar indicação
+      if (dados.codigoIndicacao) {
+        const { data: empresaOrigem } = await supabase
+          .from('empresas')
+          .select('id, cnpj, email')
+          .eq('codigo_indicacao', dados.codigoIndicacao)
+          .single()
+
+        if (empresaOrigem) {
+          // 13.26 - Não permitir auto-indicação
+          const isSelf = empresaOrigem.id === empresa.id
+          // 13.27 - Não permitir duplicata (mesmo email/CNPJ já indicado)
+          const sameEmail = empresaOrigem.email === dados.email
+          const sameCnpj = dados.cnpj && empresaOrigem.cnpj && empresaOrigem.cnpj === dados.cnpj
+
+          if (!isSelf && !sameEmail && !sameCnpj) {
+            // Verificar se esta empresa já foi indicada antes
+            const { data: existente } = await supabase
+              .from('indicacoes')
+              .select('id')
+              .eq('empresa_indicada_id', empresa.id)
+              .maybeSingle()
+
+            if (!existente) {
+              await supabase.from('indicacoes').insert({
+                empresa_origem_id: empresaOrigem.id,
+                empresa_indicada_id: empresa.id,
+                codigo_indicacao: dados.codigoIndicacao,
+                status: 'pendente',
+                data_cadastro_indicado: new Date().toISOString(),
+              })
+            }
+          }
+        }
+      }
+
+      // 6. Enviar email de boas-vindas (fire-and-forget via API route)
+      fetch('/api/email/boas-vindas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: dados.email,
+          nomeEmpresa: dados.nomeFantasia || dados.nomeEmpresa,
+        }),
+      }).catch(() => {})
 
       return { data: { usuario, empresa }, error: null }
     } catch (err) {

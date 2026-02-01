@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { useUIStore } from '@/store/useStore'
+import { useUIStore, useSubscriptionStore } from '@/store/useStore'
 import { usePermissao } from '@/hooks/usePermissao'
 import { setupGlobalErrorHandler } from '@/services/logger'
 import { cn } from '@/lib/utils'
@@ -13,6 +13,8 @@ import { TutorialOverlay } from '@/components/tutorial/TutorialOverlay'
 import { TutorialCard } from '@/components/tutorial/TutorialCard'
 import { HelpButton } from '@/components/tutorial/HelpButton'
 import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner'
+import { TrialBanner } from '@/components/layout/TrialBanner'
+import { PlanLimitBanner } from '@/components/layout/PlanLimitBanner'
 
 const rotasRestritas = ['/configuracoes', '/relatorios', '/logs']
 const rotasSuperadmin = ['/admin']
@@ -24,12 +26,20 @@ export default function DashboardLayout({
 }) {
   const { sidebarOpen } = useUIStore()
   const { isAdmin, isSuperadmin } = usePermissao()
+  const { fetchSubscription, isLoaded: subscriptionLoaded } = useSubscriptionStore()
   const pathname = usePathname()
   const router = useRouter()
 
   useEffect(() => {
     setupGlobalErrorHandler()
   }, [])
+
+  // Carregar dados da assinatura junto com o layout
+  useEffect(() => {
+    if (!subscriptionLoaded) {
+      fetchSubscription()
+    }
+  }, [subscriptionLoaded, fetchSubscription])
 
   useEffect(() => {
     if (!isAdmin && rotasRestritas.some((rota) => pathname.startsWith(rota))) {
@@ -46,6 +56,8 @@ export default function DashboardLayout({
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <ImpersonationBanner />
+          <TrialBanner />
+          <PlanLimitBanner />
           <main
             className={cn(
               'flex-1 overflow-y-auto transition-all duration-300',

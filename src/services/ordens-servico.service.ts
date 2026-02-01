@@ -1,5 +1,6 @@
 import { getSupabase, getEmpresaId, getUsuarioId, handleQuery, sanitizeSearch } from './base'
 import type { OrdemServico, ItemOS } from '@/types/database'
+import { planosService } from './planos.service'
 
 export const ordensServicoService = {
   // ============================================
@@ -39,6 +40,7 @@ export const ordensServicoService = {
 
   async buscarPorId(id: string): Promise<{ data: OrdemServico | null; error: string | null }> {
     const supabase = getSupabase()
+    const empresaId = getEmpresaId()
 
     const { data, error } = await supabase
       .from('ordens_servico')
@@ -50,6 +52,7 @@ export const ordensServicoService = {
         itens:itens_os(*, servico:servicos(id,nome), produto:produtos(id,nome))
       `)
       .eq('id', id)
+      .eq('empresa_id', empresaId)
       .single()
 
     return { data, error: error?.message ?? null }
@@ -60,6 +63,10 @@ export const ordensServicoService = {
   // ============================================
 
   async criar(os: Omit<Partial<OrdemServico>, 'id' | 'numero' | 'empresa_id' | 'usuario_id' | 'created_at' | 'updated_at'>): Promise<{ data: OrdemServico | null; error: string | null }> {
+    // Verificar limite do plano
+    const limiteErro = await planosService.verificarLimite('os_mes')
+    if (limiteErro) return { data: null, error: limiteErro }
+
     const supabase = getSupabase()
     const empresaId = getEmpresaId()
     const usuarioId = getUsuarioId()
@@ -97,11 +104,13 @@ export const ordensServicoService = {
     status: string,
     dados?: { diagnostico?: string; solucao?: string; data_finalizacao?: string; data_entrega?: string }
   ): Promise<{ data: OrdemServico | null; error: string | null }> {
+    const empresaId = getEmpresaId()
     return handleQuery(() =>
       getSupabase()
         .from('ordens_servico')
         .update({ status, ...dados })
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     )
@@ -112,11 +121,13 @@ export const ordensServicoService = {
   // ============================================
 
   async atualizar(id: string, dados: Partial<OrdemServico>): Promise<{ data: OrdemServico | null; error: string | null }> {
+    const empresaId = getEmpresaId()
     return handleQuery(() =>
       getSupabase()
         .from('ordens_servico')
         .update(dados)
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     )
@@ -137,8 +148,20 @@ export const ordensServicoService = {
     valor_custo: number
     valor_total: number
   }): Promise<{ data: ItemOS | null; error: string | null }> {
+    // Validar que a OS pertence à empresa
+    const supabase = getSupabase()
+    const empresaId = getEmpresaId()
+    const { data: os } = await supabase
+      .from('ordens_servico')
+      .select('id')
+      .eq('id', item.os_id)
+      .eq('empresa_id', empresaId)
+      .single()
+
+    if (!os) return { data: null, error: 'Ordem de serviço não encontrada' }
+
     return handleQuery(() =>
-      getSupabase()
+      supabase
         .from('itens_os')
         .insert(item)
         .select()
@@ -148,6 +171,26 @@ export const ordensServicoService = {
 
   async removerItem(itemId: string): Promise<{ data: null; error: string | null }> {
     const supabase = getSupabase()
+    const empresaId = getEmpresaId()
+
+    // Validar que o item pertence a uma OS da empresa
+    const { data: itemOS } = await supabase
+      .from('itens_os')
+      .select('id, os_id')
+      .eq('id', itemId)
+      .single()
+
+    if (itemOS) {
+      const { data: os } = await supabase
+        .from('ordens_servico')
+        .select('id')
+        .eq('id', itemOS.os_id)
+        .eq('empresa_id', empresaId)
+        .single()
+
+      if (!os) return { data: null, error: 'Ordem de serviço não encontrada' }
+    }
+
     const { error } = await supabase
       .from('itens_os')
       .delete()
@@ -164,11 +207,13 @@ export const ordensServicoService = {
     id: string,
     valores: { valor_servicos: number; valor_produtos: number; valor_desconto: number; valor_total: number }
   ): Promise<{ data: OrdemServico | null; error: string | null }> {
+    const empresaId = getEmpresaId()
     return handleQuery(() =>
       getSupabase()
         .from('ordens_servico')
         .update(valores)
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     )

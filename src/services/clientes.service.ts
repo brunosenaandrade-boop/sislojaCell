@@ -31,10 +31,12 @@ export const clientesService = {
   async buscarPorId(id: string): Promise<ServiceResult<Cliente>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('clientes')
         .select('*')
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .single()
     })
   },
@@ -55,10 +57,12 @@ export const clientesService = {
   async atualizar(id: string, dados: Partial<Omit<Cliente, 'id' | 'empresa_id' | 'created_at' | 'updated_at'>>): Promise<ServiceResult<Cliente>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('clientes')
         .update(dados)
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     })
@@ -67,10 +71,12 @@ export const clientesService = {
   async excluir(id: string): Promise<ServiceResult<Cliente>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('clientes')
         .update({ ativo: false })
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     })

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { usePermissao } from '@/hooks/usePermissao'
 import { superadminService } from '@/services/superadmin.service'
+import type { SaasStats } from '@/services/superadmin.service'
 import type { PlataformaStats } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,6 +22,12 @@ import {
   Info,
   RefreshCw,
   ScrollText,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  Gift,
+  CreditCard,
+  XCircle,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -49,6 +56,7 @@ interface AlertsData {
 export default function AdminDashboardPage() {
   const { isSuperadmin } = usePermissao()
   const [stats, setStats] = useState<PlataformaStats | null>(null)
+  const [saasStats, setSaasStats] = useState<SaasStats | null>(null)
   const [alertsData, setAlertsData] = useState<AlertsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [alertsLoading, setAlertsLoading] = useState(true)
@@ -69,8 +77,12 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const { data } = await superadminService.getPlataformaStats()
-      if (data) setStats(data)
+      const [statsResult, saasResult] = await Promise.all([
+        superadminService.getPlataformaStats(),
+        superadminService.getSaasStats(),
+      ])
+      if (statsResult.data) setStats(statsResult.data)
+      if (saasResult.data) setSaasStats(saasResult.data)
       setLoading(false)
     }
     load()
@@ -110,50 +122,18 @@ export default function AdminDashboardPage() {
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 
-  const cards = [
-    {
-      title: 'Total de Empresas',
-      value: stats?.total_empresas ?? 0,
-      icon: Building2,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
-    },
-    {
-      title: 'Empresas Ativas',
-      value: stats?.empresas_ativas ?? 0,
-      icon: CheckCircle,
-      color: 'text-green-600',
-      bg: 'bg-green-50',
-    },
-    {
-      title: 'Total de Usuarios',
-      value: stats?.total_usuarios ?? 0,
-      icon: Users,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
-    },
-    {
-      title: 'Ordens de Servico',
-      value: stats?.total_os ?? 0,
-      icon: FileText,
-      color: 'text-orange-600',
-      bg: 'bg-orange-50',
-    },
-    {
-      title: 'Total de Vendas',
-      value: stats?.total_vendas ?? 0,
-      icon: ShoppingCart,
-      color: 'text-pink-600',
-      bg: 'bg-pink-50',
-    },
-    {
-      title: 'Receita Total',
-      value: formatCurrency(stats?.valor_total_vendas ?? 0),
-      icon: DollarSign,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
-    },
+  const platformCards = [
+    { title: 'Total de Empresas', value: stats?.total_empresas ?? 0, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { title: 'Empresas Ativas', value: stats?.empresas_ativas ?? 0, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
+    { title: 'Total de Usuarios', value: stats?.total_usuarios ?? 0, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { title: 'Ordens de Servico', value: stats?.total_os ?? 0, icon: FileText, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { title: 'Total de Vendas', value: stats?.total_vendas ?? 0, icon: ShoppingCart, color: 'text-pink-600', bg: 'bg-pink-50' },
+    { title: 'Receita Total (Vendas)', value: formatCurrency(stats?.valor_total_vendas ?? 0), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
   ]
+
+  const statusLabels: Record<string, string> = {
+    trial: 'Trial', active: 'Ativa', overdue: 'Inadimplente', suspended: 'Suspensa', cancelled: 'Cancelada', expired: 'Expirada',
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -176,23 +156,207 @@ export default function AdminDashboardPage() {
         </Link>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card) => (
-          <Card key={card.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {card.title}
-              </CardTitle>
-              <div className={`rounded-lg p-2 ${card.bg}`}>
-                <card.icon className={`h-4 w-4 ${card.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{card.value}</div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* ============================================ */}
+      {/* MÉTRICAS SAAS */}
+      {/* ============================================ */}
+      {saasStats && (
+        <>
+          <div>
+            <h2 className="text-lg font-semibold mb-3">Métricas SaaS</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {/* MRR */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">MRR</CardTitle>
+                  <div className="rounded-lg p-2 bg-green-50">
+                    <TrendingUp className="h-4 w-4 text-green-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(saasStats.mrr)}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ARR: {formatCurrency(saasStats.arr)}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Assinantes */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Assinantes Ativos</CardTitle>
+                  <div className="rounded-lg p-2 bg-blue-50">
+                    <CreditCard className="h-4 w-4 text-blue-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{saasStats.total_assinantes}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Conversão: {saasStats.taxa_conversao}%
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Churn */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Churn Rate</CardTitle>
+                  <div className="rounded-lg p-2 bg-red-50">
+                    <TrendingDown className="h-4 w-4 text-red-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{saasStats.churn_rate}%</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {saasStats.cancelamentos_mes} cancelamento(s) no mês
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Alertas */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Atenção</CardTitle>
+                  <div className="rounded-lg p-2 bg-yellow-50">
+                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Trials expirando</span>
+                      <span className="font-medium">{saasStats.trials_expirando}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Faturas vencidas</span>
+                      <span className="font-medium text-red-600">{saasStats.faturas_vencidas_count}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Distribuição por Status */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">Distribuição por Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {Object.entries(saasStats.status_distribuicao).map(([status, count]) => {
+                    const total = Object.values(saasStats.status_distribuicao).reduce((a, b) => a + b, 0)
+                    const pct = total > 0 ? (count / total) * 100 : 0
+                    const colors: Record<string, string> = {
+                      trial: 'bg-blue-500', active: 'bg-green-500', overdue: 'bg-yellow-500',
+                      suspended: 'bg-red-500', cancelled: 'bg-gray-400', expired: 'bg-gray-300',
+                    }
+                    return (
+                      <div key={status}>
+                        <div className="flex items-center justify-between text-sm mb-1">
+                          <span>{statusLabels[status] || status}</span>
+                          <span className="font-medium">{count} ({Math.round(pct)}%)</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${colors[status] || 'bg-gray-400'}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Indicações */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                  <Gift className="h-4 w-4 text-blue-600" />
+                  Programa de Indicação
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-2xl font-bold">{saasStats.indicacoes.total}</p>
+                    <p className="text-xs text-muted-foreground">Total de indicações</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{saasStats.indicacoes.qualificadas}</p>
+                    <p className="text-xs text-muted-foreground">Qualificadas</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{saasStats.indicacoes.recompensadas}</p>
+                    <p className="text-xs text-muted-foreground">Recompensadas</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{saasStats.indicacoes.meses_bonus_total}</p>
+                    <p className="text-xs text-muted-foreground">Meses bônus distribuídos</p>
+                  </div>
+                </div>
+                {saasStats.indicacoes.total > 0 && (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Taxa de conversão: {saasStats.indicacoes.total > 0
+                      ? Math.round((saasStats.indicacoes.qualificadas / saasStats.indicacoes.total) * 100)
+                      : 0}%
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Faturas Vencidas */}
+          {saasStats.faturas_vencidas.length > 0 && (
+            <Card className="border-red-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm font-medium text-red-700">
+                  <XCircle className="h-4 w-4" />
+                  Faturas Vencidas ({saasStats.faturas_vencidas_count})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {saasStats.faturas_vencidas.slice(0, 5).map((f) => (
+                    <div key={f.id} className="flex items-center justify-between text-sm rounded-lg border p-2">
+                      <span className="text-muted-foreground">Empresa: {f.empresa_id.slice(0, 8)}...</span>
+                      <span className="font-medium">{formatCurrency(f.valor)}</span>
+                      <span className="text-xs text-red-600">
+                        Venceu em {new Date(f.data_vencimento).toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+
+      {/* ============================================ */}
+      {/* STATS DA PLATAFORMA */}
+      {/* ============================================ */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3">Métricas da Plataforma</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {platformCards.map((card) => (
+            <Card key={card.title}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {card.title}
+                </CardTitle>
+                <div className={`rounded-lg p-2 ${card.bg}`}>
+                  <card.icon className={`h-4 w-4 ${card.color}`} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{card.value}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {/* Alerts Section */}
@@ -226,7 +390,6 @@ export default function AdminDashboardPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {/* Summary badges */}
               <div className="flex gap-3 mb-4">
                 {alertsData.summary.criticos > 0 && (
                   <Badge variant="destructive" className="gap-1">
@@ -247,17 +410,15 @@ export default function AdminDashboardPage() {
                   </Badge>
                 )}
               </div>
-
-              {/* Alert items */}
               {alertsData.alerts.map((alert, idx) => (
                 <div
                   key={idx}
                   className={`flex items-start gap-3 rounded-lg border p-3 ${
                     alert.tipo === 'critico'
-                      ? 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'
+                      ? 'border-red-200 bg-red-50'
                       : alert.tipo === 'aviso'
-                      ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950'
-                      : 'border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950'
+                      ? 'border-yellow-200 bg-yellow-50'
+                      : 'border-blue-200 bg-blue-50'
                   }`}
                 >
                   {alert.tipo === 'critico' ? (
@@ -276,9 +437,7 @@ export default function AdminDashboardPage() {
                         {alert.categoria}
                       </Badge>
                       {alert.empresa_nome && (
-                        <span className="text-xs text-muted-foreground">
-                          {alert.empresa_nome}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{alert.empresa_nome}</span>
                       )}
                     </div>
                     <p className="text-sm mt-1">{alert.mensagem}</p>

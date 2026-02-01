@@ -52,21 +52,31 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Rotas públicas que não precisam de autenticação
-  const publicRoutes = ['/login', '/recuperar-senha', '/cadastro', '/alterar-senha']
-  const isPublicRoute = publicRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
-  )
+  const pathname = request.nextUrl.pathname
+
+  // ============================================
+  // ROTAS PÚBLICAS (sem autenticação)
+  // ============================================
+  const publicRoutes = ['/login', '/recuperar-senha', '/cadastro', '/alterar-senha', '/precos', '/termos', '/privacidade']
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+
+  // Landing page (/) é pública
+  if (pathname === '/') {
+    return supabaseResponse
+  }
+
+  // API routes do webhook são públicas (chamadas pelo Asaas)
+  if (pathname.startsWith('/api/asaas/webhook')) {
+    return supabaseResponse
+  }
 
   if (!user && !isPublicRoute) {
-    // Usuário não autenticado tentando acessar rota protegida
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  if (user && request.nextUrl.pathname === '/login') {
-    // Usuário autenticado tentando acessar login - verificar se é superadmin
+  if (user && pathname === '/login') {
     const { data: usuarioLogin } = await supabase
       .from('usuarios')
       .select('perfil')
@@ -78,17 +88,19 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Rotas restritas a administradores
-  const adminRoutes = ['/configuracoes']
-  const isAdminRoute = adminRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
-  )
+  // ============================================
+  // ROTAS AUTENTICADAS - Verificar assinatura
+  // ============================================
+
+  // Rotas que funcionam MESMO com assinatura vencida
+  const rotasLivresDeAssinatura = ['/planos', '/configuracoes', '/onboarding', '/indicacoes']
+  const isRotaLivre = rotasLivresDeAssinatura.some(route => pathname.startsWith(route))
 
   // Rotas restritas a superadmin
-  const superadminRoutes = ['/admin']
-  const isSuperadminRoute = superadminRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
-  )
+  const isSuperadminRoute = pathname.startsWith('/admin')
+
+  // Rotas restritas a admin
+  const isAdminRoute = pathname.startsWith('/configuracoes')
 
   if (user && (isAdminRoute || isSuperadminRoute)) {
     const { data: usuario } = await supabase
@@ -98,14 +110,14 @@ export async function updateSession(request: NextRequest) {
       .single()
 
     if (isSuperadminRoute) {
-      // /admin requer superadmin
       if (!usuario || usuario.perfil !== 'superadmin') {
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)
       }
+      // Superadmin não tem restrição de assinatura
+      return supabaseResponse
     } else if (isAdminRoute) {
-      // /configuracoes requer admin ou superadmin
       if (!usuario || (usuario.perfil !== 'admin' && usuario.perfil !== 'superadmin')) {
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
@@ -114,11 +126,74 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // IMPORTANTE: Você *deve* retornar o objeto supabaseResponse como está.
-  // Se você está criando um novo objeto de resposta com NextResponse.next(),
-  // certifique-se de:
-  // 1. Passar o request nele, como: NextResponse.next({ request })
-  // 2. Copiar os cookies, como: supabaseResponse.cookies.getAll().forEach(...)
+  // ============================================
+  // 4.1-4.5 VERIFICAÇÃO DE STATUS DA ASSINATURA
+  // ============================================
+  if (user && !isPublicRoute && !isRotaLivre && !isSuperadminRoute) {
+    const { data: usuario } = await supabase
+      .from('usuarios')
+      .select('empresa_id, perfil')
+      .eq('auth_id', user.id)
+      .single()
+
+    // Superadmin nunca é bloqueado
+    if (usuario?.perfil === 'superadmin') {
+      return supabaseResponse
+    }
+
+    if (usuario?.empresa_id) {
+      const { data: empresa } = await supabase
+        .from('empresas')
+        .select('status_assinatura, trial_fim, meses_bonus, onboarding_completo')
+        .eq('id', usuario.empresa_id)
+        .single()
+
+      if (empresa) {
+        const status = empresa.status_assinatura as string
+
+        // 4.7 - Redirecionar para onboarding se não completou
+        if (!empresa.onboarding_completo && !pathname.startsWith('/onboarding')) {
+          const url = request.nextUrl.clone()
+          url.pathname = '/onboarding'
+          return NextResponse.redirect(url)
+        }
+
+        // 4.2 - active → acesso normal
+        if (status === 'active') {
+          return supabaseResponse
+        }
+
+        // 4.3 - trial → verificar se expirou
+        if (status === 'trial') {
+          if (empresa.trial_fim) {
+            const trialFim = new Date(empresa.trial_fim)
+            if (trialFim > new Date()) {
+              // Trial ainda válido
+              return supabaseResponse
+            }
+          }
+          // Trial expirado → redirecionar para planos
+          const url = request.nextUrl.clone()
+          url.pathname = '/planos'
+          url.searchParams.set('motivo', 'trial_expirado')
+          return NextResponse.redirect(url)
+        }
+
+        // 4.4 - suspended, cancelled, overdue, expired → redirecionar para planos
+        if (['suspended', 'cancelled', 'overdue', 'expired'].includes(status)) {
+          // 4.5 - Se tem meses bônus, não bloqueia (consumido no webhook)
+          if ((empresa.meses_bonus || 0) > 0) {
+            return supabaseResponse
+          }
+
+          const url = request.nextUrl.clone()
+          url.pathname = '/planos'
+          url.searchParams.set('motivo', status)
+          return NextResponse.redirect(url)
+        }
+      }
+    }
+  }
 
   return supabaseResponse
 }

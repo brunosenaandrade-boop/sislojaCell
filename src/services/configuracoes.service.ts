@@ -1,5 +1,6 @@
 import { getSupabase, getEmpresaId, getUsuarioId, handleQuery } from './base'
 import type { Empresa, Usuario, Configuracoes } from '@/types/database'
+import { planosService } from './planos.service'
 
 export const configuracoesService = {
   // ============================================
@@ -34,6 +35,27 @@ export const configuracoesService = {
   // ============================================
   // CONFIGURAÇÕES
   // ============================================
+
+  async criarConfiguracoes(empresaId: string): Promise<{ data: Configuracoes | null; error: string | null }> {
+    const supabase = getSupabase()
+
+    const { data, error } = await supabase
+      .from('configuracoes')
+      .insert({
+        empresa_id: empresaId,
+        impressora_termica: true,
+        largura_cupom: 80,
+        proxima_os: 1,
+        proxima_venda: 1,
+        mensagem_cupom: 'Obrigado pela preferência!',
+        mensagem_os_entrada: 'Guarde este comprovante.',
+        config_json: {},
+      })
+      .select()
+      .single()
+
+    return { data, error: error?.message ?? null }
+  },
 
   async getConfiguracoes(): Promise<{ data: Configuracoes | null; error: string | null }> {
     const supabase = getSupabase()
@@ -84,6 +106,10 @@ export const configuracoesService = {
     perfil: 'admin' | 'funcionario'
     telefone?: string
   }): Promise<{ data: Usuario | null; error: string | null }> {
+    // Verificar limite de usuários do plano
+    const limiteErro = await planosService.verificarLimite('usuarios')
+    if (limiteErro) return { data: null, error: limiteErro }
+
     const supabase = getSupabase()
     const empresaId = getEmpresaId()
 
@@ -114,22 +140,26 @@ export const configuracoesService = {
   },
 
   async atualizarUsuario(id: string, dados: Partial<Usuario>): Promise<{ data: Usuario | null; error: string | null }> {
+    const empresaId = getEmpresaId()
     return handleQuery(() =>
       getSupabase()
         .from('usuarios')
         .update(dados)
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     )
   },
 
   async desativarUsuario(id: string): Promise<{ data: Usuario | null; error: string | null }> {
+    const empresaId = getEmpresaId()
     return handleQuery(() =>
       getSupabase()
         .from('usuarios')
         .update({ ativo: false })
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     )

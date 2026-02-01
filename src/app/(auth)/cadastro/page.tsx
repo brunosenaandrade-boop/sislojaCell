@@ -1,19 +1,29 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { authService } from '@/services/auth.service'
 import { useAuthStore } from '@/store/useStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Eye, EyeOff, Gift } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
 export default function CadastroPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+      <CadastroForm />
+    </Suspense>
+  )
+}
+
+function CadastroForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const refCode = searchParams.get('ref')
   const { setUsuario, setEmpresa, setLoading } = useAuthStore()
 
   const [nomeEmpresa, setNomeEmpresa] = useState('')
@@ -26,6 +36,17 @@ export default function CadastroPage() {
   const [confirmarSenha, setConfirmarSenha] = useState('')
   const [showSenha, setShowSenha] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [nomeIndicador, setNomeIndicador] = useState<string | null>(null)
+
+  // 13.15 - Buscar nome da empresa que indicou
+  useEffect(() => {
+    if (refCode) {
+      fetch(`/api/indicacao?codigo=${encodeURIComponent(refCode)}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => { if (data?.nome) setNomeIndicador(data.nome) })
+        .catch(() => {})
+    }
+  }, [refCode])
 
   const handleCadastro = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,6 +72,7 @@ export default function CadastroPage() {
         nomeUsuario,
         email,
         senha,
+        codigoIndicacao: refCode || undefined,
       })
 
       if (error) {
@@ -90,6 +112,16 @@ export default function CadastroPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {refCode && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+              <Gift className="h-4 w-4 shrink-0" />
+              <span>
+                {nomeIndicador
+                  ? `Você foi indicado por ${nomeIndicador}! Ambos ganham benefícios ao assinar.`
+                  : 'Você foi indicado! Ambos ganham benefícios ao assinar.'}
+              </span>
+            </div>
+          )}
           <form onSubmit={handleCadastro} className="space-y-4">
             {/* Dados da Empresa */}
             <div className="space-y-3">

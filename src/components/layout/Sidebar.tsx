@@ -25,6 +25,8 @@ import {
   ScrollText as ScrollTextAdmin,
   UsersRound,
   Bell,
+  CreditCard,
+  Gift,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -77,6 +79,16 @@ const menuItems: MenuItem[] = [
     title: 'Caixa',
     href: '/caixa',
     icon: DollarSign,
+  },
+  {
+    title: 'Meu Plano',
+    href: '/planos',
+    icon: CreditCard,
+  },
+  {
+    title: 'Indicações',
+    href: '/indicacoes',
+    icon: Gift,
   },
   {
     title: 'Relatórios',

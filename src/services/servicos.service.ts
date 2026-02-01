@@ -30,10 +30,12 @@ export const servicosService = {
   async buscarPorId(id: string): Promise<ServiceResult<Servico>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('servicos')
         .select('*')
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .single()
     })
   },
@@ -54,10 +56,12 @@ export const servicosService = {
   async atualizar(id: string, dados: Partial<Omit<Servico, 'id' | 'empresa_id' | 'created_at' | 'updated_at' | 'categoria'>>): Promise<ServiceResult<Servico>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('servicos')
         .update(dados)
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     })
@@ -66,10 +70,12 @@ export const servicosService = {
   async excluir(id: string): Promise<ServiceResult<Servico>> {
     return handleQuery(async () => {
       const supabase = getSupabase()
+      const empresaId = getEmpresaId()
       return supabase
         .from('servicos')
         .update({ ativo: false })
         .eq('id', id)
+        .eq('empresa_id', empresaId)
         .select()
         .single()
     })

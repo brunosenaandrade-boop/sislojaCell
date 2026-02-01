@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Usuario, Empresa } from '@/types/database'
+import type { Usuario, Empresa, Plano, StatusAssinatura, UsageInfo } from '@/types/database'
 
 // ============================================
 // STORE DE AUTENTICAÇÃO/USUÁRIO
@@ -390,3 +390,89 @@ export const usePrintConfigStore = create<PrintConfigState>()(
     }
   )
 )
+
+// ============================================
+// STORE DE ASSINATURA (SaaS)
+// ============================================
+
+interface SubscriptionState {
+  plano: Plano | null
+  status: StatusAssinatura | null
+  trialFim: string | null
+  trialDiasRestantes: number
+  mesesBonus: number
+  usage: UsageInfo | null
+  isLoaded: boolean
+
+  fetchSubscription: () => Promise<void>
+  checkLimit: (recurso: 'usuarios' | 'produtos' | 'os_mes' | 'vendas_mes') => string | null
+  isFeatureAvailable: (feature: string) => boolean
+  reset: () => void
+}
+
+export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
+  plano: null,
+  status: null,
+  trialFim: null,
+  trialDiasRestantes: 0,
+  mesesBonus: 0,
+  usage: null,
+  isLoaded: false,
+
+  fetchSubscription: async () => {
+    try {
+      const res = await fetch('/api/asaas/assinatura')
+      if (!res.ok) return
+
+      const json = await res.json()
+
+      set({
+        plano: json.plano || null,
+        status: json.empresa?.status_assinatura || null,
+        trialFim: json.empresa?.trial_fim || null,
+        trialDiasRestantes: json.empresa?.trial_dias_restantes || 0,
+        mesesBonus: json.empresa?.meses_bonus || 0,
+        isLoaded: true,
+      })
+    } catch {
+      // silently fail - não bloqueia o uso
+      set({ isLoaded: true })
+    }
+  },
+
+  checkLimit: (recurso) => {
+    const { usage, plano } = get()
+    if (!usage || !plano) return null
+
+    const checks: Record<string, { count: number; limit: number; label: string }> = {
+      usuarios: { count: usage.usuarios_count, limit: usage.usuarios_limit, label: 'usuários' },
+      produtos: { count: usage.produtos_count, limit: usage.produtos_limit, label: 'produtos' },
+      os_mes: { count: usage.os_mes_count, limit: usage.os_mes_limit, label: 'ordens de serviço do mês' },
+      vendas_mes: { count: usage.vendas_mes_count, limit: usage.vendas_mes_limit, label: 'vendas do mês' },
+    }
+
+    const check = checks[recurso]
+    if (!check) return null
+    if (check.limit === -1) return null // ilimitado
+    if (check.count >= check.limit) {
+      return `Limite de ${check.label} atingido (${check.count}/${check.limit}).`
+    }
+    return null
+  },
+
+  isFeatureAvailable: (feature) => {
+    const { plano } = get()
+    if (!plano?.features) return false
+    return !!plano.features[feature]
+  },
+
+  reset: () => set({
+    plano: null,
+    status: null,
+    trialFim: null,
+    trialDiasRestantes: 0,
+    mesesBonus: 0,
+    usage: null,
+    isLoaded: false,
+  }),
+}))
