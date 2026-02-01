@@ -45,7 +45,7 @@ export async function POST() {
         {
           nome: 'Plano Anual',
           slug: 'anual',
-          descricao: 'Licença completa com tudo ilimitado. R$ 1.800/ano (ou 12x de R$ 150 no cartão).',
+          descricao: 'Licença completa com tudo ilimitado. R$ 150/mês (12x no cartão) ou R$ 1.800 à vista.',
           preco_mensal: 150.0,
           preco_anual: 1800.0,
           max_usuarios: -1,

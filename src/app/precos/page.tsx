@@ -9,7 +9,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Preços - SisLoja Cell',
-  description: 'Plano anual R$ 1.800 ou 12x de R$ 150 no cartão. Trial grátis de 7 dias sem cartão de crédito. Sistema completo para lojas de celular.',
+  description: 'A partir de R$ 150/mês no cartão em 12x. Trial grátis de 7 dias sem cartão de crédito. Sistema completo para lojas de celular.',
 }
 
 export default function PrecosPage() {
@@ -104,10 +104,13 @@ export default function PrecosPage() {
               <p className="mb-6 text-sm text-gray-500">Licença completa com tudo ilimitado</p>
               <div className="mb-6">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-bold">R$ 1.800</span>
-                  <span className="text-gray-500">/ano</span>
+                  <span className="text-lg text-gray-400 line-through">R$ 1.800/ano</span>
                 </div>
-                <p className="mt-1 text-sm text-gray-500">ou 12x de R$ 150 no cartão de crédito</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-5xl font-bold">R$ 150</span>
+                  <span className="text-gray-500">/mês</span>
+                </div>
+                <p className="mt-1 text-sm text-gray-500">no cartão de crédito em 12x ou à vista via PIX/boleto</p>
               </div>
               <Link
                 href="/cadastro"
@@ -195,7 +198,7 @@ export default function PrecosPage() {
               },
               {
                 q: 'Quais formas de pagamento são aceitas?',
-                a: 'PIX (à vista), boleto (à vista) ou cartão de crédito (em até 12x de R$ 150). O valor total do plano é R$ 1.800/ano.',
+                a: 'PIX (à vista), boleto (à vista) ou cartão de crédito em até 12x de R$ 150/mês.',
               },
               {
                 q: 'Posso cancelar a qualquer momento?',
@@ -203,7 +206,7 @@ export default function PrecosPage() {
               },
               {
                 q: 'Existe desconto para pagamento à vista?',
-                a: 'O valor anual é R$ 1.800 à vista (PIX ou boleto). No cartão, o valor é parcelado em até 12x de R$ 150.',
+                a: 'À vista via PIX ou boleto o valor é R$ 1.800 (economia de tempo na aprovação). No cartão, parcela em 12x de R$ 150.',
               },
               {
                 q: 'Como funciona o programa de indicação?',

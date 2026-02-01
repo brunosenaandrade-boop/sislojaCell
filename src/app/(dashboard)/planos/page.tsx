@@ -324,7 +324,7 @@ function PlanosContent() {
               <div>
                 <h3 className="mb-1 text-xl font-bold">Plano Anual</h3>
                 <p className="text-muted-foreground">
-                  Acesso completo. Tudo ilimitado. R$ 1.800/ano ou 12x de R$ 150 no cartão.
+                  Acesso completo. Tudo ilimitado. A partir de R$ 150/mês.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {[
@@ -344,9 +344,9 @@ function PlanosContent() {
               </div>
               <div className="text-center">
                 <div className="mb-2">
-                  <span className="text-3xl font-bold">R$ 1.800</span>
-                  <span className="text-muted-foreground">/ano</span>
-                  <p className="text-xs text-muted-foreground mt-1">ou 12x de R$ 150 no cartão</p>
+                  <span className="text-3xl font-bold">R$ 150</span>
+                  <span className="text-muted-foreground">/mês</span>
+                  <p className="text-xs text-muted-foreground mt-1">12x no cartão ou R$ 1.800 à vista</p>
                 </div>
                 <Button
                   size="lg"

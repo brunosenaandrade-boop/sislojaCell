@@ -121,7 +121,7 @@ export const emailService = {
         Após esse período, o acesso ao sistema será limitado.
       </p>
       <p style="color:#52525b;font-size:14px;line-height:1.6;">
-        Assine o plano anual por apenas <strong>R$ 1.800/ano</strong> (ou 12x de R$ 150 no cartão) e continue
+        Assine por apenas <strong>R$ 150/mês</strong> (12x no cartão ou R$ 1.800 à vista) e continue
         usando o sistema sem limites.
       </p>
       ${ctaButton('Assinar Agora', `${APP_URL}/planos`)}
@@ -146,7 +146,7 @@ export const emailService = {
       <p style="color:#52525b;font-size:14px;line-height:1.6;">
         Não perca seus dados! Assine agora e retome o controle da sua loja.
       </p>
-      ${ctaButton('Assinar Plano Anual - R$ 1.800', `${APP_URL}/planos`)}
+      ${ctaButton('Assinar Agora - R$ 150/mês', `${APP_URL}/planos`)}
     `)
     return sendEmail(to, `[SisLoja Cell] Seu trial expirou — assine agora`, html)
   },

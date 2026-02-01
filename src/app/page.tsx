@@ -175,10 +175,13 @@ export default async function HomePage({
                 <p className="mb-6 text-sm text-gray-500">Licença completa com tudo ilimitado</p>
                 <div className="mb-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-bold">R$ 1.800</span>
-                    <span className="text-gray-500">/ano</span>
+                    <span className="text-lg text-gray-400 line-through">R$ 1.800/ano</span>
                   </div>
-                  <p className="mt-1 text-sm text-gray-500">ou 12x de R$ 150 no cartão de crédito</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-bold">R$ 150</span>
+                    <span className="text-gray-500">/mês</span>
+                  </div>
+                  <p className="mt-1 text-sm text-gray-500">no cartão de crédito em 12x ou à vista via PIX/boleto</p>
                 </div>
                 <Link
                   href={`/cadastro${refParam}`}
@@ -234,7 +237,7 @@ export default async function HomePage({
               },
               {
                 q: 'Quais formas de pagamento são aceitas?',
-                a: 'PIX, cartão de crédito e boleto bancário. O plano anual custa R$ 1.800. No cartão de crédito, pode ser parcelado em até 12x de R$ 150.',
+                a: 'PIX, cartão de crédito e boleto bancário. O plano custa R$ 150/mês (12x no cartão) ou R$ 1.800 à vista via PIX/boleto.',
               },
               {
                 q: 'Posso cancelar a qualquer momento?',
