@@ -1,6 +1,5 @@
-import { getSupabase, getEmpresaId, getUsuarioId, handleQuery } from './base'
+import { getSupabase, getEmpresaId, handleQuery } from './base'
 import type { Empresa, Usuario, Configuracoes } from '@/types/database'
-import { planosService } from './planos.service'
 
 export const configuracoesService = {
   // ============================================
@@ -106,37 +105,23 @@ export const configuracoesService = {
     perfil: 'admin' | 'funcionario'
     telefone?: string
   }): Promise<{ data: Usuario | null; error: string | null }> {
-    // Verificar limite de usuários do plano
-    const limiteErro = await planosService.verificarLimite('usuarios')
-    if (limiteErro) return { data: null, error: limiteErro }
-
-    const supabase = getSupabase()
-    const empresaId = getEmpresaId()
-
-    // 1. Criar usuário no Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: dados.email,
-      password: dados.senha,
-    })
-
-    if (authError) return { data: null, error: authError.message }
-    if (!authData.user) return { data: null, error: 'Erro ao criar usuário' }
-
-    // 2. Inserir na tabela usuarios
-    const { data, error } = await supabase
-      .from('usuarios')
-      .insert({
-        auth_id: authData.user.id,
-        empresa_id: empresaId,
-        nome: dados.nome,
-        email: dados.email,
-        telefone: dados.telefone || null,
-        perfil: dados.perfil,
+    try {
+      const res = await fetch('/api/auth/criar-usuario', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados),
       })
-      .select()
-      .single()
 
-    return { data, error: error?.message ?? null }
+      const json = await res.json()
+
+      if (!res.ok) {
+        return { data: null, error: json.error || 'Erro ao criar usuário' }
+      }
+
+      return { data: json.usuario, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
+    }
   },
 
   async atualizarUsuario(id: string, dados: Partial<Usuario>): Promise<{ data: Usuario | null; error: string | null }> {

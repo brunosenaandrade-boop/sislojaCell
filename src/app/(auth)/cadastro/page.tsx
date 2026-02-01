@@ -2,8 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { authService } from '@/services/auth.service'
 import { useAuthStore } from '@/store/useStore'
+import { getClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -64,30 +64,44 @@ function CadastroForm() {
     setIsLoading(true)
 
     try {
-      const { data, error } = await authService.cadastrarEmpresa({
-        nomeEmpresa,
-        nomeFantasia: nomeFantasia || undefined,
-        cnpj: cnpj || undefined,
-        telefone: telefone || undefined,
-        nomeUsuario,
-        email,
-        senha,
-        codigoIndicacao: refCode || undefined,
+      // 1. Criar conta via API server-side (auto-confirma email)
+      const res = await fetch('/api/auth/cadastro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nomeEmpresa,
+          nomeFantasia: nomeFantasia || undefined,
+          cnpj: cnpj || undefined,
+          telefone: telefone || undefined,
+          nomeUsuario,
+          email,
+          senha,
+          codigoIndicacao: refCode || undefined,
+        }),
       })
 
-      if (error) {
-        toast.error(error)
+      const json = await res.json()
+
+      if (!res.ok) {
+        toast.error(json.error || 'Erro ao criar conta')
         return
       }
 
-      if (!data) {
-        toast.error('Erro ao criar conta')
+      // 2. Auto-login com as credenciais
+      const supabase = getClient()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: senha,
+      })
+
+      if (signInError) {
+        toast.error('Conta criada, mas erro ao fazer login automático. Faça login manualmente.')
+        router.push('/login')
         return
       }
 
-      // Auto-login apos cadastro
-      setUsuario(data.usuario)
-      setEmpresa(data.empresa)
+      setUsuario(json.usuario)
+      setEmpresa(json.empresa)
       setLoading(false)
 
       toast.success('Conta criada com sucesso!')
