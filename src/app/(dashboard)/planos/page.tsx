@@ -165,7 +165,10 @@ function PlanosContent() {
       const json = await res.json()
 
       if (res.ok && json.checkoutUrl) {
-        window.open(json.checkoutUrl, '_blank')
+        window.location.href = json.checkoutUrl
+      } else if (res.ok && !json.checkoutUrl) {
+        toast.success('Assinatura criada! Atualize a página para ver a fatura.')
+        fetchData()
       } else {
         toast.error(json.error || 'Erro ao gerar link de pagamento')
       }

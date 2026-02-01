@@ -111,7 +111,7 @@ export const asaasService = {
     })
   },
 
-  // 2.4 - Criar checkout (link de pagamento)
+  // 2.4 - Criar link de pagamento (checkout)
   async criarCheckout(dados: {
     customerId: string
     name: string
@@ -124,25 +124,31 @@ export const asaasService = {
     successUrl: string
     cancelUrl?: string
   }): Promise<AsaasResponse<AsaasCheckout>> {
+    // Asaas usa /paymentLinks para links de pagamento
     const body: Record<string, unknown> = {
-      customer: dados.customerId,
       name: dados.name,
       description: dados.description,
-      billingTypes: dados.billingTypes,
-      chargeTypes: [dados.chargeType],
-      successUrl: dados.successUrl,
-      cancelUrl: dados.cancelUrl,
+      billingType: 'UNDEFINED', // Permite PIX, cartão e boleto
+      chargeType: dados.chargeType,
+      value: dados.value,
+      dueDateLimitDays: 10,
+      notificationEnabled: true,
     }
 
     if (dados.chargeType === 'RECURRENT') {
       body.subscriptionCycle = dados.cycle || 'MONTHLY'
-      body.subscriptionNextDueDate = dados.nextDueDate
-      body.value = dados.value
-    } else {
-      body.value = dados.value
     }
 
-    const result = await asaasRequest<{ id: string; status: string }>('/checkouts', {
+    // Calcular endDate (1 ano à frente)
+    const endDate = new Date()
+    endDate.setFullYear(endDate.getFullYear() + 1)
+    body.endDate = endDate.toISOString().split('T')[0]
+
+    const result = await asaasRequest<{
+      id: string
+      url: string
+      active: boolean
+    }>('/paymentLinks', {
       method: 'POST',
       body: JSON.stringify(body),
     })
@@ -151,8 +157,8 @@ export const asaasService = {
       return {
         data: {
           id: result.data.id,
-          url: `https://asaas.com/checkoutSession/show?id=${result.data.id}`,
-          status: result.data.status,
+          url: result.data.url,
+          status: result.data.active ? 'ACTIVE' : 'INACTIVE',
         },
         error: null,
       }
@@ -164,7 +170,7 @@ export const asaasService = {
   // 2.5 - Criar assinatura direta
   async criarAssinatura(dados: {
     customerId: string
-    billingType: 'BOLETO' | 'PIX' | 'CREDIT_CARD'
+    billingType: 'BOLETO' | 'PIX' | 'CREDIT_CARD' | 'UNDEFINED'
     value: number
     cycle: 'MONTHLY' | 'QUARTERLY' | 'SEMIANNUALLY' | 'YEARLY'
     nextDueDate: string

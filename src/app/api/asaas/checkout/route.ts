@@ -6,7 +6,7 @@ import { asaasService } from '@/services/asaas.service'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 // ============================================
-// CHECKOUT ASAAS - Gerar link de pagamento
+// CHECKOUT ASAAS - Criar assinatura + link de pagamento
 // POST /api/asaas/checkout
 // ============================================
 
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       const cpfCnpj = empresa.cnpj || empresa.cpf
       if (!cpfCnpj) {
         return NextResponse.json(
-          { error: 'CPF ou CNPJ da empresa é obrigatório para pagamento. Atualize os dados da empresa.' },
+          { error: 'CPF ou CNPJ da empresa é obrigatório para pagamento. Atualize os dados no Onboarding ou Configurações.' },
           { status: 400 }
         )
       }
@@ -132,38 +132,54 @@ export async function POST(request: NextRequest) {
     // Próxima data de cobrança (hoje)
     const nextDueDate = new Date().toISOString().split('T')[0]
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://sisloja-cell.vercel.app'
-
-    // Criar checkout no Asaas
-    const { data: checkout, error: checkoutError } = await asaasService.criarCheckout({
+    // Criar assinatura direta no Asaas (billingType UNDEFINED = PIX/cartão/boleto)
+    const { data: subscription, error: subError } = await asaasService.criarAssinatura({
       customerId: asaasCustomerId,
-      name: `${plano.nome} - ${empresa.nome_fantasia || empresa.nome}`,
-      description: `Assinatura ${plano.nome} (${billingCycle === 'YEARLY' ? 'Anual' : 'Mensal'})`,
-      billingTypes: ['PIX', 'CREDIT_CARD', 'BOLETO'],
-      chargeType: 'RECURRENT',
+      billingType: 'UNDEFINED',
       value: valor,
       cycle: billingCycle as 'MONTHLY' | 'QUARTERLY' | 'SEMIANNUALLY' | 'YEARLY',
       nextDueDate,
-      successUrl: `${appUrl}/planos?status=success`,
-      cancelUrl: `${appUrl}/planos?status=cancelled`,
+      description: `${plano.nome} - ${empresa.nome_fantasia || empresa.nome}`,
+      externalReference: empresa.id,
     })
 
-    if (checkoutError || !checkout) {
+    if (subError || !subscription) {
       return NextResponse.json(
-        { error: checkoutError || 'Erro ao criar checkout' },
+        { error: subError || 'Erro ao criar assinatura' },
         { status: 500 }
       )
     }
 
-    // Criar registro da assinatura (pendente)
+    // Buscar a primeira fatura gerada para obter o link de pagamento
+    const { data: faturas } = await asaasService.listarFaturas(subscription.id)
+    const primeiraFatura = faturas?.data?.[0]
+
+    // URL de pagamento: invoice URL da primeira fatura
+    const checkoutUrl = primeiraFatura?.invoiceUrl || null
+
+    // Criar registro da assinatura no banco
     await serviceClient.from('assinaturas').insert({
       empresa_id: empresa.id,
       plano_id: plano.id,
       status: 'pending',
       ciclo: billingCycle,
       valor,
+      asaas_subscription_id: subscription.id,
       asaas_customer_id: asaasCustomerId,
     })
+
+    // Registrar primeira fatura no banco
+    if (primeiraFatura) {
+      await serviceClient.from('faturas').insert({
+        empresa_id: empresa.id,
+        valor,
+        status: 'pending',
+        data_vencimento: primeiraFatura.dueDate,
+        asaas_payment_id: primeiraFatura.id,
+        link_boleto: primeiraFatura.bankSlipUrl || null,
+        link_invoice: primeiraFatura.invoiceUrl || null,
+      })
+    }
 
     // Atualizar plano da empresa
     await serviceClient
@@ -172,8 +188,8 @@ export async function POST(request: NextRequest) {
       .eq('id', empresa.id)
 
     return NextResponse.json({
-      checkoutUrl: checkout.url,
-      checkoutId: checkout.id,
+      checkoutUrl,
+      subscriptionId: subscription.id,
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
