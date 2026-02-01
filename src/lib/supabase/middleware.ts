@@ -65,8 +65,13 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse
   }
 
-  // API routes do webhook são públicas (chamadas pelo Asaas)
-  if (pathname.startsWith('/api/asaas/webhook')) {
+  // API routes públicas (sem autenticação)
+  if (
+    pathname.startsWith('/api/asaas/webhook') ||
+    pathname.startsWith('/api/auth/cadastro') ||
+    pathname.startsWith('/api/indicacao') ||
+    pathname.startsWith('/api/email/trial-check')
+  ) {
     return supabaseResponse
   }
 
