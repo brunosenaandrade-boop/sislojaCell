@@ -159,7 +159,7 @@ function PlanosContent() {
       const res = await fetch('/api/asaas/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planoSlug: 'anual', ciclo: 'MONTHLY' }),
+        body: JSON.stringify({ planoSlug: 'anual', ciclo: 'YEARLY' }),
       })
 
       const json = await res.json()
@@ -324,7 +324,7 @@ function PlanosContent() {
               <div>
                 <h3 className="mb-1 text-xl font-bold">Plano Anual</h3>
                 <p className="text-muted-foreground">
-                  Acesso completo. Tudo ilimitado. 12x de R$ 150/mês.
+                  Acesso completo. Tudo ilimitado. R$ 1.800/ano ou 12x de R$ 150 no cartão.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {[
@@ -344,9 +344,9 @@ function PlanosContent() {
               </div>
               <div className="text-center">
                 <div className="mb-2">
-                  <span className="text-sm text-muted-foreground">12x de</span>
-                  <span className="ml-1 text-3xl font-bold">R$ 150</span>
-                  <span className="text-muted-foreground">/mês</span>
+                  <span className="text-3xl font-bold">R$ 1.800</span>
+                  <span className="text-muted-foreground">/ano</span>
+                  <p className="text-xs text-muted-foreground mt-1">ou 12x de R$ 150 no cartão</p>
                 </div>
                 <Button
                   size="lg"

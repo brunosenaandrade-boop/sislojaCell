@@ -98,11 +98,10 @@ export default function PrecosPage() {
               <p className="mb-6 text-sm text-gray-500">Licença completa com tudo ilimitado</p>
               <div className="mb-6">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-sm text-gray-500">12x de</span>
-                  <span className="text-5xl font-bold">R$ 150</span>
-                  <span className="text-gray-500">/mês</span>
+                  <span className="text-5xl font-bold">R$ 1.800</span>
+                  <span className="text-gray-500">/ano</span>
                 </div>
-                <p className="mt-1 text-sm text-gray-500">ou R$ 1.800/ano à vista</p>
+                <p className="mt-1 text-sm text-gray-500">ou 12x de R$ 150 no cartão de crédito</p>
               </div>
               <Link
                 href="/cadastro"
@@ -190,7 +189,7 @@ export default function PrecosPage() {
               },
               {
                 q: 'Quais formas de pagamento são aceitas?',
-                a: 'PIX, cartão de crédito e boleto bancário. O plano anual é cobrado em 12 parcelas de R$ 150.',
+                a: 'PIX (à vista), boleto (à vista) ou cartão de crédito (em até 12x de R$ 150). O valor total do plano é R$ 1.800/ano.',
               },
               {
                 q: 'Posso cancelar a qualquer momento?',
@@ -198,7 +197,7 @@ export default function PrecosPage() {
               },
               {
                 q: 'Existe desconto para pagamento à vista?',
-                a: 'O valor anual é R$ 1.800. Aceitamos PIX para pagamento à vista.',
+                a: 'O valor anual é R$ 1.800 à vista (PIX ou boleto). No cartão, o valor é parcelado em até 12x de R$ 150.',
               },
               {
                 q: 'Como funciona o programa de indicação?',

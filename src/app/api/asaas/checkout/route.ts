@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calcular valor e ciclo
-    const billingCycle = (ciclo as string) || 'MONTHLY'
+    const billingCycle = (ciclo as string) || 'YEARLY'
     const valor = billingCycle === 'YEARLY' ? plano.preco_anual : plano.preco_mensal
 
     if (valor <= 0) {
@@ -133,6 +133,7 @@ export async function POST(request: NextRequest) {
     const nextDueDate = new Date().toISOString().split('T')[0]
 
     // Criar assinatura direta no Asaas (billingType UNDEFINED = PIX/cartão/boleto)
+    // maxInstallmentCount: 12 permite parcelamento em até 12x no cartão de crédito
     const { data: subscription, error: subError } = await asaasService.criarAssinatura({
       customerId: asaasCustomerId,
       billingType: 'UNDEFINED',
@@ -141,6 +142,7 @@ export async function POST(request: NextRequest) {
       nextDueDate,
       description: `${plano.nome} - ${empresa.nome_fantasia || empresa.nome}`,
       externalReference: empresa.id,
+      maxInstallmentCount: 12,
     })
 
     if (subError || !subscription) {

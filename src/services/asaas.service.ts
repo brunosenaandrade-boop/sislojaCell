@@ -136,7 +136,7 @@ export const asaasService = {
     }
 
     if (dados.chargeType === 'RECURRENT') {
-      body.subscriptionCycle = dados.cycle || 'MONTHLY'
+      body.subscriptionCycle = dados.cycle || 'YEARLY'
     }
 
     // Calcular endDate (1 ano à frente)
@@ -176,18 +176,25 @@ export const asaasService = {
     nextDueDate: string
     description: string
     externalReference?: string
+    maxInstallmentCount?: number
   }): Promise<AsaasResponse<AsaasSubscription>> {
+    const body: Record<string, unknown> = {
+      customer: dados.customerId,
+      billingType: dados.billingType,
+      value: dados.value,
+      cycle: dados.cycle,
+      nextDueDate: dados.nextDueDate,
+      description: dados.description,
+      externalReference: dados.externalReference,
+    }
+
+    if (dados.maxInstallmentCount) {
+      body.maxInstallmentCount = dados.maxInstallmentCount
+    }
+
     return asaasRequest<AsaasSubscription>('/subscriptions', {
       method: 'POST',
-      body: JSON.stringify({
-        customer: dados.customerId,
-        billingType: dados.billingType,
-        value: dados.value,
-        cycle: dados.cycle,
-        nextDueDate: dados.nextDueDate,
-        description: dados.description,
-        externalReference: dados.externalReference,
-      }),
+      body: JSON.stringify(body),
     })
   },
 

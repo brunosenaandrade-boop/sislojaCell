@@ -14,9 +14,9 @@ export async function GET() {
 
   const allEmpresas = empresas || []
 
-  // MRR: contar assinaturas ativas * R$150/mês
+  // MRR: assinatura anual R$1.800 / 12 = R$150 equivalente mensal
   const ativas = allEmpresas.filter(e => e.status_assinatura === 'active')
-  const mrr = ativas.length * 150
+  const mrr = ativas.length * (1800 / 12)
 
   // Distribuição por status
   const statusCount: Record<string, number> = {}
