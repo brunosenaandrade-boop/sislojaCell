@@ -39,37 +39,78 @@ export function TutorialCard() {
     const cardHeight = 280
     const gap = 16
     const padding = 8
+    const edge = 12
 
-    let top = 0
-    let left = 0
-
-    switch (currentStepData.position) {
-      case 'bottom':
-        top = rect.bottom + padding + gap
-        left = rect.left + rect.width / 2 - cardWidth / 2
-        break
-      case 'top':
-        top = rect.top - padding - gap - cardHeight
-        left = rect.left + rect.width / 2 - cardWidth / 2
-        break
-      case 'right':
-        top = rect.top + rect.height / 2 - cardHeight / 2
-        left = rect.right + padding + gap
-        break
-      case 'left':
-        top = rect.top + rect.height / 2 - cardHeight / 2
-        left = rect.left - padding - gap - cardWidth
-        break
-    }
-
-    // Keep card within viewport bounds
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
 
-    if (left < 12) left = 12
-    if (left + cardWidth > viewportWidth - 12) left = viewportWidth - cardWidth - 12
-    if (top < 12) top = 12
-    if (top + cardHeight > viewportHeight - 12) top = viewportHeight - cardHeight - 12
+    // Target area including spotlight padding
+    const targetTop = rect.top - padding
+    const targetBottom = rect.bottom + padding
+    const targetLeft = rect.left - padding
+    const targetRight = rect.right + padding
+
+    const positionCard = (pos: string) => {
+      let t = 0
+      let l = 0
+
+      switch (pos) {
+        case 'bottom':
+          t = targetBottom + gap
+          l = rect.left + rect.width / 2 - cardWidth / 2
+          break
+        case 'top':
+          t = targetTop - gap - cardHeight
+          l = rect.left + rect.width / 2 - cardWidth / 2
+          break
+        case 'right':
+          t = rect.top + rect.height / 2 - cardHeight / 2
+          l = targetRight + gap
+          break
+        case 'left':
+          t = rect.top + rect.height / 2 - cardHeight / 2
+          l = targetLeft - gap - cardWidth
+          break
+      }
+
+      // Clamp to viewport
+      if (l < edge) l = edge
+      if (l + cardWidth > viewportWidth - edge) l = viewportWidth - cardWidth - edge
+      if (t < edge) t = edge
+      if (t + cardHeight > viewportHeight - edge) t = viewportHeight - cardHeight - edge
+
+      return { t, l }
+    }
+
+    const overlaps = (t: number, l: number) => {
+      return !(l + cardWidth <= targetLeft || l >= targetRight || t + cardHeight <= targetTop || t >= targetBottom)
+    }
+
+    // Try preferred position first, then fallback to alternatives
+    const preferred = currentStepData.position
+    const fallbacks = ['bottom', 'top', 'right', 'left'].filter(p => p !== preferred)
+    const tryOrder = [preferred, ...fallbacks]
+
+    let top = 0
+    let left = 0
+    let found = false
+
+    for (const pos of tryOrder) {
+      const { t, l } = positionCard(pos)
+      if (!overlaps(t, l)) {
+        top = t
+        left = l
+        found = true
+        break
+      }
+    }
+
+    // If all positions overlap, use the preferred but offset away from target
+    if (!found) {
+      const { t, l } = positionCard(preferred)
+      top = t
+      left = l
+    }
 
     setPosition({ top, left })
     setVisible(true)
