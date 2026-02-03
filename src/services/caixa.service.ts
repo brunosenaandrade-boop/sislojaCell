@@ -126,7 +126,7 @@ export const caixaService = {
         .select('tipo, valor')
         .eq('caixa_id', mov.caixa_id)
 
-      const saldo = (caixa.valor_abertura || 0) + (movimentacoes || []).reduce((acc, m) => {
+      const saldo = (caixa.valor_abertura || 0) + (movimentacoes || []).reduce((acc: number, m: { tipo: string; valor: number }) => {
         return acc + (m.tipo === 'sangria' ? -m.valor : m.valor)
       }, 0)
 
