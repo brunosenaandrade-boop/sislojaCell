@@ -104,13 +104,10 @@ export default function PrecosPage() {
               <p className="mb-6 text-sm text-gray-500">Licença completa com tudo ilimitado</p>
               <div className="mb-6">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg text-gray-400 line-through">R$ 1.800/ano</span>
-                </div>
-                <div className="flex items-baseline gap-1">
                   <span className="text-5xl font-bold">R$ 150</span>
                   <span className="text-gray-500">/mês</span>
                 </div>
-                <p className="mt-1 text-sm text-gray-500">no cartão de crédito em 12x ou à vista via PIX/boleto</p>
+                <p className="mt-1 text-sm text-gray-500">12x no cartão ou R$ 1.800 à vista</p>
               </div>
               <Link
                 href="/cadastro"
