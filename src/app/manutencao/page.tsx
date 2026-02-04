@@ -34,7 +34,7 @@ export default function ManutencaoPage() {
               <Construction className="h-12 w-12 text-yellow-600" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">
-              Sistema em Manutencao
+              Sistema em Manutenção
             </h1>
             {loading ? (
               <div className="h-5 w-48 bg-muted rounded animate-pulse" />

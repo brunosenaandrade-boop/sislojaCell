@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data?.valor || { ativo: false, mensagem: '' })
   } catch (err) {
-    console.error('Erro ao buscar status de manutencao:', err)
+    console.error('Erro ao buscar status de manutenção:', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
@@ -44,7 +44,7 @@ export async function PATCH(request: NextRequest) {
 
     if (typeof ativo !== 'boolean') {
       return NextResponse.json(
-        { error: 'Campo obrigatorio: ativo (boolean)' },
+        { error: 'Campo obrigatório: ativo (boolean)' },
         { status: 400 }
       )
     }
@@ -78,15 +78,15 @@ export async function PATCH(request: NextRequest) {
       tipo: 'audit',
       categoria: 'manutencao',
       mensagem: ativo
-        ? 'Modo de manutencao ATIVADO'
-        : 'Modo de manutencao DESATIVADO',
+        ? 'Modo de manutenção ATIVADO'
+        : 'Modo de manutenção DESATIVADO',
       detalhes: { ativo, mensagem },
       autor_id: auth.authUserId,
     })
 
     return NextResponse.json({ data: data?.valor || valor })
   } catch (err) {
-    console.error('Erro ao atualizar modo de manutencao:', err)
+    console.error('Erro ao atualizar modo de manutenção:', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

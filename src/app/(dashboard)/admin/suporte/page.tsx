@@ -69,7 +69,7 @@ const prioridadeConfig: Record<
   { label: string; className: string }
 > = {
   baixa: { label: 'Baixa', className: 'bg-gray-100 text-gray-700' },
-  media: { label: 'Media', className: 'bg-blue-100 text-blue-700' },
+  media: { label: 'Média', className: 'bg-blue-100 text-blue-700' },
   alta: { label: 'Alta', className: 'bg-orange-100 text-orange-700' },
   urgente: { label: 'Urgente', className: 'bg-red-100 text-red-700' },
 }
@@ -307,7 +307,7 @@ export default function SuporteAdminPage() {
           <SelectContent>
             <SelectItem value="todos">Todas Prioridades</SelectItem>
             <SelectItem value="baixa">Baixa</SelectItem>
-            <SelectItem value="media">Media</SelectItem>
+            <SelectItem value="media">Média</SelectItem>
             <SelectItem value="alta">Alta</SelectItem>
             <SelectItem value="urgente">Urgente</SelectItem>
           </SelectContent>
@@ -346,7 +346,7 @@ export default function SuporteAdminPage() {
                   <TableHead>Status</TableHead>
                   <TableHead>Prioridade</TableHead>
                   <TableHead>Criado em</TableHead>
-                  <TableHead>Ultima msg</TableHead>
+                  <TableHead>Última msg</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -461,7 +461,7 @@ export default function SuporteAdminPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="baixa">Baixa</SelectItem>
-                        <SelectItem value="media">Media</SelectItem>
+                        <SelectItem value="media">Média</SelectItem>
                         <SelectItem value="alta">Alta</SelectItem>
                         <SelectItem value="urgente">Urgente</SelectItem>
                       </SelectContent>

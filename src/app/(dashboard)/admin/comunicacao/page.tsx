@@ -169,11 +169,11 @@ export default function ComunicacaoAdminPage() {
 
   const handleCriarAviso = async () => {
     if (!formTitulo.trim()) {
-      toast.error('Titulo e obrigatorio')
+      toast.error('Título é obrigatório')
       return
     }
     if (!formMensagem.trim()) {
-      toast.error('Mensagem e obrigatoria')
+      toast.error('Mensagem é obrigatória')
       return
     }
 
@@ -213,7 +213,7 @@ export default function ComunicacaoAdminPage() {
           </Link>
           <Megaphone className="h-6 w-6" />
           <div>
-            <h1 className="text-2xl font-bold">Comunicacao</h1>
+            <h1 className="text-2xl font-bold">Comunicação</h1>
             <p className="text-muted-foreground text-sm">
               {avisos.length} aviso{avisos.length !== 1 ? 's' : ''} cadastrado{avisos.length !== 1 ? 's' : ''}
             </p>
@@ -243,12 +243,12 @@ export default function ComunicacaoAdminPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Titulo</TableHead>
+                  <TableHead>Título</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Alvo</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Criado em</TableHead>
-                  <TableHead className="text-right">Acoes</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -307,14 +307,14 @@ export default function ComunicacaoAdminPage() {
           <DialogHeader>
             <DialogTitle>Novo Aviso</DialogTitle>
             <DialogDescription>
-              Crie um aviso para ser exibido aos usuarios da plataforma.
+              Crie um aviso para ser exibido aos usuários da plataforma.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="text-sm font-medium">Titulo</label>
+              <label className="text-sm font-medium">Título</label>
               <Input
-                placeholder="Titulo do aviso"
+                placeholder="Título do aviso"
                 value={formTitulo}
                 onChange={(e) => setFormTitulo(e.target.value)}
               />
@@ -349,8 +349,8 @@ export default function ComunicacaoAdminPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="plano">Plano especifico</SelectItem>
-                  <SelectItem value="empresa">Empresa especifica</SelectItem>
+                  <SelectItem value="plano">Plano específico</SelectItem>
+                  <SelectItem value="empresa">Empresa específica</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser()
     if (!user) {
-      return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
     const ip = getClientIp(request)
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const { codigo, plano_slug } = body
 
     if (!codigo) {
-      return NextResponse.json({ error: 'Codigo do cupom e obrigatorio' }, { status: 400 })
+      return NextResponse.json({ error: 'Código do cupom é obrigatório' }, { status: 400 })
     }
 
     const db = getServiceClient()
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error || !cupom) {
-      const response: CupomInvalidoResponse = { valido: false, motivo: 'Cupom nao encontrado' }
+      const response: CupomInvalidoResponse = { valido: false, motivo: 'Cupom não encontrado' }
       return NextResponse.json(response)
     }
 
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     if (cupom.max_usos !== null && cupom.usos >= cupom.max_usos) {
       const response: CupomInvalidoResponse = {
         valido: false,
-        motivo: 'Cupom atingiu o limite maximo de usos',
+        motivo: 'Cupom atingiu o limite máximo de usos',
       }
       return NextResponse.json(response)
     }
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     if (cupom.plano_slug && plano_slug && cupom.plano_slug !== plano_slug) {
       const response: CupomInvalidoResponse = {
         valido: false,
-        motivo: 'Cupom nao e valido para este plano',
+        motivo: 'Cupom não é válido para este plano',
       }
       return NextResponse.json(response)
     }

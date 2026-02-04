@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser()
     if (!user) {
-      return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
     const ip = getClientIp(request)
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (userError || !usuario) {
-      return NextResponse.json({ error: 'Usuario nao encontrado' }, { status: 404 })
+      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
     }
 
     const empresaId = usuario.empresa_id
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser()
     if (!user) {
-      return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
     const ip = getClientIp(request)
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     const { aviso_id } = body
 
     if (!aviso_id) {
-      return NextResponse.json({ error: 'aviso_id e obrigatorio' }, { status: 400 })
+      return NextResponse.json({ error: 'aviso_id é obrigatório' }, { status: 400 })
     }
 
     const db = getServiceClient()
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (userError || !usuario) {
-      return NextResponse.json({ error: 'Usuario nao encontrado' }, { status: 404 })
+      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
     }
 
     // Check if already marked as read

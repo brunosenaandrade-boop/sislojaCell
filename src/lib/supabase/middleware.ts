@@ -1,5 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -89,7 +97,8 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && pathname === '/login') {
-    const { data: usuarioLogin } = await supabase
+    const db = getServiceClient()
+    const { data: usuarioLogin } = await db
       .from('usuarios')
       .select('perfil')
       .eq('auth_id', user.id)
@@ -115,7 +124,8 @@ export async function updateSession(request: NextRequest) {
   const isAdminRoute = pathname.startsWith('/configuracoes')
 
   if (user && (isAdminRoute || isSuperadminRoute)) {
-    const { data: usuario } = await supabase
+    const db = getServiceClient()
+    const { data: usuario } = await db
       .from('usuarios')
       .select('perfil')
       .eq('auth_id', user.id)
@@ -143,14 +153,15 @@ export async function updateSession(request: NextRequest) {
   // ============================================
   if (user && !isPublicRoute && !isSuperadminRoute && !pathname.startsWith('/api')) {
     try {
-      const { data: manutencaoConfig } = await supabase
+      const dbManutencao = getServiceClient()
+      const { data: manutencaoConfig } = await dbManutencao
         .from('configuracoes_plataforma')
         .select('valor')
         .eq('chave', 'manutencao')
         .single()
 
       if (manutencaoConfig?.valor && (manutencaoConfig.valor as Record<string, unknown>).ativo === true) {
-        const { data: usuarioCheck } = await supabase
+        const { data: usuarioCheck } = await dbManutencao
           .from('usuarios')
           .select('perfil')
           .eq('auth_id', user.id)
@@ -171,7 +182,8 @@ export async function updateSession(request: NextRequest) {
   // 4.1-4.5 VERIFICAÇÃO DE STATUS DA ASSINATURA
   // ============================================
   if (user && !isPublicRoute && !isRotaLivre && !isSuperadminRoute) {
-    const { data: usuario } = await supabase
+    const dbAssinatura = getServiceClient()
+    const { data: usuario } = await dbAssinatura
       .from('usuarios')
       .select('empresa_id, perfil')
       .eq('auth_id', user.id)
@@ -183,7 +195,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     if (usuario?.empresa_id) {
-      const { data: empresa } = await supabase
+      const { data: empresa } = await dbAssinatura
         .from('empresas')
         .select('status_assinatura, trial_fim, meses_bonus, onboarding_completo')
         .eq('id', usuario.empresa_id)

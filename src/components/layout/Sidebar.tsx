@@ -141,7 +141,7 @@ const menuItems: MenuItem[] = [
     requiredRole: 'superadmin',
   },
   {
-    title: 'Usuarios Global',
+    title: 'Usuários Global',
     href: '/admin/usuarios',
     icon: UsersRound,
     requiredRole: 'superadmin',

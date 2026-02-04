@@ -180,11 +180,11 @@ export default function FinanceiroAdminPage() {
 
   const handleCriarCupom = async () => {
     if (!cupomForm.codigo.trim()) {
-      toast.error('Informe o codigo do cupom')
+      toast.error('Informe o código do cupom')
       return
     }
     if (!cupomForm.valor || Number(cupomForm.valor) <= 0) {
-      toast.error('Informe um valor valido para o desconto')
+      toast.error('Informe um valor válido para o desconto')
       return
     }
 
@@ -242,15 +242,15 @@ export default function FinanceiroAdminPage() {
         CNPJ: e.cnpj || '',
         Plano: e.plano,
         'Status Assinatura': e.status_assinatura,
-        Ativo: e.ativo ? 'Sim' : 'Nao',
+        Ativo: e.ativo ? 'Sim' : 'Não',
         'Trial Fim': e.trial_fim || '',
-        Usuarios: e.usuarios_count,
-        'Ordens Servico': e.os_count,
+        Usuários: e.usuarios_count,
+        'Ordens de Serviço': e.os_count,
         Vendas: e.vendas_count,
         'Criada em': e.created_at,
       }))
       downloadCSV(rows as unknown as Record<string, unknown>[], `empresas_${new Date().toISOString().split('T')[0]}.csv`)
-      toast.success('Exportacao de empresas concluida')
+      toast.success('Exportação de empresas concluída')
     } else {
       toast.info('Nenhuma empresa para exportar')
     }
@@ -277,7 +277,7 @@ export default function FinanceiroAdminPage() {
           Valor: data.total_assinantes,
         },
         {
-          Metrica: 'Taxa Conversao (%)',
+          Metrica: 'Taxa Conversão (%)',
           Valor: data.taxa_conversao,
         },
         {
@@ -285,7 +285,7 @@ export default function FinanceiroAdminPage() {
           Valor: data.churn_rate,
         },
         {
-          Metrica: 'Cancelamentos no Mes',
+          Metrica: 'Cancelamentos no Mês',
           Valor: data.cancelamentos_mes,
         },
         {
@@ -297,16 +297,16 @@ export default function FinanceiroAdminPage() {
           Valor: data.trials_expirando,
         },
         {
-          Metrica: 'Indicacoes Total',
+          Metrica: 'Indicações Total',
           Valor: data.indicacoes.total,
         },
         {
-          Metrica: 'Indicacoes Qualificadas',
+          Metrica: 'Indicações Qualificadas',
           Valor: data.indicacoes.qualificadas,
         },
       ]
       downloadCSV(rows as unknown as Record<string, unknown>[], `financeiro_${new Date().toISOString().split('T')[0]}.csv`)
-      toast.success('Exportacao financeira concluida')
+      toast.success('Exportação financeira concluída')
     }
     setExportingFinanceiro(false)
   }
@@ -317,25 +317,25 @@ export default function FinanceiroAdminPage() {
       const res = await fetch('/api/superadmin/usuarios')
       const json = await res.json()
       if (!res.ok) {
-        toast.error('Erro ao exportar usuarios: ' + (json.error || 'Erro desconhecido'))
+        toast.error('Erro ao exportar usuários: ' + (json.error || 'Erro desconhecido'))
       } else if (json.data && json.data.length > 0) {
         const rows = json.data.map((u: Record<string, unknown>) => ({
           ID: u.id,
           Nome: u.nome,
           Email: u.email,
           Perfil: u.perfil,
-          Ativo: u.ativo ? 'Sim' : 'Nao',
+          Ativo: u.ativo ? 'Sim' : 'Não',
           'Empresa ID': u.empresa_id || '',
-          'Ultimo Acesso': u.ultimo_acesso || '',
+          'Último Acesso': u.ultimo_acesso || '',
           'Criado em': u.created_at,
         }))
         downloadCSV(rows, `usuarios_${new Date().toISOString().split('T')[0]}.csv`)
-        toast.success('Exportacao de usuarios concluida')
+        toast.success('Exportação de usuários concluída')
       } else {
-        toast.info('Nenhum usuario para exportar')
+        toast.info('Nenhum usuário para exportar')
       }
     } catch {
-      toast.error('Erro ao exportar usuarios')
+      toast.error('Erro ao exportar usuários')
     }
     setExportingUsuarios(false)
   }
@@ -357,7 +357,7 @@ export default function FinanceiroAdminPage() {
         <div>
           <h1 className="text-2xl font-bold">Financeiro</h1>
           <p className="text-muted-foreground">
-            Receita, cupons e exportacoes
+            Receita, cupons e exportações
           </p>
         </div>
       </div>
@@ -434,7 +434,7 @@ export default function FinanceiroAdminPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5" />
-                    Novas Assinaturas por Mes
+                    Novas Assinaturas por Mês
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -556,14 +556,14 @@ export default function FinanceiroAdminPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Codigo</TableHead>
+                      <TableHead>Código</TableHead>
                       <TableHead>Tipo</TableHead>
                       <TableHead>Valor</TableHead>
                       <TableHead>Usos</TableHead>
                       <TableHead>Plano</TableHead>
-                      <TableHead>Expiracao</TableHead>
+                      <TableHead>Expiração</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Acoes</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -651,7 +651,7 @@ export default function FinanceiroAdminPage() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="cupom-codigo">Codigo</Label>
+                  <Label htmlFor="cupom-codigo">Código</Label>
                   <Input
                     id="cupom-codigo"
                     placeholder="DESCONTO10"
@@ -665,10 +665,10 @@ export default function FinanceiroAdminPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cupom-descricao">Descricao</Label>
+                  <Label htmlFor="cupom-descricao">Descrição</Label>
                   <Input
                     id="cupom-descricao"
-                    placeholder="Descricao do cupom (opcional)"
+                    placeholder="Descrição do cupom (opcional)"
                     value={cupomForm.descricao}
                     onChange={(e) =>
                       setCupomForm({
@@ -762,7 +762,7 @@ export default function FinanceiroAdminPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="cupom-expiracao">
-                    Data de Expiracao (opcional)
+                    Data de Expiração (opcional)
                   </Label>
                   <Input
                     id="cupom-expiracao"
@@ -807,7 +807,7 @@ export default function FinanceiroAdminPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Exporta todas as empresas cadastradas com estatisticas de uso
+                  Exporta todas as empresas cadastradas com estatísticas de uso
                   em formato CSV.
                 </p>
                 <Button
@@ -834,8 +834,8 @@ export default function FinanceiroAdminPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Exporta metricas financeiras SaaS incluindo MRR, ARR, churn e
-                  indicacoes.
+                  Exporta métricas financeiras SaaS incluindo MRR, ARR, churn e
+                  indicações.
                 </p>
                 <Button
                   className="w-full"
@@ -856,12 +856,12 @@ export default function FinanceiroAdminPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Download className="h-5 w-5" />
-                  Exportar Usuarios
+                  Exportar Usuários
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Exporta todos os usuarios da plataforma com dados de perfil e
+                  Exporta todos os usuários da plataforma com dados de perfil e
                   acesso.
                 </p>
                 <Button

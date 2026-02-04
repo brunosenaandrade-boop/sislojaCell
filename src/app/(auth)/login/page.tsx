@@ -138,7 +138,7 @@ export default function LoginPage() {
               </Link>
             </div>
             <div>
-              <span className="text-sm text-muted-foreground">Nao tem conta? </span>
+              <span className="text-sm text-muted-foreground">Não tem conta? </span>
               <Link href="/cadastro">
                 <Button variant="link" className="text-sm p-0">
                   Cadastre-se

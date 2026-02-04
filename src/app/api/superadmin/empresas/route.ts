@@ -41,7 +41,7 @@ export async function PATCH(request: NextRequest) {
   const { empresa_id, ativo } = body
 
   if (!empresa_id || typeof ativo !== 'boolean') {
-    return NextResponse.json({ error: 'Dados invalidos' }, { status: 400 })
+    return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
   }
 
   const db = getServiceClient()

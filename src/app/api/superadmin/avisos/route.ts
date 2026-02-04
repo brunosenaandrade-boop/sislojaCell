@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     if (!titulo || !mensagem) {
       return NextResponse.json(
-        { error: 'Campos obrigatorios: titulo, mensagem' },
+        { error: 'Campos obrigatórios: título, mensagem' },
         { status: 400 }
       )
     }
@@ -99,7 +99,7 @@ export async function PATCH(request: NextRequest) {
     const { id, ...fields } = body
 
     if (!id) {
-      return NextResponse.json({ error: 'ID do aviso e obrigatorio' }, { status: 400 })
+      return NextResponse.json({ error: 'ID do aviso é obrigatório' }, { status: 400 })
     }
 
     const db = getServiceClient()

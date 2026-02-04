@@ -62,7 +62,7 @@ export default function MetricasAdminPage() {
     async function loadMetricas() {
       const { data, error } = await superadminService.getMetricas()
       if (error) {
-        toast.error('Erro ao carregar metricas: ' + error)
+        toast.error('Erro ao carregar métricas: ' + error)
       } else if (data) {
         setMetricas(data)
       }
@@ -100,9 +100,9 @@ export default function MetricasAdminPage() {
         </Link>
         <BarChart3 className="h-6 w-6" />
         <div>
-          <h1 className="text-2xl font-bold">Metricas</h1>
+          <h1 className="text-2xl font-bold">Métricas</h1>
           <p className="text-muted-foreground text-sm">
-            Funil de onboarding e metricas de uso
+            Funil de onboarding e métricas de uso
           </p>
         </div>
       </div>
@@ -130,7 +130,7 @@ export default function MetricasAdminPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Nao foi possivel carregar os dados do funil.</p>
+                <p className="text-muted-foreground">Não foi possível carregar os dados do funil.</p>
               </CardContent>
             </Card>
           ) : (
@@ -186,7 +186,7 @@ export default function MetricasAdminPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Nao foi possivel carregar as metricas de uso.</p>
+                <p className="text-muted-foreground">Não foi possível carregar as métricas de uso.</p>
               </CardContent>
             </Card>
           ) : (
@@ -196,7 +196,7 @@ export default function MetricasAdminPage() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Ativas ultimos 7 dias
+                      Ativas últimos 7 dias
                     </CardTitle>
                     <div className="rounded-lg p-2 bg-green-50">
                       <Activity className="h-4 w-4 text-green-600" />
@@ -209,7 +209,7 @@ export default function MetricasAdminPage() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Ativas ultimos 30 dias
+                      Ativas últimos 30 dias
                     </CardTitle>
                     <div className="rounded-lg p-2 bg-blue-50">
                       <Activity className="h-4 w-4 text-blue-600" />
@@ -229,7 +229,7 @@ export default function MetricasAdminPage() {
                 <CardContent className="p-0">
                   {metricas.features_mais_usadas.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      <p>Nenhum dado de uso disponivel.</p>
+                      <p>Nenhum dado de uso disponível.</p>
                     </div>
                   ) : (
                     <Table>
@@ -274,7 +274,7 @@ export default function MetricasAdminPage() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Nome</TableHead>
-                          <TableHead>Ultimo acesso</TableHead>
+                          <TableHead>Último acesso</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

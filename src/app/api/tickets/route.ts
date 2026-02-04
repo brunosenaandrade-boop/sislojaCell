@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser()
     if (!user) {
-      return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
     const ip = getClientIp(request)
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (userError || !usuario) {
-      return NextResponse.json({ error: 'Usuario nao encontrado' }, { status: 404 })
+      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
     }
 
     const { data: tickets, error } = await db
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser()
     if (!user) {
-      return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
     const ip = getClientIp(request)
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
 
     if (!assunto || !mensagem) {
       return NextResponse.json(
-        { error: 'Campos obrigatorios: assunto, mensagem' },
+        { error: 'Campos obrigatórios: assunto, mensagem' },
         { status: 400 }
       )
     }
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (userError || !usuario) {
-      return NextResponse.json({ error: 'Usuario nao encontrado' }, { status: 404 })
+      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
     }
 
     // Generate protocol number

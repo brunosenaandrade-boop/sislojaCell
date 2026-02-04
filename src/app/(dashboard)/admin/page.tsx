@@ -125,8 +125,8 @@ export default function AdminDashboardPage() {
   const platformCards = [
     { title: 'Total de Empresas', value: stats?.total_empresas ?? 0, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
     { title: 'Empresas Ativas', value: stats?.empresas_ativas ?? 0, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
-    { title: 'Total de Usuarios', value: stats?.total_usuarios ?? 0, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { title: 'Ordens de Servico', value: stats?.total_os ?? 0, icon: FileText, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { title: 'Total de Usuários', value: stats?.total_usuarios ?? 0, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { title: 'Ordens de Serviço', value: stats?.total_os ?? 0, icon: FileText, color: 'text-orange-600', bg: 'bg-orange-50' },
     { title: 'Total de Vendas', value: stats?.total_vendas ?? 0, icon: ShoppingCart, color: 'text-pink-600', bg: 'bg-pink-50' },
     { title: 'Receita Total (Vendas)', value: formatCurrency(stats?.valor_total_vendas ?? 0), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
   ]
@@ -145,7 +145,7 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Painel Administrativo</h1>
-            <p className="text-muted-foreground">Visao geral da plataforma</p>
+            <p className="text-muted-foreground">Visão geral da plataforma</p>
           </div>
         </div>
         <Link href="/admin/empresas">
@@ -467,8 +467,8 @@ export default function AdminDashboardPage() {
             <CardContent className="pt-6 flex items-center gap-3">
               <Users className="h-5 w-5 text-purple-600" />
               <div>
-                <p className="font-medium">Usuarios Global</p>
-                <p className="text-sm text-muted-foreground">Todos os usuarios do sistema</p>
+                <p className="font-medium">Usuários Global</p>
+                <p className="text-sm text-muted-foreground">Todos os usuários do sistema</p>
               </div>
             </CardContent>
           </Card>

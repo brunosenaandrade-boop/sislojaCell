@@ -31,7 +31,7 @@ export async function verifySuperadmin(): Promise<
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    return { error: NextResponse.json({ error: 'Nao autenticado' }, { status: 401 }) }
+    return { error: NextResponse.json({ error: 'Não autenticado' }, { status: 401 }) }
   }
 
   const serviceClient = getServiceClient()

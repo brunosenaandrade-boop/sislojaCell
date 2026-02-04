@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const user = await getAuthUser()
     if (!user) {
-      return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
     const ip = getClientIp(request)
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .single()
 
     if (userError || !usuario) {
-      return NextResponse.json({ error: 'Usuario nao encontrado' }, { status: 404 })
+      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
     }
 
     // Verify ticket belongs to the company
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .single()
 
     if (ticketError || !ticket) {
-      return NextResponse.json({ error: 'Ticket nao encontrado' }, { status: 404 })
+      return NextResponse.json({ error: 'Ticket não encontrado' }, { status: 404 })
     }
 
     // Get messages
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const user = await getAuthUser()
     if (!user) {
-      return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
     const ip = getClientIp(request)
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const { mensagem } = body
 
     if (!mensagem || !mensagem.trim()) {
-      return NextResponse.json({ error: 'Mensagem e obrigatoria' }, { status: 400 })
+      return NextResponse.json({ error: 'Mensagem é obrigatória' }, { status: 400 })
     }
 
     const db = getServiceClient()
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       .single()
 
     if (userError || !usuario) {
-      return NextResponse.json({ error: 'Usuario nao encontrado' }, { status: 404 })
+      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
     }
 
     // Verify ticket belongs to the company
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       .single()
 
     if (ticketError || !ticket) {
-      return NextResponse.json({ error: 'Ticket nao encontrado' }, { status: 404 })
+      return NextResponse.json({ error: 'Ticket não encontrado' }, { status: 404 })
     }
 
     // Insert message

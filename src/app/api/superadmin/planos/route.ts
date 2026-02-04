@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const { nome, slug, descricao, preco_mensal, preco_anual, recursos, limites, ordem, ativo, destaque } = body
 
     if (!nome || !slug || preco_mensal === undefined) {
-      return NextResponse.json({ error: 'Campos obrigatorios: nome, slug, preco_mensal' }, { status: 400 })
+      return NextResponse.json({ error: 'Campos obrigatórios: nome, slug, preco_mensal' }, { status: 400 })
     }
 
     const db = getServiceClient()
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existing) {
-      return NextResponse.json({ error: 'Ja existe um plano com este slug' }, { status: 409 })
+      return NextResponse.json({ error: 'Já existe um plano com este slug' }, { status: 409 })
     }
 
     const { data: plano, error } = await db
@@ -95,7 +95,7 @@ export async function PATCH(request: NextRequest) {
     const { id, ...fields } = body
 
     if (!id) {
-      return NextResponse.json({ error: 'ID do plano e obrigatorio' }, { status: 400 })
+      return NextResponse.json({ error: 'ID do plano é obrigatório' }, { status: 400 })
     }
 
     const db = getServiceClient()
@@ -129,7 +129,7 @@ export async function DELETE(request: NextRequest) {
     const { id } = body
 
     if (!id) {
-      return NextResponse.json({ error: 'ID do plano e obrigatorio' }, { status: 400 })
+      return NextResponse.json({ error: 'ID do plano é obrigatório' }, { status: 400 })
     }
 
     const db = getServiceClient()
@@ -143,7 +143,7 @@ export async function DELETE(request: NextRequest) {
 
     if (activeCount && activeCount > 0) {
       return NextResponse.json(
-        { error: `Existem ${activeCount} assinaturas ativas usando este plano. Nao e possivel desativar.` },
+        { error: `Existem ${activeCount} assinaturas ativas usando este plano. Não é possível desativar.` },
         { status: 409 }
       )
     }

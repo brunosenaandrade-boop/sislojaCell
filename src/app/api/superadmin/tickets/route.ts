@@ -76,7 +76,7 @@ export async function PATCH(request: NextRequest) {
     const { id, status, prioridade } = body
 
     if (!id) {
-      return NextResponse.json({ error: 'ID do ticket e obrigatorio' }, { status: 400 })
+      return NextResponse.json({ error: 'ID do ticket é obrigatório' }, { status: 400 })
     }
 
     if (!status && !prioridade) {

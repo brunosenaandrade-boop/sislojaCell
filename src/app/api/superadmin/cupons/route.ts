@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     if (!codigo || !tipo_desconto || valor === undefined) {
       return NextResponse.json(
-        { error: 'Campos obrigatorios: codigo, tipo_desconto, valor' },
+        { error: 'Campos obrigatórios: codigo, tipo_desconto, valor' },
         { status: 400 }
       )
     }
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existing) {
-      return NextResponse.json({ error: 'Ja existe um cupom com este codigo' }, { status: 409 })
+      return NextResponse.json({ error: 'Já existe um cupom com este código' }, { status: 409 })
     }
 
     const { data: cupom, error } = await db
@@ -106,7 +106,7 @@ export async function PATCH(request: NextRequest) {
     const { id, ...fields } = body
 
     if (!id) {
-      return NextResponse.json({ error: 'ID do cupom e obrigatorio' }, { status: 400 })
+      return NextResponse.json({ error: 'ID do cupom é obrigatório' }, { status: 400 })
     }
 
     // Uppercase codigo if provided

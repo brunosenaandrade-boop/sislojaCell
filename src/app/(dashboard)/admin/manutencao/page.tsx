@@ -32,7 +32,7 @@ export default function ManutencaoAdminPage() {
   const loadManutencao = async () => {
     const { data, error } = await superadminService.getManutencao()
     if (error) {
-      toast.error('Erro ao carregar configuracao: ' + error)
+      toast.error('Erro ao carregar configuração: ' + error)
     } else if (data) {
       setConfig(data)
       setMensagem(data.mensagem || '')
@@ -73,8 +73,8 @@ export default function ManutencaoAdminPage() {
   const handleToggle = async () => {
     const novoStatus = !isAtivo
     const confirmMsg = novoStatus
-      ? 'Ativar o modo manutencao? Os usuarios nao conseguirao acessar o sistema.'
-      : 'Desativar o modo manutencao? Os usuarios voltarao a acessar o sistema.'
+      ? 'Ativar o modo manutenção? Os usuários não conseguirão acessar o sistema.'
+      : 'Desativar o modo manutenção? Os usuários voltarão a acessar o sistema.'
 
     if (!window.confirm(confirmMsg)) return
 
@@ -83,7 +83,7 @@ export default function ManutencaoAdminPage() {
     if (error) {
       toast.error('Erro: ' + error)
     } else {
-      toast.success(`Modo manutencao ${novoStatus ? 'ativado' : 'desativado'} com sucesso`)
+      toast.success(`Modo manutenção ${novoStatus ? 'ativado' : 'desativado'} com sucesso`)
       setConfig((prev) => prev ? { ...prev, ativo: novoStatus, mensagem } : { ativo: novoStatus, mensagem })
     }
     setToggling(false)
@@ -112,9 +112,9 @@ export default function ManutencaoAdminPage() {
         </Link>
         <Construction className="h-6 w-6" />
         <div>
-          <h1 className="text-2xl font-bold">Modo Manutencao</h1>
+          <h1 className="text-2xl font-bold">Modo Manutenção</h1>
           <p className="text-muted-foreground text-sm">
-            Controle do modo de manutencao do sistema
+            Controle do modo de manutenção do sistema
           </p>
         </div>
       </div>
@@ -154,12 +154,12 @@ export default function ManutencaoAdminPage() {
               ) : (
                 <PowerOff className="mr-2 h-4 w-4" />
               )}
-              {isAtivo ? 'Desativar Modo Manutencao' : 'Ativar Modo Manutencao'}
+              {isAtivo ? 'Desativar Modo Manutenção' : 'Ativar Modo Manutenção'}
             </Button>
 
             {/* Mensagem */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Mensagem de manutencao</label>
+              <label className="text-sm font-medium">Mensagem de manutenção</label>
               <Textarea
                 placeholder="Estamos realizando melhorias no sistema. Voltaremos em breve!"
                 rows={4}
@@ -195,7 +195,7 @@ export default function ManutencaoAdminPage() {
                   <Construction className="h-12 w-12 text-yellow-600" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Sistema em Manutencao
+                  Sistema em Manutenção
                 </h2>
                 <p className="text-gray-600 max-w-sm">
                   {mensagem || 'Estamos realizando melhorias no sistema. Voltaremos em breve!'}

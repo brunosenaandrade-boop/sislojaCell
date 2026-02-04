@@ -153,10 +153,10 @@ export async function POST() {
         })
       }
 
-      // Tabelas faltando e nao conseguimos criar via API
+      // Tabelas faltando e não conseguimos criar via API
       return NextResponse.json(
         {
-          error: `Nao foi possivel criar as tabelas via API. ${missingTables.length} tabela(s) faltando: ${missingTables.join(', ')}. Execute o SQL manualmente no Supabase Dashboard (SQL Editor).`,
+          error: `Não foi possível criar as tabelas via API. ${missingTables.length} tabela(s) faltando: ${missingTables.join(', ')}. Execute o SQL manualmente no Supabase Dashboard (SQL Editor).`,
           missing_tables: missingTables,
           existing_tables: existingTables,
           sql: CREATE_TABLES_SQL,

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     if (!empresa_id || !acao) {
       return NextResponse.json(
-        { error: 'Campos obrigatorios: empresa_id, acao' },
+        { error: 'Campos obrigatórios: empresa_id, ação' },
         { status: 400 }
       )
     }
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       .insert({
         tipo: 'audit',
         categoria: 'impersonacao',
-        mensagem: `Superadmin ${acao} impersonacao da empresa ${empresa_nome || empresa_id}`,
+        mensagem: `Superadmin ${acao} impersonação da empresa ${empresa_nome || empresa_id}`,
         detalhes: {
           empresa_id,
           empresa_nome: empresa_nome || null,
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: log }, { status: 201 })
   } catch (err) {
-    console.error('Erro ao registrar impersonacao:', err)
+    console.error('Erro ao registrar impersonação:', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

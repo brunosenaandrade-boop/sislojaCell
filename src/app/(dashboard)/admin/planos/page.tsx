@@ -174,7 +174,7 @@ export default function PlanosAdminPage() {
     try {
       featuresObj = JSON.parse(form.features)
     } catch {
-      toast.error('JSON de features invalido. Verifique a sintaxe.')
+      toast.error('JSON de features inválido. Verifique a sintaxe.')
       return
     }
 
@@ -294,15 +294,15 @@ export default function PlanosAdminPage() {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Slug</TableHead>
-                  <TableHead className="text-right">Preco Mensal</TableHead>
-                  <TableHead className="text-right">Preco Anual</TableHead>
-                  <TableHead className="text-center">Max Usuarios</TableHead>
+                  <TableHead className="text-right">Preço Mensal</TableHead>
+                  <TableHead className="text-right">Preço Anual</TableHead>
+                  <TableHead className="text-center">Max Usuários</TableHead>
                   <TableHead className="text-center">Max Produtos</TableHead>
-                  <TableHead className="text-center">Max OS/mes</TableHead>
-                  <TableHead className="text-center">Max Vendas/mes</TableHead>
+                  <TableHead className="text-center">Max OS/mês</TableHead>
+                  <TableHead className="text-center">Max Vendas/mês</TableHead>
                   <TableHead className="text-center">Destaque</TableHead>
                   <TableHead className="text-center">Ativo</TableHead>
-                  <TableHead className="text-right">Acoes</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -348,7 +348,7 @@ export default function PlanosAdminPage() {
                           </Badge>
                         ) : (
                           <span className="text-muted-foreground text-sm">
-                            Nao
+                            Não
                           </span>
                         )}
                       </TableCell>
@@ -421,10 +421,10 @@ export default function PlanosAdminPage() {
 
             {/* Descricao */}
             <div className="space-y-2">
-              <Label htmlFor="plano-descricao">Descricao</Label>
+              <Label htmlFor="plano-descricao">Descrição</Label>
               <Textarea
                 id="plano-descricao"
-                placeholder="Descricao do plano (opcional)"
+                placeholder="Descrição do plano (opcional)"
                 value={form.descricao}
                 onChange={(e) =>
                   setForm({ ...form, descricao: e.target.value })
@@ -436,7 +436,7 @@ export default function PlanosAdminPage() {
             {/* Row 2: Precos */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="plano-preco-mensal">Preco Mensal (R$)</Label>
+                <Label htmlFor="plano-preco-mensal">Preço Mensal (R$)</Label>
                 <Input
                   id="plano-preco-mensal"
                   type="number"
@@ -449,7 +449,7 @@ export default function PlanosAdminPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="plano-preco-anual">Preco Anual (R$)</Label>
+                <Label htmlFor="plano-preco-anual">Preço Anual (R$)</Label>
                 <Input
                   id="plano-preco-anual"
                   type="number"
@@ -467,7 +467,7 @@ export default function PlanosAdminPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="plano-max-usuarios">
-                  Max Usuarios (-1 = ilimitado)
+                  Max Usuários (-1 = ilimitado)
                 </Label>
                 <Input
                   id="plano-max-usuarios"
@@ -497,7 +497,7 @@ export default function PlanosAdminPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="plano-max-os">
-                  Max OS/mes (-1 = ilimitado)
+                  Max OS/mês (-1 = ilimitado)
                 </Label>
                 <Input
                   id="plano-max-os"
@@ -511,7 +511,7 @@ export default function PlanosAdminPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="plano-max-vendas">
-                  Max Vendas/mes (-1 = ilimitado)
+                  Max Vendas/mês (-1 = ilimitado)
                 </Label>
                 <Input
                   id="plano-max-vendas"
@@ -528,7 +528,7 @@ export default function PlanosAdminPage() {
             {/* Row 4: Ordem + Checkboxes */}
             <div className="grid grid-cols-3 gap-4 items-end">
               <div className="space-y-2">
-                <Label htmlFor="plano-ordem">Ordem de Exibicao</Label>
+                <Label htmlFor="plano-ordem">Ordem de Exibição</Label>
                 <Input
                   id="plano-ordem"
                   type="number"
@@ -578,7 +578,7 @@ export default function PlanosAdminPage() {
                 }
               />
               <p className="text-xs text-muted-foreground">
-                Insira um JSON valido com as features do plano. Exemplo:
+                Insira um JSON válido com as features do plano. Exemplo:
                 {' {"pdv": true, "os": true, "suporte": "prioritario"}'}
               </p>
             </div>
@@ -594,7 +594,7 @@ export default function PlanosAdminPage() {
               {saving && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {editingPlano ? 'Salvar Alteracoes' : 'Criar Plano'}
+              {editingPlano ? 'Salvar Alterações' : 'Criar Plano'}
             </Button>
           </DialogFooter>
         </DialogContent>
