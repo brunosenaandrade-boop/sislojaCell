@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySuperadmin, getServiceClient } from '../route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 interface ReceitaMensal {
   mes: string
@@ -84,6 +85,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ meses: months, por_plano: porPlano })
   } catch (err) {
     console.error('Erro ao buscar receita:', err)
+    await logApiError('/api/superadmin/receita', 'GET', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

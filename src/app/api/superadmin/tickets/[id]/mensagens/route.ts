@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySuperadmin, getServiceClient } from '../../../route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -41,6 +42,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ ticket, mensagens: mensagens || [] })
   } catch (err) {
     console.error('Erro ao buscar mensagens do ticket:', err)
+    await logApiError('/api/superadmin/tickets/[id]/mensagens', 'GET', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
@@ -105,6 +107,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ data: novaMensagem }, { status: 201 })
   } catch (err) {
     console.error('Erro ao enviar mensagem no ticket:', err)
+    await logApiError('/api/superadmin/tickets/[id]/mensagens', 'POST', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

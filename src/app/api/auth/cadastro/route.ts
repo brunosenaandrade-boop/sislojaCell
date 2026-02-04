@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServiceClient } from '../../superadmin/route-utils'
 import { emailService } from '@/services/email/resend'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 // ============================================
 // POST /api/auth/cadastro
@@ -247,6 +248,7 @@ export async function POST(request: NextRequest) {
     const stack = err instanceof Error ? err.stack : undefined
     console.error('[Cadastro] ERRO GERAL:', msg)
     if (stack) console.error('[Cadastro] Stack:', stack)
+    await logApiError('/api/auth/cadastro', 'POST', err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

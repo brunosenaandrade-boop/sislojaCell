@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { getServiceClient } from '../../superadmin/route-utils'
 import { asaasService } from '@/services/asaas.service'
 import { emailService } from '@/services/email/resend'
+import { logApiError } from '@/lib/server-logger'
 
 // ============================================
 // ASSINATURA ASAAS - Consultar, Cancelar, Trocar
@@ -126,6 +127,7 @@ export async function GET() {
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
+    await logApiError('/api/asaas/assinatura', 'GET', err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
@@ -203,6 +205,7 @@ export async function DELETE() {
     return NextResponse.json({ success: true, message: 'Assinatura cancelada' })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
+    await logApiError('/api/asaas/assinatura', 'DELETE', err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
@@ -254,6 +257,7 @@ export async function PATCH(request: NextRequest) {
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
+    await logApiError('/api/asaas/assinatura', 'PATCH', err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 async function getAuthUser() {
   const cookieStore = await cookies()
@@ -84,6 +85,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ ticket, mensagens: mensagens || [] })
   } catch (err) {
     console.error('Erro ao buscar mensagens do ticket:', err)
+    await logApiError('/api/tickets/[id]/mensagens', 'GET', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
@@ -155,6 +157,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ data: novaMensagem }, { status: 201 })
   } catch (err) {
     console.error('Erro ao enviar mensagem no ticket:', err)
+    await logApiError('/api/tickets/[id]/mensagens', 'POST', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

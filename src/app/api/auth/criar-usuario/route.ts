@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { getServiceClient } from '../../superadmin/route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 // ============================================
 // POST /api/auth/criar-usuario
@@ -147,6 +148,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ usuario })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
+    await logApiError('/api/auth/criar-usuario', 'POST', err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

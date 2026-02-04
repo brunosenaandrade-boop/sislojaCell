@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySuperadmin, getServiceClient } from '../route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data?.valor || { ativo: false, mensagem: '' })
   } catch (err) {
     console.error('Erro ao buscar status de manutenção:', err)
+    await logApiError('/api/superadmin/manutencao', 'GET', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
@@ -87,6 +89,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ data: data?.valor || valor })
   } catch (err) {
     console.error('Erro ao atualizar modo de manutenção:', err)
+    await logApiError('/api/superadmin/manutencao', 'PATCH', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

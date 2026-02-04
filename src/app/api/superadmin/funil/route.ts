@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySuperadmin, getServiceClient } from '../route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 interface FunilEtapa {
   etapa: string
@@ -91,6 +92,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: funil, total_empresas: total })
   } catch (err) {
     console.error('Erro ao buscar funil:', err)
+    await logApiError('/api/superadmin/funil', 'GET', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

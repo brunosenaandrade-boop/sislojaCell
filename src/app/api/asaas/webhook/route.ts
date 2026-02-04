@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServiceClient } from '../../superadmin/route-utils'
 import { emailService } from '@/services/email/resend'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 // ============================================
 // WEBHOOK ASAAS - Recebe eventos de pagamento
@@ -141,6 +142,7 @@ export async function POST(request: NextRequest) {
       })
     } catch { /* ignore logging error */ }
 
+    await logApiError('/api/asaas/webhook', 'POST', err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

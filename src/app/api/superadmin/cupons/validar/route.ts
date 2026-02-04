@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { getServiceClient } from '../../route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 async function getAuthUser() {
   const cookieStore = await cookies()
@@ -110,6 +111,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response)
   } catch (err) {
     console.error('Erro ao validar cupom:', err)
+    await logApiError('/api/superadmin/cupons/validar', 'POST', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

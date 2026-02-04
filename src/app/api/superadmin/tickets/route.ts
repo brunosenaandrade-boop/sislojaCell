@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySuperadmin, getServiceClient } from '../route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -74,6 +75,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: ticketsComMensagem })
   } catch (err) {
     console.error('Erro ao listar tickets:', err)
+    await logApiError('/api/superadmin/tickets', 'GET', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
@@ -120,6 +122,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ data: ticket })
   } catch (err) {
     console.error('Erro ao atualizar ticket:', err)
+    await logApiError('/api/superadmin/tickets', 'PATCH', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

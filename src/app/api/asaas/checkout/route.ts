@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { getServiceClient } from '../../superadmin/route-utils'
 import { asaasService } from '@/services/asaas.service'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 // ============================================
 // CHECKOUT ASAAS - Criar assinatura + link de pagamento
@@ -266,7 +267,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (assinaturaDbErr) {
-      console.error('[Checkout] Erro ao salvar assinatura no banco:', assinaturaDbErr.message)
+      await logApiError('/api/asaas/checkout', 'POST', new Error(assinaturaDbErr.message), { empresa_id: empresa.id })
     }
 
     // Registrar primeira fatura no banco
@@ -282,7 +283,7 @@ export async function POST(request: NextRequest) {
       })
 
       if (faturaDbErr) {
-        console.error('[Checkout] Erro ao salvar fatura no banco:', faturaDbErr.message)
+        await logApiError('/api/asaas/checkout', 'POST', new Error(faturaDbErr.message), { empresa_id: empresa.id })
       }
     }
 
@@ -304,6 +305,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
+    await logApiError('/api/asaas/checkout', 'POST', err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

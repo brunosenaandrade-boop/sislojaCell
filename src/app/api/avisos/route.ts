@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 async function getAuthUser() {
   const cookieStore = await cookies()
@@ -102,6 +103,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: avisosFiltrados })
   } catch (err) {
     console.error('Erro ao buscar avisos:', err)
+    await logApiError('/api/avisos', 'GET', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
@@ -162,6 +164,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true }, { status: 201 })
   } catch (err) {
     console.error('Erro ao marcar aviso como lido:', err)
+    await logApiError('/api/avisos', 'POST', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

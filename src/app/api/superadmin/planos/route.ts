@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySuperadmin, getServiceClient } from '../route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logApiError } from '@/lib/server-logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: planos })
   } catch (err) {
     console.error('Erro ao listar planos:', err)
+    await logApiError('/api/superadmin/planos', 'GET', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
@@ -78,6 +80,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: plano }, { status: 201 })
   } catch (err) {
     console.error('Erro ao criar plano:', err)
+    await logApiError('/api/superadmin/planos', 'POST', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
@@ -112,6 +115,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ data: plano })
   } catch (err) {
     console.error('Erro ao atualizar plano:', err)
+    await logApiError('/api/superadmin/planos', 'PATCH', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
@@ -161,6 +165,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ data: plano })
   } catch (err) {
     console.error('Erro ao desativar plano:', err)
+    await logApiError('/api/superadmin/planos', 'DELETE', err)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
