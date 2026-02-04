@@ -83,6 +83,10 @@ export default function EmpresasAdminPage() {
   const [bonusMeses, setBonusMeses] = useState('1')
   const [bonusSaving, setBonusSaving] = useState(false)
 
+  // Toggle ativo state
+  const [toggleDialogOpen, setToggleDialogOpen] = useState(false)
+  const [toggleEmpresa, setToggleEmpresa] = useState<EmpresaStats | null>(null)
+
   const loadEmpresas = async () => {
     const { data, error } = await superadminService.getEmpresas()
     if (error) {
@@ -113,22 +117,23 @@ export default function EmpresasAdminPage() {
     )
   }
 
-  const handleToggle = async (empresa: EmpresaStats) => {
-    const novoStatus = !empresa.ativo
-    const confirmMsg = novoStatus
-      ? `Ativar a empresa "${empresa.nome}"?`
-      : `Desativar a empresa "${empresa.nome}"? Os usuarios nao conseguirao mais acessar o sistema.`
+  const handleToggle = (empresa: EmpresaStats) => {
+    setToggleEmpresa(empresa)
+    setToggleDialogOpen(true)
+  }
 
-    if (!window.confirm(confirmMsg)) return
-
-    setTogglingId(empresa.id)
-    const { error } = await superadminService.toggleEmpresa(empresa.id, novoStatus)
+  const handleToggleConfirm = async () => {
+    if (!toggleEmpresa) return
+    const novoStatus = !toggleEmpresa.ativo
+    setToggleDialogOpen(false)
+    setTogglingId(toggleEmpresa.id)
+    const { error } = await superadminService.toggleEmpresa(toggleEmpresa.id, novoStatus)
     if (error) {
       toast.error('Erro: ' + error)
     } else {
       toast.success(`Empresa ${novoStatus ? 'ativada' : 'desativada'} com sucesso`)
       setEmpresas((prev) =>
-        prev.map((e) => (e.id === empresa.id ? { ...e, ativo: novoStatus } : e))
+        prev.map((e) => (e.id === toggleEmpresa.id ? { ...e, ativo: novoStatus } : e))
       )
     }
     setTogglingId(null)
@@ -145,15 +150,15 @@ export default function EmpresasAdminPage() {
       nome: empresa.nome,
       nome_fantasia: empresa.nome_fantasia,
       cnpj: empresa.cnpj,
-      cor_primaria: '#3B82F6',
-      cor_secundaria: '#1e40af',
+      cor_primaria: empresa.cor_primaria || '#3B82F6',
+      cor_secundaria: empresa.cor_secundaria || '#1e40af',
       ativo: empresa.ativo,
       plano: empresa.plano || 'free',
       status_assinatura: empresa.status_assinatura || 'trial',
-      meses_bonus: 0,
-      onboarding_completo: true,
+      meses_bonus: empresa.meses_bonus ?? 0,
+      onboarding_completo: empresa.onboarding_completo ?? true,
       created_at: empresa.created_at,
-      updated_at: empresa.created_at,
+      updated_at: empresa.updated_at || empresa.created_at,
     })
     router.push('/dashboard')
   }
@@ -454,6 +459,33 @@ export default function EmpresasAdminPage() {
             <Button onClick={handleAdicionarBonus} disabled={bonusSaving}>
               {bonusSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Adicionar {bonusMeses} mês(es)
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Ativar/Desativar Empresa */}
+      <Dialog open={toggleDialogOpen} onOpenChange={setToggleDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {toggleEmpresa?.ativo ? 'Desativar' : 'Ativar'} Empresa
+            </DialogTitle>
+            <DialogDescription>
+              {toggleEmpresa?.ativo
+                ? `Desativar a empresa "${toggleEmpresa?.nome}"? Os usuários não conseguirão mais acessar o sistema.`
+                : `Ativar a empresa "${toggleEmpresa?.nome}"?`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setToggleDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant={toggleEmpresa?.ativo ? 'destructive' : 'default'}
+              onClick={handleToggleConfirm}
+            >
+              {toggleEmpresa?.ativo ? 'Desativar' : 'Ativar'}
             </Button>
           </DialogFooter>
         </DialogContent>

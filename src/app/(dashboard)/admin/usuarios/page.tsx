@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { usePermissao } from '@/hooks/usePermissao'
+import { superadminService } from '@/services/superadmin.service'
+import type { UsuarioGlobal } from '@/types/database'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,19 +27,7 @@ import {
 import { Users, Search, Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-interface UsuarioGlobal {
-  id: string
-  nome: string
-  email: string
-  perfil: 'admin' | 'funcionario'
-  ativo: boolean
-  ultimo_acesso: string | null
-  created_at: string
-  empresa_id: string | null
-  empresas: { nome: string; nome_fantasia: string | null } | null
-}
-
-function formatDate(d: string | null) {
+function formatDate(d: string | null | undefined) {
   if (!d) return '-'
   const date = new Date(d)
   return (
@@ -60,20 +51,16 @@ export default function SuperadminUsuariosPage() {
 
   const fetchUsuarios = async () => {
     setLoading(true)
-    const params = new URLSearchParams()
-    if (perfilFilter !== 'todos') params.set('perfil', perfilFilter)
-    if (ativoFilter !== 'todos') params.set('ativo', ativoFilter)
-    if (empresaFilter !== 'todos') params.set('empresa_id', empresaFilter)
-    if (search.trim()) params.set('search', search.trim())
-
-    try {
-      const res = await fetch('/api/superadmin/usuarios?' + params.toString())
-      if (res.ok) {
-        const json = await res.json()
-        setUsuarios(json.data || [])
-      }
-    } catch {
-      // silently fail
+    const { data, error } = await superadminService.getUsuarios({
+      perfil: perfilFilter !== 'todos' ? perfilFilter : undefined,
+      ativo: ativoFilter !== 'todos' ? ativoFilter : undefined,
+      empresa_id: empresaFilter !== 'todos' ? empresaFilter : undefined,
+      search: search.trim() || undefined,
+    })
+    if (error) {
+      toast.error('Erro ao carregar usuários: ' + error)
+    } else {
+      setUsuarios(data || [])
     }
     setLoading(false)
   }

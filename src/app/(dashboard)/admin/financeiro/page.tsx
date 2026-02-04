@@ -314,12 +314,11 @@ export default function FinanceiroAdminPage() {
   const handleExportUsuarios = async () => {
     setExportingUsuarios(true)
     try {
-      const res = await fetch('/api/superadmin/usuarios')
-      const json = await res.json()
-      if (!res.ok) {
-        toast.error('Erro ao exportar usuários: ' + (json.error || 'Erro desconhecido'))
-      } else if (json.data && json.data.length > 0) {
-        const rows = json.data.map((u: Record<string, unknown>) => ({
+      const { data: usuariosData, error: usuariosError } = await superadminService.getUsuarios()
+      if (usuariosError) {
+        toast.error('Erro ao exportar usuários: ' + usuariosError)
+      } else if (usuariosData && usuariosData.length > 0) {
+        const rows = usuariosData.map((u) => ({
           ID: u.id,
           Nome: u.nome,
           Email: u.email,

@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { usePermissao } from '@/hooks/usePermissao'
 import { superadminService } from '@/services/superadmin.service'
-import type { SaasStats } from '@/services/superadmin.service'
-import type { PlataformaStats } from '@/types/database'
+import type { PlataformaStats, SaasStats, AlertsData } from '@/types/database'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -31,28 +31,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 
-interface AlertItem {
-  tipo: 'critico' | 'aviso' | 'info'
-  categoria: string
-  mensagem: string
-  empresa_id?: string
-  empresa_nome?: string
-}
-
-interface AlertsData {
-  alerts: AlertItem[]
-  summary: {
-    total_empresas: number
-    empresas_ativas: number
-    total_usuarios: number
-    total_erros_24h: number
-    total_erros_total: number
-    total_alerts: number
-    criticos: number
-    avisos: number
-  }
-}
-
 export default function AdminDashboardPage() {
   const { isSuperadmin } = usePermissao()
   const [stats, setStats] = useState<PlataformaStats | null>(null)
@@ -63,14 +41,11 @@ export default function AdminDashboardPage() {
 
   const fetchAlerts = async () => {
     setAlertsLoading(true)
-    try {
-      const res = await fetch('/api/superadmin/alerts')
-      if (res.ok) {
-        const json = await res.json()
-        setAlertsData(json.data || null)
-      }
-    } catch {
-      // silently fail
+    const { data, error } = await superadminService.getAlerts()
+    if (error) {
+      toast.error('Erro ao carregar alertas: ' + error)
+    } else {
+      setAlertsData(data)
     }
     setAlertsLoading(false)
   }

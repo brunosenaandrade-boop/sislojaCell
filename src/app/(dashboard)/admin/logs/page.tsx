@@ -1,7 +1,10 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { usePermissao } from '@/hooks/usePermissao'
+import { superadminService } from '@/services/superadmin.service'
+import type { LogEntry } from '@/types/database'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,22 +41,6 @@ import {
   Check,
 } from 'lucide-react'
 import Link from 'next/link'
-
-interface LogEntry {
-  id: string
-  tipo: string
-  categoria: string | null
-  mensagem: string
-  detalhes: Record<string, unknown> | null
-  pagina: string | null
-  acao: string | null
-  ip: string | null
-  user_agent: string | null
-  empresa_id: string | null
-  usuario_id: string | null
-  created_at: string
-  empresas: { nome: string; nome_fantasia: string | null } | null
-}
 
 function formatDate(d: string) {
   const date = new Date(d)
@@ -258,20 +245,16 @@ export default function SuperadminLogsPage() {
 
   const fetchLogs = useCallback(async () => {
     setLoading(true)
-    const params = new URLSearchParams()
-    params.set('limit', '500')
-    if (tipo !== 'todos') params.set('tipo', tipo)
-    if (categoria !== 'todos') params.set('categoria', categoria)
-    if (search.trim()) params.set('search', search.trim())
-
-    try {
-      const res = await fetch('/api/superadmin/logs?' + params.toString())
-      if (res.ok) {
-        const json = await res.json()
-        setLogs(json.data || [])
-      }
-    } catch {
-      // silently fail
+    const { data, error } = await superadminService.getLogs({
+      limit: 500,
+      tipo: tipo !== 'todos' ? tipo : undefined,
+      categoria: categoria !== 'todos' ? categoria : undefined,
+      search: search.trim() || undefined,
+    })
+    if (error) {
+      toast.error('Erro ao carregar logs: ' + error)
+    } else {
+      setLogs(data || [])
     }
     setLoading(false)
     setLastUpdate(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
@@ -448,46 +431,48 @@ export default function SuperadminLogsPage() {
                   const isExpanded = expandedId === log.id
                   const hasDetails = log.detalhes || log.pagina || log.acao || log.ip || log.user_agent
                   return (
-                    <TableRow
-                      key={log.id}
-                      className={`cursor-pointer ${isExpanded ? 'bg-muted/30' : ''} ${log.tipo === 'erro' ? 'hover:bg-destructive/5' : ''}`}
-                      onClick={() => setExpandedId(isExpanded ? null : log.id)}
-                    >
-                      <TableCell className="px-2">
-                        {hasDetails && (
-                          isExpanded
-                            ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                            : <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap font-mono text-xs">
-                        {formatDate(log.created_at)}
-                      </TableCell>
-                      <TableCell>
-                        <TipoBadge tipo={log.tipo} />
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">{log.categoria || '-'}</Badge>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {log.empresas?.nome_fantasia || log.empresas?.nome || (log.empresa_id ? log.empresa_id.slice(0, 8) + '...' : '-')}
-                      </TableCell>
-                      <TableCell className="text-sm max-w-[400px] truncate" title={log.mensagem}>
-                        {log.mensagem}
-                      </TableCell>
-                    </TableRow>
+                    <React.Fragment key={log.id}>
+                      <TableRow
+                        className={`cursor-pointer ${isExpanded ? 'bg-muted/30' : ''} ${log.tipo === 'erro' ? 'hover:bg-destructive/5' : ''}`}
+                        onClick={() => setExpandedId(isExpanded ? null : log.id)}
+                      >
+                        <TableCell className="px-2">
+                          {hasDetails && (
+                            isExpanded
+                              ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                              : <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap font-mono text-xs">
+                          {formatDate(log.created_at)}
+                        </TableCell>
+                        <TableCell>
+                          <TipoBadge tipo={log.tipo} />
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">{log.categoria || '-'}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {log.empresas?.nome_fantasia || log.empresas?.nome || (log.empresa_id ? log.empresa_id.slice(0, 8) + '...' : '-')}
+                        </TableCell>
+                        <TableCell className="text-sm max-w-[400px] truncate" title={log.mensagem}>
+                          {log.mensagem}
+                        </TableCell>
+                      </TableRow>
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan={6} className="p-0">
+                            <LogDetailPanel log={log} />
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   )
                 })}
               </TableBody>
             </Table>
             </div>
           )}
-
-          {/* Expanded detail panels (rendered outside table for proper layout) */}
-          {logs.map((log) => {
-            if (expandedId !== log.id) return null
-            return <LogDetailPanel key={`detail-${log.id}`} log={log} />
-          })}
         </CardContent>
       </Card>
     </div>

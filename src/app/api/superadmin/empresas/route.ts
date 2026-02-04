@@ -11,7 +11,7 @@ export async function GET() {
 
     const { data: empresas, error } = await db
       .from('empresas')
-      .select('id, nome, nome_fantasia, cnpj, ativo, created_at')
+      .select('id, nome, nome_fantasia, cnpj, ativo, plano, status_assinatura, trial_fim, cor_primaria, cor_secundaria, meses_bonus, onboarding_completo, created_at, updated_at')
       .order('created_at', { ascending: false })
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })

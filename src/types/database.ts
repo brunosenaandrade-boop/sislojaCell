@@ -375,7 +375,12 @@ export interface EmpresaStats {
   plano: string
   status_assinatura: StatusAssinatura
   trial_fim?: string
+  cor_primaria: string
+  cor_secundaria: string
+  meses_bonus: number
+  onboarding_completo: boolean
   created_at: string
+  updated_at: string
   usuarios_count: number
   os_count: number
   vendas_count: number
@@ -622,4 +627,76 @@ export interface UsoEmpresa {
   produtos_count: number
   vendas_count: number
   os_count: number
+}
+
+export interface SaasStats {
+  mrr: number
+  arr: number
+  total_assinantes: number
+  status_distribuicao: Record<string, number>
+  plano_distribuicao: Record<string, number>
+  taxa_conversao: number
+  churn_rate: number
+  cancelamentos_mes: number
+  faturas_vencidas: { id: string; empresa_id: string; valor: number; data_vencimento: string }[]
+  faturas_vencidas_count: number
+  trials_expirando: number
+  indicacoes: {
+    total: number
+    qualificadas: number
+    recompensadas: number
+    meses_bonus_total: number
+    top_indicadores: { empresa_id: string; count: number }[]
+  }
+}
+
+export interface AlertItem {
+  tipo: 'critico' | 'aviso' | 'info'
+  categoria: string
+  mensagem: string
+  empresa_id?: string
+  empresa_nome?: string
+}
+
+export interface AlertsData {
+  alerts: AlertItem[]
+  summary: {
+    total_empresas: number
+    empresas_ativas: number
+    total_usuarios: number
+    total_erros_24h: number
+    total_erros_total: number
+    total_alerts: number
+    criticos: number
+    avisos: number
+  }
+}
+
+export interface UsuarioGlobal {
+  id: string
+  auth_id: string
+  empresa_id: string
+  nome: string
+  email: string
+  perfil: string
+  ativo: boolean
+  ultimo_acesso?: string
+  created_at: string
+  empresas?: { nome: string; nome_fantasia?: string }
+}
+
+export interface LogEntry {
+  id: string
+  tipo: string
+  categoria: string | null
+  mensagem: string
+  detalhes: Record<string, unknown> | null
+  pagina: string | null
+  acao: string | null
+  ip: string | null
+  user_agent: string | null
+  empresa_id: string | null
+  usuario_id: string | null
+  created_at: string
+  empresas: { nome: string; nome_fantasia: string | null } | null
 }

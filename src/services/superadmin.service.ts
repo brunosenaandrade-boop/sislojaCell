@@ -1,4 +1,4 @@
-import type { EmpresaStats, PlataformaStats, Cupom, AvisoPlataforma, TicketSuporte, TicketMensagem, ReceitaMensal, ReceitaPorPlano, FunilOnboarding, MetricasUso, ManutencaoConfig, Plano } from '@/types/database'
+import type { EmpresaStats, PlataformaStats, Cupom, AvisoPlataforma, TicketSuporte, TicketMensagem, ReceitaMensal, ReceitaPorPlano, FunilOnboarding, MetricasUso, ManutencaoConfig, Plano, SaasStats, AlertsData, UsuarioGlobal, LogEntry } from '@/types/database'
 import type { ServiceResult } from './base'
 
 export const superadminService = {
@@ -356,25 +356,50 @@ export const superadminService = {
       return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
     }
   },
-}
 
-export interface SaasStats {
-  mrr: number
-  arr: number
-  total_assinantes: number
-  status_distribuicao: Record<string, number>
-  plano_distribuicao: Record<string, number>
-  taxa_conversao: number
-  churn_rate: number
-  cancelamentos_mes: number
-  faturas_vencidas: { id: string; empresa_id: string; valor: number; data_vencimento: string }[]
-  faturas_vencidas_count: number
-  trials_expirando: number
-  indicacoes: {
-    total: number
-    qualificadas: number
-    recompensadas: number
-    meses_bonus_total: number
-    top_indicadores: { empresa_id: string; count: number }[]
-  }
+  // ====== ALERTS ======
+  async getAlerts(): Promise<ServiceResult<AlertsData>> {
+    try {
+      const res = await fetch('/api/superadmin/alerts')
+      const json = await res.json()
+      if (!res.ok) return { data: null, error: json.error }
+      return { data: json.data, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
+    }
+  },
+
+  // ====== USUARIOS ======
+  async getUsuarios(params?: { perfil?: string; ativo?: string; empresa_id?: string; search?: string }): Promise<ServiceResult<UsuarioGlobal[]>> {
+    try {
+      const query = new URLSearchParams()
+      if (params?.perfil) query.set('perfil', params.perfil)
+      if (params?.ativo) query.set('ativo', params.ativo)
+      if (params?.empresa_id) query.set('empresa_id', params.empresa_id)
+      if (params?.search) query.set('search', params.search)
+      const res = await fetch(`/api/superadmin/usuarios?${query}`)
+      const json = await res.json()
+      if (!res.ok) return { data: null, error: json.error }
+      return { data: json.data, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
+    }
+  },
+
+  // ====== LOGS ======
+  async getLogs(params?: { tipo?: string; categoria?: string; search?: string; limit?: number }): Promise<ServiceResult<LogEntry[]>> {
+    try {
+      const query = new URLSearchParams()
+      if (params?.limit) query.set('limit', String(params.limit))
+      if (params?.tipo) query.set('tipo', params.tipo)
+      if (params?.categoria) query.set('categoria', params.categoria)
+      if (params?.search) query.set('search', params.search)
+      const res = await fetch(`/api/superadmin/logs?${query}`)
+      const json = await res.json()
+      if (!res.ok) return { data: null, error: json.error }
+      return { data: json.data, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
+    }
+  },
 }

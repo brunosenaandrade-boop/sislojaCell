@@ -9,6 +9,14 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Construction,
   AlertTriangle,
   Loader2,
@@ -28,6 +36,7 @@ export default function ManutencaoAdminPage() {
   const [toggling, setToggling] = useState(false)
   const [savingMsg, setSavingMsg] = useState(false)
   const [mensagem, setMensagem] = useState('')
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
 
   const loadManutencao = async () => {
     const { data, error } = await superadminService.getManutencao()
@@ -70,14 +79,9 @@ export default function ManutencaoAdminPage() {
 
   const isAtivo = config?.ativo ?? false
 
-  const handleToggle = async () => {
+  const handleToggleConfirm = async () => {
     const novoStatus = !isAtivo
-    const confirmMsg = novoStatus
-      ? 'Ativar o modo manutenção? Os usuários não conseguirão acessar o sistema.'
-      : 'Desativar o modo manutenção? Os usuários voltarão a acessar o sistema.'
-
-    if (!window.confirm(confirmMsg)) return
-
+    setConfirmDialogOpen(false)
     setToggling(true)
     const { error } = await superadminService.setManutencao(novoStatus, mensagem)
     if (error) {
@@ -144,7 +148,7 @@ export default function ManutencaoAdminPage() {
             <Button
               className="w-full"
               variant={isAtivo ? 'default' : 'destructive'}
-              onClick={handleToggle}
+              onClick={() => setConfirmDialogOpen(true)}
               disabled={toggling}
             >
               {toggling ? (
@@ -208,6 +212,32 @@ export default function ManutencaoAdminPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {isAtivo ? 'Desativar Modo Manutenção' : 'Ativar Modo Manutenção'}
+            </DialogTitle>
+            <DialogDescription>
+              {isAtivo
+                ? 'Os usuários voltarão a acessar o sistema normalmente.'
+                : 'Os usuários não conseguirão acessar o sistema enquanto a manutenção estiver ativa.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant={isAtivo ? 'default' : 'destructive'}
+              onClick={handleToggleConfirm}
+            >
+              {isAtivo ? 'Desativar' : 'Ativar'} Manutenção
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
