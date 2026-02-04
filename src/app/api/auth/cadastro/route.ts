@@ -21,6 +21,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+    console.log('[Cadastro] Recebido:', JSON.stringify({ ...body, senha: '***' }))
+
     const {
       nomeEmpresa,
       nomeFantasia,
@@ -62,9 +64,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('[Cadastro] Etapa 1: Criando serviceClient...')
     const serviceClient = getServiceClient()
 
     // 1. Criar usuário no Supabase Auth com auto-confirmação
+    console.log('[Cadastro] Etapa 1: Criando auth user para', email)
     const { data: authData, error: authError } =
       await serviceClient.auth.admin.createUser({
         email,
@@ -73,6 +77,7 @@ export async function POST(request: NextRequest) {
       })
 
     if (authError) {
+      console.error('[Cadastro] ERRO Etapa 1 (auth):', authError.message)
       if (authError.message.includes('already been registered') || authError.message.includes('already registered')) {
         return NextResponse.json(
           { error: 'Este email já está cadastrado' },
@@ -83,16 +88,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (!authData.user) {
+      console.error('[Cadastro] ERRO Etapa 1: authData.user é null')
       return NextResponse.json(
         { error: 'Erro ao criar conta de autenticação' },
         { status: 500 }
       )
     }
 
+    console.log('[Cadastro] Etapa 1 OK: auth_id =', authData.user.id)
+
     // 2. Criar empresa com trial
     const trialFim = new Date()
     trialFim.setDate(trialFim.getDate() + TRIAL_DAYS)
 
+    console.log('[Cadastro] Etapa 2: Criando empresa...')
     const { data: empresa, error: empresaError } = await serviceClient
       .from('empresas')
       .insert({
@@ -113,12 +122,16 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (empresaError) {
+      console.error('[Cadastro] ERRO Etapa 2 (empresa):', empresaError.message, empresaError.code, empresaError.details)
       // Rollback: apagar usuário auth criado
       await serviceClient.auth.admin.deleteUser(authData.user.id)
       return NextResponse.json({ error: empresaError.message }, { status: 500 })
     }
 
+    console.log('[Cadastro] Etapa 2 OK: empresa_id =', empresa.id)
+
     // 3. Criar usuário admin vinculado à empresa
+    console.log('[Cadastro] Etapa 3: Criando usuario admin...')
     const { data: usuario, error: usuarioError } = await serviceClient
       .from('usuarios')
       .insert({
@@ -133,16 +146,20 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (usuarioError) {
+      console.error('[Cadastro] ERRO Etapa 3 (usuario):', usuarioError.message, usuarioError.code, usuarioError.details)
       // Rollback
       await serviceClient.from('empresas').delete().eq('id', empresa.id)
       await serviceClient.auth.admin.deleteUser(authData.user.id)
       return NextResponse.json({ error: usuarioError.message }, { status: 500 })
     }
 
+    console.log('[Cadastro] Etapa 3 OK: usuario_id =', usuario.id)
+
     // 4. Auto-setup: configurações + categorias padrão
     // Se falhar, não faz rollback (conta funciona sem defaults)
+    console.log('[Cadastro] Etapa 4: Criando defaults...')
     try {
-      await serviceClient.from('configuracoes').insert({
+      const { error: configErr } = await serviceClient.from('configuracoes').insert({
         empresa_id: empresa.id,
         impressora_termica: true,
         largura_cupom: 80,
@@ -152,26 +169,31 @@ export async function POST(request: NextRequest) {
         mensagem_os_entrada: 'Guarde este comprovante.',
         config_json: {},
       })
+      if (configErr) console.warn('[Cadastro] Etapa 4 WARN (configuracoes):', configErr.message)
 
-      await serviceClient.from('categorias_produtos').insert([
+      const { error: catProdErr } = await serviceClient.from('categorias_produtos').insert([
         { empresa_id: empresa.id, nome: 'Acessórios' },
         { empresa_id: empresa.id, nome: 'Peças' },
         { empresa_id: empresa.id, nome: 'Capas' },
         { empresa_id: empresa.id, nome: 'Carregadores' },
         { empresa_id: empresa.id, nome: 'Fones de Ouvido' },
       ])
+      if (catProdErr) console.warn('[Cadastro] Etapa 4 WARN (cat_produtos):', catProdErr.message)
 
-      await serviceClient.from('categorias_servicos').insert([
+      const { error: catServErr } = await serviceClient.from('categorias_servicos').insert([
         { empresa_id: empresa.id, nome: 'Celular' },
         { empresa_id: empresa.id, nome: 'Videogame' },
         { empresa_id: empresa.id, nome: 'Tablet' },
       ])
-    } catch {
-      // Defaults opcionais - conta funciona sem eles
-      console.warn('[Cadastro] Erro ao criar defaults para empresa', empresa.id)
+      if (catServErr) console.warn('[Cadastro] Etapa 4 WARN (cat_servicos):', catServErr.message)
+
+      console.log('[Cadastro] Etapa 4 OK')
+    } catch (defaultsErr) {
+      console.warn('[Cadastro] Etapa 4 ERRO (defaults):', defaultsErr instanceof Error ? defaultsErr.message : defaultsErr)
     }
 
     // 5. Se foi indicada, registrar indicação
+    console.log('[Cadastro] Etapa 5: Indicação...')
     if (codigoIndicacao) {
       const { data: empresaOrigem } = await serviceClient
         .from('empresas')
@@ -205,16 +227,23 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Email de boas-vindas (fire-and-forget)
+    console.log('[Cadastro] Etapa 6: Enviando email de boas-vindas...')
     emailService
       .boasVindas(email, nomeFantasia || nomeEmpresa)
-      .catch(() => {})
+      .catch((emailErr) => {
+        console.warn('[Cadastro] Etapa 6 WARN (email):', emailErr instanceof Error ? emailErr.message : emailErr)
+      })
 
+    console.log('[Cadastro] SUCESSO: Cadastro completo para', email)
     return NextResponse.json({
       usuario,
       empresa,
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
+    const stack = err instanceof Error ? err.stack : undefined
+    console.error('[Cadastro] ERRO GERAL:', msg)
+    if (stack) console.error('[Cadastro] Stack:', stack)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

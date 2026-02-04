@@ -41,6 +41,7 @@ export default function OnboardingPage() {
   const [isSaving, setIsSaving] = useState(false)
 
   // Step 1 - Empresa
+  const [nomeFantasia, setNomeFantasia] = useState(empresa?.nome_fantasia || '')
   const [cnpj, setCnpj] = useState(empresa?.cnpj || '')
   const [telefone, setTelefone] = useState(empresa?.telefone || '')
   const [whatsapp, setWhatsapp] = useState(empresa?.whatsapp || '')
@@ -96,6 +97,7 @@ export default function OnboardingPage() {
     setIsSaving(true)
     try {
       const dados: Partial<Empresa> = {}
+      if (nomeFantasia) dados.nome_fantasia = nomeFantasia
       if (cnpj) dados.cnpj = cnpj.replace(/\D/g, '')
       if (telefone) dados.telefone = telefone
       if (whatsapp) dados.whatsapp = whatsapp
@@ -254,10 +256,22 @@ export default function OnboardingPage() {
             {currentStep === 0 && (
               <div className="space-y-4">
                 <div className="mb-4">
-                  <h2 className="text-lg font-semibold">Dados da Empresa</h2>
+                  <h2 className="text-lg font-semibold">Complete os dados da sua loja</h2>
                   <p className="text-sm text-muted-foreground">
-                    Preencha os dados para aparecerem nos cupons e documentos.
+                    Essas informações aparecem nos cupons e documentos. Tudo opcional, pode preencher depois.
                   </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="nomeFantasia">Nome Fantasia</Label>
+                    <Input
+                      id="nomeFantasia"
+                      value={nomeFantasia}
+                      onChange={(e) => setNomeFantasia(e.target.value)}
+                      placeholder="Como seus clientes conhecem sua loja"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
