@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/store/useStore'
 import { AnimatedCounter } from '@/components/ui/animated-counter'
-import { Header } from '@/components/layout/Header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -127,7 +126,6 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col">
-        <Header title="Dashboard" />
         <div className="flex-1 flex items-center justify-center p-4">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -137,8 +135,6 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Dashboard" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Saudação */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

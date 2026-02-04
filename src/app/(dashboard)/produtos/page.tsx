@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -162,7 +161,6 @@ export default function ProdutosPage() {
   if (loading) {
     return (
       <div className="flex flex-col">
-        <Header title="Produtos" />
         <div className="flex-1 flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -172,8 +170,6 @@ export default function ProdutosPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Produtos" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Cards de estatísticas */}
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -254,8 +253,6 @@ export default function RelatoriosPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Relatórios" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
 
         {/* Tabs de Relatórios */}

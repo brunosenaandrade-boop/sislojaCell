@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Header } from '@/components/layout/Header'
 import { useAuthStore } from '@/store/useStore'
 import { usePermissao } from '@/hooks/usePermissao'
 import { configuracoesService } from '@/services/configuracoes.service'
@@ -108,8 +107,6 @@ export default function PerfilPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Meu Perfil" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6 max-w-2xl">
         {/* Info do usuário */}
         <Card>

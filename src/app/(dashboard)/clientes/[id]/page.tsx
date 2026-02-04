@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -111,7 +110,6 @@ export default function ClienteDetalhePage() {
   if (isLoading) {
     return (
       <div className="flex flex-col">
-        <Header title="Detalhes do Cliente" />
         <div className="flex-1 flex items-center justify-center h-96">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -122,7 +120,6 @@ export default function ClienteDetalhePage() {
   if (!cliente) {
     return (
       <div className="flex flex-col">
-        <Header title="Detalhes do Cliente" />
         <div className="flex-1 space-y-6 p-4 lg:p-6">
           <Link href="/clientes">
             <Button variant="outline">
@@ -140,8 +137,6 @@ export default function ClienteDetalhePage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Detalhes do Cliente" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Ações */}
         <div className="flex items-center justify-between">

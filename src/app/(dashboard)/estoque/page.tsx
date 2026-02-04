@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -264,7 +263,6 @@ function EstoqueContent() {
   if (isLoading) {
     return (
       <div className="flex flex-col">
-        <Header title="Controle de Estoque" />
         <div className="flex-1 flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -274,8 +272,6 @@ function EstoqueContent() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Controle de Estoque" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Ações */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -699,7 +695,6 @@ export default function EstoquePage() {
   return (
     <Suspense fallback={
       <div className="flex flex-col">
-        <Header title="Controle de Estoque" />
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="text-muted-foreground">Carregando...</div>
         </div>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -153,7 +152,6 @@ export default function CategoriasPage() {
   if (loading) {
     return (
       <div className="flex flex-col">
-        <Header title="Categorias de Produtos" />
         <div className="flex-1 flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -163,8 +161,6 @@ export default function CategoriasPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Categorias de Produtos" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Ações */}
         <div className="flex items-center justify-between">

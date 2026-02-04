@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Header } from '@/components/layout/Header'
 import { useAuthStore, usePrintConfigStore } from '@/store/useStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -443,7 +442,6 @@ export default function ConfiguracoesPage() {
   if (isLoadingPage) {
     return (
       <div className="flex flex-col">
-        <Header title="Configurações" />
         <div className="flex-1 flex items-center justify-center p-4">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -453,8 +451,6 @@ export default function ConfiguracoesPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Configurações" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         <Tabs defaultValue="empresa">
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 max-w-2xl">

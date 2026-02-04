@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -159,8 +158,6 @@ export default function ClientesPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Clientes" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Ações */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

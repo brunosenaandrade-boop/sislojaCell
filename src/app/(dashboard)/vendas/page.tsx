@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -503,7 +502,6 @@ export default function VendasPage() {
   if (isLoadingData) {
     return (
       <div className="flex flex-col h-screen">
-        <Header title="PDV - Ponto de Venda" />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -532,8 +530,6 @@ export default function VendasPage() {
       )}
 
       <div className="flex flex-col h-screen print:hidden">
-        <Header title="PDV - Ponto de Venda" />
-
         {/* Tela de venda finalizada */}
         {vendaFinalizada ? (
           <div className="flex-1 flex items-center justify-center p-4">

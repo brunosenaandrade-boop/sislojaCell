@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -320,7 +319,6 @@ export default function CaixaPage() {
   if (isLoadingPage) {
     return (
       <div className="flex flex-col">
-        <Header title="Caixa" />
         <div className="flex-1 flex items-center justify-center p-4">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -330,8 +328,6 @@ export default function CaixaPage() {
 
   return (
     <div className="flex flex-col" data-tutorial="caixa-status">
-      <Header title="Caixa" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Status e Ações do Caixa */}
         <Card className={statusCaixa === 'aberto' ? 'border-green-200 bg-green-50 dark:bg-green-950/20' : 'border-red-200 bg-red-50 dark:bg-red-950/20'}>

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Header } from '@/components/layout/Header'
 import { usePermissao } from '@/hooks/usePermissao'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -93,7 +92,6 @@ export default function LogsPage() {
   if (!isAdmin) {
     return (
       <div className="flex flex-col">
-        <Header title="Logs do Sistema" />
         <div className="flex-1 flex items-center justify-center p-4">
           <Card className="w-full max-w-md text-center">
             <CardContent className="pt-6">
@@ -123,8 +121,6 @@ export default function LogsPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Logs do Sistema" />
-
       <div className="flex-1 space-y-4 p-4 lg:p-6">
         {/* Filtros */}
         <div className="flex flex-wrap gap-3">

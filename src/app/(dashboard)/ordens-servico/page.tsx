@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -124,8 +123,6 @@ export default function OrdensServicoPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Ordens de Serviço" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Cards de estatísticas */}
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">

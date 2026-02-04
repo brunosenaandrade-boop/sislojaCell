@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -122,8 +121,6 @@ export default function HistoricoVendasPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Histórico de Vendas" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Ações */}
         <div className="flex items-center justify-between">

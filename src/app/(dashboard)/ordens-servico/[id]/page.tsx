@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -232,7 +231,6 @@ export default function VisualizarOSPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col">
-        <Header title="Carregando OS..." />
         <div className="flex-1 flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -243,7 +241,6 @@ export default function VisualizarOSPage() {
   if (!os) {
     return (
       <div className="flex flex-col">
-        <Header title="OS nao encontrada" />
         <div className="flex-1 flex items-center justify-center p-8">
           <p className="text-muted-foreground">Ordem de servico nao encontrada.</p>
         </div>
@@ -274,8 +271,6 @@ export default function VisualizarOSPage() {
       )}
 
       <div className="flex flex-col print:hidden">
-        <Header title={`OS #${os.numero}`} />
-
         <div className="flex-1 space-y-6 p-4 lg:p-6">
           {/* Ações */}
           <div className="flex flex-wrap items-center justify-between gap-4">

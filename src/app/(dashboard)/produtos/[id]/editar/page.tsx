@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -159,7 +158,6 @@ export default function EditarProdutoPage() {
   if (loadingData) {
     return (
       <div className="flex flex-col">
-        <Header title="Editar Produto" />
         <div className="flex-1 flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -169,8 +167,6 @@ export default function EditarProdutoPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Editar Produto" />
-
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Ações */}
         <div className="flex items-center justify-between">
