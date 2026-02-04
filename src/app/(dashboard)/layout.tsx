@@ -14,7 +14,6 @@ import { TutorialCard } from '@/components/tutorial/TutorialCard'
 import { HelpButton } from '@/components/tutorial/HelpButton'
 import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner'
 import { TrialBanner } from '@/components/layout/TrialBanner'
-import { PlanLimitBanner } from '@/components/layout/PlanLimitBanner'
 
 const rotasRestritas = ['/configuracoes', '/relatorios', '/logs']
 const rotasSuperadmin = ['/admin']
@@ -57,7 +56,6 @@ export default function DashboardLayout({
         <div className="flex-1 flex flex-col overflow-hidden">
           <ImpersonationBanner />
           <TrialBanner />
-          <PlanLimitBanner />
           <main
             className={cn(
               'flex-1 overflow-y-auto transition-all duration-300',
