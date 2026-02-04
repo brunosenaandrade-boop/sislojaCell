@@ -25,11 +25,11 @@ export function ImpersonationBanner() {
   }
 
   return (
-    <div className="bg-red-600 text-white px-4 py-2 flex items-center justify-between text-sm shrink-0">
+    <div className="bg-red-600 text-white px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm shrink-0">
       <div className="flex items-center gap-2">
         <Eye className="h-4 w-4" />
         <span>
-          Visualizando como: <strong>{empresa?.nome_fantasia || empresa?.nome}</strong>
+          Visualizando como: <strong className="truncate max-w-[200px] sm:max-w-none">{empresa?.nome_fantasia || empresa?.nome}</strong>
         </span>
       </div>
       <Button

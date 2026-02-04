@@ -128,7 +128,7 @@ export default function OrdensServicoPage() {
 
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Cards de estatísticas */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -216,6 +216,7 @@ export default function OrdensServicoPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -328,6 +329,7 @@ export default function OrdensServicoPage() {
                   )}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

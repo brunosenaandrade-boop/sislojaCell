@@ -404,7 +404,7 @@ export default function NovoClientePage() {
           </div>
 
           {/* Coluna Lateral - Resumo */}
-          <div className="space-y-6">
+          <div className="hidden lg:block space-y-6">
             <Card className="sticky top-20">
               <CardHeader>
                 <CardTitle>Resumo do Cadastro</CardTitle>

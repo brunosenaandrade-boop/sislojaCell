@@ -47,7 +47,7 @@ export default function ManutencaoAdminPage() {
   if (!isSuperadmin) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Card className="w-96">
+        <Card className="w-full max-w-sm">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
             <h2 className="text-lg font-semibold">Acesso Restrito</h2>

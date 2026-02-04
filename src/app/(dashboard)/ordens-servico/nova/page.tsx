@@ -538,7 +538,7 @@ export default function NovaOSPage() {
                   </p>
 
                   {/* Seletor de tipo de desbloqueio */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
                     {[
                       { value: 'sem_senha', label: 'Sem Senha', icon: ShieldOff },
                       { value: 'padrao', label: 'Padrão', icon: Grid3x3 },
@@ -760,6 +760,7 @@ export default function NovaOSPage() {
                     <p className="text-sm">Adicione serviços e peças usando os botões acima</p>
                   </div>
                 ) : (
+                  <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -809,13 +810,14 @@ export default function NovaOSPage() {
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
           </div>
 
           {/* Coluna Lateral - Resumo */}
-          <div className="space-y-6">
+          <div className="hidden lg:block space-y-6">
             <Card className="sticky top-20">
               <CardHeader>
                 <CardTitle>Resumo da OS</CardTitle>

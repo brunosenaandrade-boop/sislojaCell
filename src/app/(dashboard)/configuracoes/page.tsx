@@ -981,6 +981,7 @@ export default function ConfiguracoesPage() {
             {/* Tabela de Usuários */}
             <Card>
               <CardContent className="p-0">
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1067,6 +1068,7 @@ export default function ConfiguracoesPage() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

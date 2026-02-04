@@ -477,7 +477,7 @@ export default function CaixaPage() {
                 <CardTitle className="text-sm">Resumo por Forma de Pagamento</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 sm:grid-cols-4">
+                <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
                   {(() => {
                     // Calcular totais por forma de pagamento das vendas
                     const totais: Record<string, number> = { dinheiro: 0, pix: 0, debito: 0, credito: 0 }
@@ -531,6 +531,7 @@ export default function CaixaPage() {
           <TabsContent value="movimentacoes" data-tutorial="caixa-movimentacoes">
             <Card>
               <CardContent className="p-0">
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -575,6 +576,7 @@ export default function CaixaPage() {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -583,6 +585,7 @@ export default function CaixaPage() {
           <TabsContent value="historico">
             <Card>
               <CardContent className="p-0">
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -637,6 +640,7 @@ export default function CaixaPage() {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

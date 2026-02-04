@@ -52,7 +52,7 @@ export function AnnouncementBanner() {
         return (
           <div
             key={aviso.id}
-            className={`${styles.bg} ${styles.text} border-b px-4 py-2 flex items-center justify-between text-sm shrink-0`}
+            className={`${styles.bg} ${styles.text} border-b px-4 py-2 flex items-center justify-between gap-2 text-sm shrink-0`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <Icon className={`h-4 w-4 shrink-0 ${styles.iconColor}`} />
@@ -63,9 +63,9 @@ export function AnnouncementBanner() {
               variant="ghost"
               size="sm"
               onClick={() => handleDismiss(aviso.id)}
-              className={`shrink-0 h-6 w-6 p-0 ${styles.text} hover:bg-black/5`}
+              className={`shrink-0 h-8 w-8 p-0 ${styles.text} hover:bg-black/5`}
             >
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
         )

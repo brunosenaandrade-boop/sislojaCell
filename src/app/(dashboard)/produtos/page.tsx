@@ -176,7 +176,7 @@ export default function ProdutosPage() {
 
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Cards de estatísticas */}
-        <div className="grid gap-4 md:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -295,6 +295,7 @@ export default function ProdutosPage() {
         {/* Tabela de produtos */}
         <Card>
           <CardContent className="p-0">
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -423,6 +424,7 @@ export default function ProdutosPage() {
                 )}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
 

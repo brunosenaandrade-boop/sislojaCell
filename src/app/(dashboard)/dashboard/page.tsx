@@ -141,14 +141,14 @@ export default function DashboardPage() {
 
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Saudação */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold">
               {new Date().getHours() < 12 ? 'Bom dia' : new Date().getHours() < 18 ? 'Boa tarde' : 'Boa noite'}, {usuario?.nome?.split(' ')[0] || 'Usuário'}!
             </h2>
             <p className="text-muted-foreground">Aqui está o resumo do seu dia</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Link href="/vendas">
               <Button size="sm"><ShoppingCart className="mr-2 h-4 w-4" />Nova Venda</Button>
             </Link>
@@ -162,7 +162,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Cards principais */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" data-tutorial="dashboard-kpis">
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4" data-tutorial="dashboard-kpis">
           {/* Vendas do dia */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -322,7 +322,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Listas */}
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {/* Últimas Vendas */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">

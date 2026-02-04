@@ -121,7 +121,7 @@ export default function PlanosAdminPage() {
   if (!isSuperadmin) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Card className="w-96">
+        <Card className="w-full max-w-sm">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
             <h2 className="text-lg font-semibold">Acesso Restrito</h2>
@@ -289,6 +289,7 @@ export default function PlanosAdminPage() {
       ) : (
         <Card>
           <CardContent className="p-0">
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -375,6 +376,7 @@ export default function PlanosAdminPage() {
                   ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -394,7 +396,7 @@ export default function PlanosAdminPage() {
           </DialogHeader>
           <div className="space-y-4">
             {/* Row 1: Nome + Slug */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="plano-nome">Nome</Label>
                 <Input
@@ -434,7 +436,7 @@ export default function PlanosAdminPage() {
             </div>
 
             {/* Row 2: Precos */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="plano-preco-mensal">Preço Mensal (R$)</Label>
                 <Input
@@ -464,7 +466,7 @@ export default function PlanosAdminPage() {
             </div>
 
             {/* Row 3: Limites */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="plano-max-usuarios">
                   Max Usuários (-1 = ilimitado)
@@ -494,7 +496,7 @@ export default function PlanosAdminPage() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="plano-max-os">
                   Max OS/mês (-1 = ilimitado)
@@ -526,7 +528,7 @@ export default function PlanosAdminPage() {
             </div>
 
             {/* Row 4: Ordem + Checkboxes */}
-            <div className="grid grid-cols-3 gap-4 items-end">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
               <div className="space-y-2">
                 <Label htmlFor="plano-ordem">Ordem de Exibição</Label>
                 <Input

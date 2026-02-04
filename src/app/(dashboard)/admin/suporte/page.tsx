@@ -134,7 +134,7 @@ export default function SuporteAdminPage() {
   if (!isSuperadmin) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Card className="w-96">
+        <Card className="w-full max-w-sm">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
             <h2 className="text-lg font-semibold">Acesso Restrito</h2>
@@ -337,6 +337,7 @@ export default function SuporteAdminPage() {
       ) : (
         <Card>
           <CardContent className="p-0">
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -401,6 +402,7 @@ export default function SuporteAdminPage() {
                 })}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}
