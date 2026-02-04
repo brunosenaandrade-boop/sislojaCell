@@ -3,6 +3,7 @@
 import { useAuthStore, useCaixaStore, useUIStore } from '@/store/useStore'
 import { useNotificacoesStore, type TipoNotificacao } from '@/store/useNotificacoesStore'
 import { useNotificacoes } from '@/hooks/useNotificacoes'
+import { usePermissao } from '@/hooks/usePermissao'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -53,6 +54,7 @@ export function Header({ title }: HeaderProps) {
   const { usuario, logout } = useAuthStore()
   const { isCaixaAberto } = useCaixaStore()
   const { toggleSidebar } = useUIStore()
+  const { isAdmin } = usePermissao()
   const {
     notificacoes,
     getNaoLidas,
@@ -232,14 +234,16 @@ export function Header({ title }: HeaderProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/configuracoes')}>
+            <DropdownMenuItem onClick={() => router.push('/perfil')}>
               <User className="mr-2 h-4 w-4" />
               <span>Meu Perfil</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/configuracoes')}>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Configurações</span>
-            </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem onClick={() => router.push('/configuracoes')}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Configurações</span>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-red-600">
               <LogOut className="mr-2 h-4 w-4" />
