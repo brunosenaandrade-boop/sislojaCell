@@ -549,6 +549,7 @@ export interface TicketSuporte {
   empresa_id: string
   usuario_id?: string
   numero: number
+  protocolo?: string
   assunto: string
   status: StatusTicket
   prioridade: PrioridadeTicket

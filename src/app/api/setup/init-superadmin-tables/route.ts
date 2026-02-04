@@ -47,9 +47,10 @@ CREATE TABLE IF NOT EXISTS avisos_lidos (
 
 CREATE TABLE IF NOT EXISTS tickets_suporte (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  empresa_id UUID NOT NULL,
+  empresa_id UUID NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
   usuario_id UUID,
   numero SERIAL,
+  protocolo VARCHAR(50),
   assunto VARCHAR(200) NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'aberto',
   prioridade VARCHAR(20) NOT NULL DEFAULT 'media',
@@ -59,12 +60,30 @@ CREATE TABLE IF NOT EXISTS tickets_suporte (
 
 CREATE TABLE IF NOT EXISTS ticket_mensagens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  ticket_id UUID NOT NULL,
+  ticket_id UUID NOT NULL REFERENCES tickets_suporte(id) ON DELETE CASCADE,
   autor_id UUID,
   autor_tipo VARCHAR(20) NOT NULL DEFAULT 'empresa',
   mensagem TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE tickets_suporte ADD COLUMN IF NOT EXISTS protocolo VARCHAR(50);
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'tickets_suporte_empresa_id_fkey'
+  ) THEN
+    ALTER TABLE tickets_suporte ADD CONSTRAINT tickets_suporte_empresa_id_fkey
+      FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE;
+  END IF;
+END $$;
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'ticket_mensagens_ticket_id_fkey'
+  ) THEN
+    ALTER TABLE ticket_mensagens ADD CONSTRAINT ticket_mensagens_ticket_id_fkey
+      FOREIGN KEY (ticket_id) REFERENCES tickets_suporte(id) ON DELETE CASCADE;
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS configuracoes_plataforma (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

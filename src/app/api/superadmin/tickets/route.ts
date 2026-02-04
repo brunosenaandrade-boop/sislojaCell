@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     let query = db
       .from('tickets_suporte')
-      .select('*, empresas:empresa_id(nome, nome_fantasia)')
+      .select('*')
       .order('updated_at', { ascending: false })
 
     if (status) {
@@ -39,7 +39,21 @@ export async function GET(request: NextRequest) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-    // Get latest message for each ticket
+    // Get empresa names + latest message for each ticket
+    const empresaIds = [...new Set((tickets || []).map(t => t.empresa_id).filter(Boolean))]
+    const empresaMap: Record<string, { nome: string; nome_fantasia: string | null }> = {}
+
+    if (empresaIds.length > 0) {
+      const { data: empresas } = await db
+        .from('empresas')
+        .select('id, nome, nome_fantasia')
+        .in('id', empresaIds)
+
+      for (const emp of empresas || []) {
+        empresaMap[emp.id] = { nome: emp.nome, nome_fantasia: emp.nome_fantasia }
+      }
+    }
+
     const ticketsComMensagem = await Promise.all(
       (tickets || []).map(async (ticket) => {
         const { data: mensagens } = await db
@@ -51,6 +65,7 @@ export async function GET(request: NextRequest) {
 
         return {
           ...ticket,
+          empresa: empresaMap[ticket.empresa_id] || null,
           ultima_mensagem: mensagens?.[0] || null,
         }
       })
