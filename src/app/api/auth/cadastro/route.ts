@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
       nomeFantasia,
       cnpj,
       telefone,
+      whatsapp,
       nomeUsuario,
       email,
       senha,
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest) {
       nomeFantasia?: string
       cnpj?: string
       telefone?: string
+      whatsapp?: string
       nomeUsuario: string
       email: string
       senha: string
@@ -108,7 +110,8 @@ export async function POST(request: NextRequest) {
         nome: nomeEmpresa,
         nome_fantasia: nomeFantasia || nomeEmpresa,
         cnpj: cnpj || null,
-        telefone: telefone || null,
+        telefone: whatsapp || telefone || null,
+        whatsapp: whatsapp || null,
         email,
         cor_primaria: '#2563eb',
         cor_secundaria: '#1e40af',
@@ -140,7 +143,7 @@ export async function POST(request: NextRequest) {
         nome: nomeUsuario,
         email,
         perfil: 'admin',
-        telefone: telefone || null,
+        telefone: whatsapp || telefone || null,
       })
       .select()
       .single()

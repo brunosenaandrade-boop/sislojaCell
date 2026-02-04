@@ -44,10 +44,40 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { planoSlug, ciclo } = body as { planoSlug: string; ciclo?: string }
+    const { planoSlug, ciclo, billingType, creditCard, creditCardHolderInfo, installmentCount } = body as {
+      planoSlug: string
+      ciclo?: string
+      billingType?: 'PIX' | 'CREDIT_CARD' | 'BOLETO'
+      creditCard?: {
+        holderName: string
+        number: string
+        expiryMonth: string
+        expiryYear: string
+        ccv: string
+      }
+      creditCardHolderInfo?: {
+        name: string
+        email: string
+        cpfCnpj: string
+        postalCode: string
+        addressNumber: string
+        phone: string
+      }
+      installmentCount?: number
+    }
 
     if (!planoSlug) {
       return NextResponse.json({ error: 'Plano não informado' }, { status: 400 })
+    }
+
+    // Validar dados do cartão quando billingType é CREDIT_CARD
+    if (billingType === 'CREDIT_CARD') {
+      if (!creditCard || !creditCardHolderInfo) {
+        return NextResponse.json(
+          { error: 'Dados do cartão e titular são obrigatórios para pagamento com cartão' },
+          { status: 400 }
+        )
+      }
     }
 
     const serviceClient = getServiceClient()
@@ -132,18 +162,29 @@ export async function POST(request: NextRequest) {
     // Próxima data de cobrança (hoje)
     const nextDueDate = new Date().toISOString().split('T')[0]
 
-    // Criar assinatura direta no Asaas (billingType UNDEFINED = PIX/cartão/boleto)
-    // maxInstallmentCount: 12 permite parcelamento em até 12x no cartão de crédito
-    const { data: subscription, error: subError } = await asaasService.criarAssinatura({
+    // Criar assinatura no Asaas com billingType específico ou UNDEFINED (fallback)
+    const effectiveBillingType = billingType || 'UNDEFINED'
+
+    const subscriptionPayload: Parameters<typeof asaasService.criarAssinatura>[0] = {
       customerId: asaasCustomerId,
-      billingType: 'UNDEFINED',
+      billingType: effectiveBillingType,
       value: valor,
       cycle: billingCycle as 'MONTHLY' | 'QUARTERLY' | 'SEMIANNUALLY' | 'YEARLY',
       nextDueDate,
       description: `${plano.nome} - ${empresa.nome_fantasia || empresa.nome}`,
       externalReference: empresa.id,
-      maxInstallmentCount: 12,
-    })
+    }
+
+    if (effectiveBillingType === 'CREDIT_CARD' && creditCard && creditCardHolderInfo) {
+      subscriptionPayload.creditCard = creditCard
+      subscriptionPayload.creditCardHolderInfo = creditCardHolderInfo
+    }
+
+    if (effectiveBillingType !== 'CREDIT_CARD') {
+      subscriptionPayload.maxInstallmentCount = 12
+    }
+
+    const { data: subscription, error: subError } = await asaasService.criarAssinatura(subscriptionPayload)
 
     if (subError || !subscription) {
       return NextResponse.json(
@@ -152,15 +193,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Buscar a primeira fatura gerada para obter o link de pagamento
+    // Buscar a primeira fatura gerada
     const { data: faturas } = await asaasService.listarFaturas(subscription.id)
     const primeiraFatura = faturas?.data?.[0]
 
-    // URL de pagamento: invoice URL da primeira fatura, fallback para link direto Asaas
+    // URL de pagamento (fallback para checkout externo se não for transparente)
     const invoiceUrl = primeiraFatura?.invoiceUrl || null
-    const checkoutUrl = invoiceUrl
-      || `${process.env.ASAAS_API_URL?.replace('/api/v3', '')}/c/${subscription.id}`
-      || null
+    const checkoutUrl = billingType
+      ? null // Checkout transparente: não precisa de URL externa
+      : invoiceUrl || `${process.env.ASAAS_API_URL?.replace('/api/v3', '')}/c/${subscription.id}` || null
 
     // Criar registro da assinatura no banco
     const { error: assinaturaDbErr } = await serviceClient.from('assinaturas').insert({
@@ -203,6 +244,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       checkoutUrl,
       subscriptionId: subscription.id,
+      paymentId: primeiraFatura?.id || null,
+      billingType: effectiveBillingType,
+      status: primeiraFatura?.status || subscription.status,
+      bankSlipUrl: primeiraFatura?.bankSlipUrl || null,
+      invoiceUrl,
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro interno'

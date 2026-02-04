@@ -19,7 +19,9 @@ export default function AuthLayout({
         ['--muted-foreground' as string]: 'oklch(0.556 0 0)',
         ['--border' as string]: 'oklch(0.922 0 0)',
         ['--input' as string]: 'oklch(0.922 0 0)',
-        ['--ring' as string]: 'oklch(0.708 0 0)',
+        ['--ring' as string]: 'oklch(0.623 0.214 259.815)',
+        ['--primary' as string]: 'oklch(0.546 0.245 262.881)',
+        ['--primary-foreground' as string]: 'oklch(0.985 0 0)',
       }}
     >
       {children}

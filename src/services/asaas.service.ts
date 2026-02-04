@@ -84,6 +84,36 @@ export interface AsaasPayment {
   billingType: string
   invoiceUrl?: string
   bankSlipUrl?: string
+  creditCardToken?: string
+}
+
+export interface AsaasCreditCard {
+  holderName: string
+  number: string
+  expiryMonth: string
+  expiryYear: string
+  ccv: string
+}
+
+export interface AsaasCreditCardHolderInfo {
+  name: string
+  email: string
+  cpfCnpj: string
+  postalCode: string
+  addressNumber: string
+  phone: string
+}
+
+export interface AsaasPixQrCode {
+  encodedImage: string
+  payload: string
+  expirationDate: string
+}
+
+export interface AsaasBoletoInfo {
+  identificationField: string
+  nossoNumero: string
+  barCode: string
 }
 
 // ============================================
@@ -177,6 +207,8 @@ export const asaasService = {
     description: string
     externalReference?: string
     maxInstallmentCount?: number
+    creditCard?: AsaasCreditCard
+    creditCardHolderInfo?: AsaasCreditCardHolderInfo
   }): Promise<AsaasResponse<AsaasSubscription>> {
     const body: Record<string, unknown> = {
       customer: dados.customerId,
@@ -190,6 +222,13 @@ export const asaasService = {
 
     if (dados.maxInstallmentCount) {
       body.maxInstallmentCount = dados.maxInstallmentCount
+    }
+
+    if (dados.creditCard) {
+      body.creditCard = dados.creditCard
+    }
+    if (dados.creditCardHolderInfo) {
+      body.creditCardHolderInfo = dados.creditCardHolderInfo
     }
 
     return asaasRequest<AsaasSubscription>('/subscriptions', {
@@ -263,5 +302,20 @@ export const asaasService = {
   // Listar webhooks configurados
   async listarWebhooks(): Promise<AsaasResponse<{ data: { id: string; url: string; enabled: boolean; events: string[] }[] }>> {
     return asaasRequest<{ data: { id: string; url: string; enabled: boolean; events: string[] }[] }>('/webhooks')
+  },
+
+  // Buscar QR Code PIX de um pagamento
+  async getPixQrCode(paymentId: string): Promise<AsaasResponse<AsaasPixQrCode>> {
+    return asaasRequest<AsaasPixQrCode>(`/payments/${paymentId}/pixQrCode`)
+  },
+
+  // Buscar linha digitável do boleto
+  async getIdentificationField(paymentId: string): Promise<AsaasResponse<AsaasBoletoInfo>> {
+    return asaasRequest<AsaasBoletoInfo>(`/payments/${paymentId}/identificationField`)
+  },
+
+  // Buscar status de um pagamento
+  async buscarPagamento(paymentId: string): Promise<AsaasResponse<AsaasPayment>> {
+    return asaasRequest<AsaasPayment>(`/payments/${paymentId}`)
   },
 }

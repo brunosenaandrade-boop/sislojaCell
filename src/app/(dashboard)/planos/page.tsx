@@ -9,7 +9,6 @@ import {
   ArrowRight,
   Loader2,
   AlertTriangle,
-  Clock,
   CreditCard,
   Gift,
   ExternalLink,
@@ -19,7 +18,6 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -30,6 +28,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+import { CheckoutTransparente } from '@/components/checkout/CheckoutTransparente'
 
 interface PlanoInfo {
   nome: string
@@ -107,9 +106,9 @@ function PlanosContent() {
 
   const [data, setData] = useState<AssinaturaResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false)
   const [isCancelLoading, setIsCancelLoading] = useState(false)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const fetchData = async () => {
@@ -153,30 +152,13 @@ function PlanosContent() {
     }
   }, [searchParams])
 
-  const handleCheckout = async () => {
-    try {
-      setIsCheckoutLoading(true)
-      const res = await fetch('/api/asaas/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planoSlug: 'anual', ciclo: 'YEARLY' }),
-      })
+  const handleCheckout = () => {
+    setCheckoutOpen(true)
+  }
 
-      const json = await res.json()
-
-      if (res.ok && json.checkoutUrl) {
-        window.location.href = json.checkoutUrl
-      } else if (res.ok && !json.checkoutUrl) {
-        toast.success('Assinatura criada! Atualize a página para ver a fatura.')
-        fetchData()
-      } else {
-        toast.error(json.error || 'Erro ao gerar link de pagamento')
-      }
-    } catch {
-      toast.error('Erro de conexão')
-    } finally {
-      setIsCheckoutLoading(false)
-    }
+  const handleCheckoutSuccess = () => {
+    toast.success('Pagamento realizado com sucesso! Seu plano será ativado em instantes.')
+    fetchData()
   }
 
   const handleCancel = async () => {
@@ -305,12 +287,8 @@ function PlanosContent() {
                 Assine o plano anual para continuar usando o sistema sem limites.
               </p>
             </div>
-            <Button onClick={handleCheckout} disabled={isCheckoutLoading}>
-              {isCheckoutLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>Assinar Agora <ArrowRight className="ml-1 h-4 w-4" /></>
-              )}
+            <Button onClick={handleCheckout}>
+              Assinar Agora <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </CardContent>
         </Card>
@@ -351,14 +329,9 @@ function PlanosContent() {
                 <Button
                   size="lg"
                   onClick={handleCheckout}
-                  disabled={isCheckoutLoading}
                   className="w-full"
                 >
-                  {isCheckoutLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <CreditCard className="mr-2 h-4 w-4" />
-                  )}
+                  <CreditCard className="mr-2 h-4 w-4" />
                   Assinar Agora
                 </Button>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -504,6 +477,17 @@ function PlanosContent() {
           </CardContent>
         </Card>
       )}
+
+      {/* Checkout Transparente */}
+      <CheckoutTransparente
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        planoSlug="anual"
+        planoNome="Plano Anual"
+        valor={data?.plano?.preco_anual || 1800}
+        ciclo="YEARLY"
+        onSuccess={handleCheckoutSuccess}
+      />
     </div>
   )
 }

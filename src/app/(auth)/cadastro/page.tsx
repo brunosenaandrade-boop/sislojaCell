@@ -27,6 +27,7 @@ function CadastroForm() {
   const { setUsuario, setEmpresa, setLoading } = useAuthStore()
 
   const [nomeEmpresa, setNomeEmpresa] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
   const [nomeUsuario, setNomeUsuario] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -67,6 +68,7 @@ function CadastroForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nomeEmpresa,
+          whatsapp: whatsapp || undefined,
           nomeUsuario,
           email,
           senha,
@@ -136,6 +138,19 @@ function CadastroForm() {
                   placeholder="Ex: Cell Tech Assistência"
                   value={nomeEmpresa}
                   onChange={(e) => setNomeEmpresa(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp">WhatsApp *</Label>
+                <Input
+                  id="whatsapp"
+                  type="tel"
+                  placeholder="(00) 00000-0000"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
                   required
                   disabled={isLoading}
                 />
