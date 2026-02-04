@@ -4,6 +4,7 @@ import { useAuthStore, useCaixaStore, useUIStore } from '@/store/useStore'
 import { useNotificacoesStore, type TipoNotificacao } from '@/store/useNotificacoesStore'
 import { useNotificacoes } from '@/hooks/useNotificacoes'
 import { usePermissao } from '@/hooks/usePermissao'
+import { authService } from '@/services/auth.service'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -68,7 +69,8 @@ export function Header({ title }: HeaderProps) {
 
   const naoLidas = getNaoLidas()
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authService.logout()
     logout()
     window.location.href = '/login'
   }
