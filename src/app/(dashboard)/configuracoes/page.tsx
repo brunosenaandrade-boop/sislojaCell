@@ -837,7 +837,7 @@ export default function ConfiguracoesPage() {
                           } as Empresa}
                           operador="Operador"
                           config={{
-                            largura: larguraPapel as '58' | '80' | 'A4',
+                            largura: (tipoImpressora === 'padrão' ? 'A4' : larguraPapel) as '58' | '80' | 'A4',
                             mostrarLogo,
                             mostrarEndereco,
                             mostrarTelefone,
@@ -878,7 +878,7 @@ export default function ConfiguracoesPage() {
                           } as Empresa}
                           operador="Operador"
                           config={{
-                            largura: larguraPapel as '58' | '80' | 'A4',
+                            largura: (tipoImpressora === 'padrão' ? 'A4' : larguraPapel) as '58' | '80' | 'A4',
                             mostrarLogo,
                             mostrarEndereco,
                             mostrarTelefone,
@@ -918,7 +918,7 @@ export default function ConfiguracoesPage() {
                           } as Empresa}
                           operador="Operador"
                           config={{
-                            largura: larguraPapel as '58' | '80' | 'A4',
+                            largura: (tipoImpressora === 'padrão' ? 'A4' : larguraPapel) as '58' | '80' | 'A4',
                             mostrarLogo,
                             mostrarEndereco,
                             mostrarTelefone,
@@ -1082,24 +1082,7 @@ export default function ConfiguracoesPage() {
                     Informações do Sistema
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Versão</span>
-                    <Badge variant="outline">1.0.0</Badge>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Frontend</span>
-                    <span>Next.js + Shadcn/ui</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Backend</span>
-                    <span>Supabase</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Hospedagem</span>
-                    <span>Vercel</span>
-                  </div>
-                  <Separator />
+                <CardContent>
                   <div className="flex items-center gap-2 text-green-600 text-sm">
                     <CheckCircle className="h-4 w-4" />
                     Sistema funcionando normalmente
