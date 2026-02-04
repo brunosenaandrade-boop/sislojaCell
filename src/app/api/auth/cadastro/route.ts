@@ -176,6 +176,7 @@ export async function POST(request: NextRequest) {
       if (configErr) console.warn('[Cadastro] Etapa 4 WARN (configuracoes):', configErr.message)
 
       const { error: catProdErr } = await serviceClient.from('categorias_produtos').insert([
+        { empresa_id: empresa.id, nome: 'Celulares' },
         { empresa_id: empresa.id, nome: 'Acessórios' },
         { empresa_id: empresa.id, nome: 'Peças' },
         { empresa_id: empresa.id, nome: 'Capas' },

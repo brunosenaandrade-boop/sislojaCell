@@ -82,7 +82,8 @@ export function Header({ title }: HeaderProps) {
     }
   }
 
-  const hoje = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })
+  const hojeRaw = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })
+  const hoje = hojeRaw.charAt(0).toUpperCase() + hojeRaw.slice(1)
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-4 lg:px-6">
@@ -100,7 +101,7 @@ export function Header({ title }: HeaderProps) {
         <div>
           {title && <h1 className="text-lg font-semibold">{title}</h1>}
           <div className="flex items-center gap-3">
-            <p className="text-sm text-muted-foreground capitalize">{hoje}</p>
+            <p className="hidden sm:block text-sm text-muted-foreground whitespace-nowrap">{hoje}</p>
             <Breadcrumbs />
           </div>
         </div>
