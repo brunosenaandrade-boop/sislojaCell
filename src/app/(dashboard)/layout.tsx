@@ -3,10 +3,9 @@
 import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { useUIStore, useSubscriptionStore } from '@/store/useStore'
+import { useSubscriptionStore } from '@/store/useStore'
 import { usePermissao } from '@/hooks/usePermissao'
 import { setupGlobalErrorHandler } from '@/services/logger'
-import { cn } from '@/lib/utils'
 import { Toaster } from '@/components/ui/sonner'
 import { TutorialProvider } from '@/components/tutorial/TutorialProvider'
 import { TutorialOverlay } from '@/components/tutorial/TutorialOverlay'
@@ -24,7 +23,6 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { sidebarOpen } = useUIStore()
   const { isAdmin, isSuperadmin } = usePermissao()
   const { fetchSubscription, isLoaded: subscriptionLoaded } = useSubscriptionStore()
   const pathname = usePathname()
@@ -58,12 +56,7 @@ export default function DashboardLayout({
           <ImpersonationBanner />
           <TrialBanner />
           <AnnouncementBanner />
-          <main
-            className={cn(
-              'flex-1 overflow-y-auto transition-all duration-300',
-              sidebarOpen ? 'lg:ml-0' : 'lg:ml-0'
-            )}
-          >
+          <main className="flex-1 overflow-y-auto">
             {children}
           </main>
         </div>

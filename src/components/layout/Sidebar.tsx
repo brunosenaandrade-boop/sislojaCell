@@ -193,8 +193,15 @@ const menuItems: MenuItem[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const { usuario, empresa, isImpersonating } = useAuthStore()
-  const { sidebarOpen, toggleSidebar } = useUIStore()
+  const { sidebarOpen, toggleSidebar, setSidebarOpen } = useUIStore()
   const { isAdmin, isSuperadmin } = usePermissao()
+
+  // Auto-close sidebar on mobile when navigating
+  const handleLinkClick = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setSidebarOpen(false)
+    }
+  }
 
   const filteredMenuItems = menuItems.filter((item) => {
     // Itens de loja: ocultos para superadmin, exceto quando impersonando
@@ -218,7 +225,13 @@ export function Sidebar() {
       <aside
         className={cn(
           'fixed left-0 top-0 z-50 flex h-full flex-col border-r bg-card transition-all duration-300',
-          sidebarOpen ? 'w-64' : 'w-16',
+          // Mobile: slide in/out (hidden off-screen when closed)
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          // Desktop: always visible, no translate needed
+          'lg:translate-x-0',
+          // Width: always w-64 on mobile (overlay), toggle on desktop
+          sidebarOpen ? 'w-64' : 'w-64 lg:w-16',
+          // Desktop: relative positioning (inline in flex layout)
           'lg:relative lg:z-0'
         )}
       >
@@ -268,6 +281,7 @@ export function Sidebar() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
+                    onClick={handleLinkClick}
                     className={cn(
                       'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                       isActive
