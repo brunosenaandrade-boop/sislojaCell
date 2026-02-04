@@ -476,7 +476,7 @@ export default function VendasPage() {
       </div>
 
       {/* Botoes */}
-      <div className="p-4 border-t space-y-2">
+      <div className="p-4 pt-6 border-t space-y-2">
         <Button
           className="w-full h-14 text-lg"
           onClick={handleAbrirFinalizar}
@@ -646,20 +646,17 @@ export default function VendasPage() {
 
                 {/* Carrinho */}
                 <Card className="flex-1 flex flex-col overflow-hidden" data-tutorial="pdv-cart">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center gap-2">
-                      <ShoppingCart className="h-5 w-5" />
-                      Carrinho
-                      {itens.length > 0 && (
-                        <Badge variant="secondary">{itens.length} {itens.length === 1 ? 'item' : 'itens'}</Badge>
-                      )}
-                    </CardTitle>
-                  </CardHeader>
+                  <div className="flex items-center gap-2 px-4 py-2 border-b">
+                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-semibold text-sm">Carrinho</span>
+                    {itens.length > 0 && (
+                      <Badge variant="secondary" className="text-xs">{itens.length}</Badge>
+                    )}
+                  </div>
                   <CardContent className="flex-1 overflow-y-auto p-0">
                     {itens.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-8">
-                        <ShoppingCart className="h-12 w-12 mb-2 opacity-50" />
-                        <p>Carrinho vazio</p>
+                      <div className="flex items-center justify-center gap-2 text-muted-foreground py-6">
+                        <ShoppingCart className="h-5 w-5 opacity-50" />
                         <p className="text-sm">Busque um produto para adicionar</p>
                       </div>
                     ) : (
