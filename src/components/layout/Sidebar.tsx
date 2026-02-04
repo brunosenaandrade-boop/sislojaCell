@@ -36,6 +36,8 @@ interface MenuItem {
   href: string
   icon: React.ComponentType<{ className?: string }>
   requiredRole?: 'admin' | 'superadmin'
+  /** Itens de loja: ocultos para superadmin, exceto quando impersonando */
+  storeOnly?: boolean
 }
 
 const menuItems: MenuItem[] = [
@@ -43,69 +45,82 @@ const menuItems: MenuItem[] = [
     title: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
+    storeOnly: true,
   },
   {
     title: 'Clientes',
     href: '/clientes',
     icon: Users,
+    storeOnly: true,
   },
   {
     title: 'Produtos',
     href: '/produtos',
     icon: Package,
+    storeOnly: true,
   },
   {
     title: 'Serviços',
     href: '/servicos',
     icon: Wrench,
+    storeOnly: true,
   },
   {
     title: 'Ordens de Serviço',
     href: '/ordens-servico',
     icon: FileText,
+    storeOnly: true,
   },
   {
     title: 'Vendas (PDV)',
     href: '/vendas',
     icon: ShoppingCart,
+    storeOnly: true,
   },
   {
     title: 'Estoque',
     href: '/estoque',
     icon: Warehouse,
+    storeOnly: true,
   },
   {
     title: 'Caixa',
     href: '/caixa',
     icon: DollarSign,
+    storeOnly: true,
   },
   {
     title: 'Meu Plano',
     href: '/planos',
     icon: CreditCard,
+    storeOnly: true,
   },
   {
     title: 'Indicações',
     href: '/indicacoes',
     icon: Gift,
+    storeOnly: true,
   },
   {
     title: 'Relatórios',
     href: '/relatorios',
     icon: BarChart3,
     requiredRole: 'admin',
+    storeOnly: true,
   },
   {
     title: 'Logs',
     href: '/logs',
     icon: ScrollText,
     requiredRole: 'admin',
+    storeOnly: true,
   },
   {
     title: 'Configurações',
     href: '/configuracoes',
     icon: Settings,
     requiredRole: 'admin',
+    storeOnly: true,
   },
   {
     title: 'Painel Admin',
@@ -135,15 +150,16 @@ const menuItems: MenuItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { usuario, empresa } = useAuthStore()
+  const { usuario, empresa, isImpersonating } = useAuthStore()
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const { isAdmin, isSuperadmin } = usePermissao()
 
   const filteredMenuItems = menuItems.filter((item) => {
-    if (!item.requiredRole) return true
+    // Itens de loja: ocultos para superadmin, exceto quando impersonando
+    if (item.storeOnly && isSuperadmin && !isImpersonating) return false
     if (item.requiredRole === 'superadmin') return isSuperadmin
     if (item.requiredRole === 'admin') return isAdmin
-    return false
+    return true
   })
 
   return (
