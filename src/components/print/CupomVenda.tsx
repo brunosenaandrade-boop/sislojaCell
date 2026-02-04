@@ -44,12 +44,6 @@ const formasPagamentoLabel: Record<string, string> = {
   credito: 'CARTÃO CRÉDITO',
 }
 
-const larguraClasses: Record<string, string> = {
-  '58': 'w-[58mm]',
-  '80': 'w-[80mm]',
-  'A4': 'w-full max-w-[210mm]',
-}
-
 export function CupomVenda({ venda, empresa, config, operador }: CupomVendaProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -63,8 +57,136 @@ export function CupomVenda({ venda, empresa, config, operador }: CupomVendaProps
   const mostrarEndereco = config?.mostrarEndereco !== false
   const mostrarTelefone = config?.mostrarTelefone !== false
   const mensagemCupom = config?.mensagemCupom || 'Obrigado pela preferência!'
-
   const nomeEmpresa = empresa?.nome_fantasia || empresa?.nome || 'LOJA DE CELULAR'
+  const isA4 = largura === 'A4'
+
+  if (isA4) {
+    return (
+      <div className="w-full max-w-[210mm] mx-auto bg-white text-black font-sans text-sm p-8 print:p-6">
+        {/* Header profissional */}
+        <div className="flex items-start justify-between pb-4 border-b-2 border-gray-800 mb-6">
+          <div className="flex items-center gap-4">
+            {mostrarLogo && empresa?.logo_url && (
+              <img
+                src={empresa.logo_url}
+                alt={nomeEmpresa}
+                className="h-16 w-16 object-contain"
+              />
+            )}
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">{nomeEmpresa}</h1>
+              {empresa?.cnpj && (
+                <p className="text-xs text-gray-500">CNPJ: {empresa.cnpj}</p>
+              )}
+              {mostrarEndereco && empresa?.endereco && (
+                <p className="text-xs text-gray-500">
+                  {empresa.endereco}
+                  {empresa.numero ? `, ${empresa.numero}` : ''}
+                  {empresa.bairro ? ` - ${empresa.bairro}` : ''}
+                  {empresa.cidade ? ` | ${empresa.cidade}` : ''}
+                  {empresa.estado ? `/${empresa.estado}` : ''}
+                </p>
+              )}
+              {mostrarTelefone && (empresa?.telefone || empresa?.whatsapp) && (
+                <p className="text-xs text-gray-500">
+                  {empresa?.telefone && `Tel: ${empresa.telefone}`}
+                  {empresa?.whatsapp && empresa.whatsapp !== empresa.telefone && ` | WhatsApp: ${empresa.whatsapp}`}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="bg-gray-900 text-white px-4 py-2 rounded">
+              <p className="text-[10px] uppercase tracking-wider">Venda</p>
+              <p className="text-2xl font-bold">#{venda.numero}</p>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              {format(new Date(venda.data), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+            </p>
+            {operador && (
+              <p className="text-xs text-gray-500">Operador: {operador}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Info grid: cliente + pagamento */}
+        <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-1">Cliente</p>
+            {venda.cliente ? (
+              <>
+                <p className="font-semibold text-gray-900">{venda.cliente.nome}</p>
+                {venda.cliente.telefone && (
+                  <p className="text-xs text-gray-600">{venda.cliente.telefone}</p>
+                )}
+              </>
+            ) : (
+              <p className="text-gray-400">Consumidor final</p>
+            )}
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-1">Forma de Pagamento</p>
+            <p className="font-semibold text-gray-900">
+              {formasPagamentoLabel[venda.forma_pagamento] || venda.forma_pagamento.toUpperCase()}
+            </p>
+          </div>
+        </div>
+
+        {/* Tabela de itens */}
+        <table className="w-full mb-6">
+          <thead>
+            <tr className="bg-gray-900 text-white text-xs">
+              <th className="text-left py-2 px-3 rounded-tl">#</th>
+              <th className="text-left py-2 px-3">Descrição</th>
+              <th className="text-center py-2 px-3">Qtd</th>
+              <th className="text-right py-2 px-3">Unitário</th>
+              <th className="text-right py-2 px-3 rounded-tr">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {venda.itens.map((item, index) => (
+              <tr
+                key={item.produto_id}
+                className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+              >
+                <td className="py-2 px-3 text-xs text-gray-500">{index + 1}</td>
+                <td className="py-2 px-3 font-medium">{item.descricao}</td>
+                <td className="py-2 px-3 text-center">{item.quantidade}</td>
+                <td className="py-2 px-3 text-right text-gray-600">{formatCurrency(item.valor_unitario)}</td>
+                <td className="py-2 px-3 text-right font-semibold">{formatCurrency(item.valor_total)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Totais */}
+        <div className="flex justify-end mb-8">
+          <div className="w-64">
+            <div className="flex justify-between py-1 text-sm text-gray-600">
+              <span>Itens ({venda.itens.reduce((acc, i) => acc + i.quantidade, 0)})</span>
+              <span>{formatCurrency(venda.itens.reduce((acc, i) => acc + i.valor_total, 0))}</span>
+            </div>
+            <div className="flex justify-between py-3 mt-2 border-t-2 border-gray-900 text-lg font-bold">
+              <span>Total</span>
+              <span>{formatCurrency(venda.valor_total)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Rodapé */}
+        <div className="border-t border-gray-200 pt-4 text-center">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Cupom Não Fiscal</p>
+          <p className="text-sm text-gray-600">{mensagemCupom}</p>
+        </div>
+      </div>
+    )
+  }
+
+  // ===== Layout térmico (58mm / 80mm) =====
+  const larguraClasses: Record<string, string> = {
+    '58': 'w-[58mm]',
+    '80': 'w-[80mm]',
+  }
 
   return (
     <div className={`${larguraClasses[largura]} mx-auto p-4 bg-white text-black font-mono text-xs`}>
