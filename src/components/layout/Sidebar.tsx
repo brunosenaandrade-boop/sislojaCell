@@ -16,7 +16,6 @@ import {
   DollarSign,
   BarChart3,
   Settings,
-  LogOut,
   ChevronLeft,
   Menu,
   ScrollText,
@@ -136,14 +135,9 @@ const menuItems: MenuItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { usuario, empresa, logout } = useAuthStore()
+  const { usuario, empresa } = useAuthStore()
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const { isAdmin, isSuperadmin } = usePermissao()
-
-  const handleLogout = () => {
-    logout()
-    window.location.href = '/login'
-  }
 
   const filteredMenuItems = menuItems.filter((item) => {
     if (!item.requiredRole) return true
@@ -254,16 +248,6 @@ export function Sidebar() {
                   {usuario?.perfil}
                 </p>
               </div>
-            )}
-            {sidebarOpen && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleLogout}
-                title="Sair"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
             )}
           </div>
         </div>
