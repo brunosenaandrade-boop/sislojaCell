@@ -26,6 +26,12 @@ import {
   Bell,
   CreditCard,
   Gift,
+  TrendingUp,
+  LifeBuoy,
+  Megaphone,
+  Activity,
+  Construction,
+  ListOrdered,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -144,6 +150,42 @@ const menuItems: MenuItem[] = [
     title: 'Logs Global',
     href: '/admin/logs',
     icon: ScrollTextAdmin,
+    requiredRole: 'superadmin',
+  },
+  {
+    title: 'Financeiro',
+    href: '/admin/financeiro',
+    icon: TrendingUp,
+    requiredRole: 'superadmin',
+  },
+  {
+    title: 'Planos',
+    href: '/admin/planos',
+    icon: ListOrdered,
+    requiredRole: 'superadmin',
+  },
+  {
+    title: 'Suporte',
+    href: '/admin/suporte',
+    icon: LifeBuoy,
+    requiredRole: 'superadmin',
+  },
+  {
+    title: 'Comunicação',
+    href: '/admin/comunicacao',
+    icon: Megaphone,
+    requiredRole: 'superadmin',
+  },
+  {
+    title: 'Métricas',
+    href: '/admin/metricas',
+    icon: Activity,
+    requiredRole: 'superadmin',
+  },
+  {
+    title: 'Manutenção',
+    href: '/admin/manutencao',
+    icon: Construction,
     requiredRole: 'superadmin',
   },
 ]

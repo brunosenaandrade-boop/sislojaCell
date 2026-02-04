@@ -134,7 +134,12 @@ export default function EmpresasAdminPage() {
     setTogglingId(null)
   }
 
-  const handleImpersonate = (empresa: EmpresaStats) => {
+  const handleImpersonate = async (empresa: EmpresaStats) => {
+    await superadminService.logImpersonacao(
+      empresa.id,
+      empresa.nome_fantasia || empresa.nome,
+      'inicio'
+    )
     startImpersonation({
       id: empresa.id,
       nome: empresa.nome,

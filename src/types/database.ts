@@ -313,7 +313,7 @@ export interface Configuracoes {
 }
 
 export type TipoLog = 'erro' | 'info' | 'warning' | 'audit'
-export type CategoriaLog = 'auth' | 'venda' | 'os' | 'estoque' | 'sistema'
+export type CategoriaLog = 'auth' | 'venda' | 'os' | 'estoque' | 'sistema' | 'impersonacao'
 
 export interface LogSistema {
   id: string
@@ -495,4 +495,130 @@ export interface UsageInfo {
   os_mes_limit: number
   vendas_mes_count: number
   vendas_mes_limit: number
+}
+
+// ============================================
+// TIPOS SUPERADMIN - NOVAS FEATURES
+// ============================================
+
+export interface Cupom {
+  id: string
+  codigo: string
+  descricao?: string
+  tipo_desconto: 'percentual' | 'fixo'
+  valor: number
+  valor_minimo: number
+  max_usos?: number
+  usos_atuais: number
+  plano_restrito?: string
+  data_inicio: string
+  data_expiracao?: string
+  ativo: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type TipoAviso = 'info' | 'warning' | 'important'
+export type AlvoTipoAviso = 'todos' | 'plano' | 'empresa'
+
+export interface AvisoPlataforma {
+  id: string
+  titulo: string
+  mensagem: string
+  tipo: TipoAviso
+  alvo_tipo: AlvoTipoAviso
+  alvo_valor?: string
+  ativo: boolean
+  criado_por?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface AvisoLido {
+  id: string
+  aviso_id: string
+  empresa_id: string
+  lido_em: string
+}
+
+export type StatusTicket = 'aberto' | 'em_atendimento' | 'resolvido' | 'fechado'
+export type PrioridadeTicket = 'baixa' | 'media' | 'alta' | 'urgente'
+
+export interface TicketSuporte {
+  id: string
+  empresa_id: string
+  usuario_id?: string
+  numero: number
+  assunto: string
+  status: StatusTicket
+  prioridade: PrioridadeTicket
+  created_at: string
+  updated_at: string
+  empresa?: { nome: string; nome_fantasia?: string }
+  mensagens?: TicketMensagem[]
+}
+
+export interface TicketMensagem {
+  id: string
+  ticket_id: string
+  autor_id?: string
+  autor_tipo: 'empresa' | 'superadmin'
+  mensagem: string
+  created_at: string
+}
+
+export interface ConfiguracaoPlataforma {
+  id: string
+  chave: string
+  valor: Record<string, unknown>
+  updated_at: string
+}
+
+export interface ManutencaoConfig {
+  ativo: boolean
+  mensagem: string
+}
+
+export interface ReceitaMensal {
+  mes: string
+  mrr: number
+  novas_assinaturas: number
+  receita_total: number
+}
+
+export interface ReceitaPorPlano {
+  plano: string
+  receita: number
+  quantidade: number
+}
+
+export interface FunilOnboarding {
+  total_cadastros: number
+  onboarding_completo: number
+  primeiro_produto: number
+  primeira_venda: number
+  assinatura_ativa: number
+}
+
+export interface MetricasUso {
+  empresas_ativas_7d: number
+  empresas_ativas_30d: number
+  empresas_inativas_30d: EmpresaInativa[]
+  features_mais_usadas: { categoria: string; total: number }[]
+  uso_por_empresa: UsoEmpresa[]
+}
+
+export interface EmpresaInativa {
+  id: string
+  nome: string
+  nome_fantasia?: string
+  ultimo_acesso?: string
+}
+
+export interface UsoEmpresa {
+  empresa_id: string
+  empresa_nome: string
+  produtos_count: number
+  vendas_count: number
+  os_count: number
 }

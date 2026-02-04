@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { planoSlug, ciclo, billingType, creditCard, creditCardHolderInfo, installmentCount } = body as {
+    const { planoSlug, ciclo, billingType, creditCard, creditCardHolderInfo, installmentCount, cupom } = body as {
       planoSlug: string
       ciclo?: string
       billingType?: 'PIX' | 'CREDIT_CARD' | 'BOLETO'
@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
         phone: string
       }
       installmentCount?: number
+      cupom?: string
     }
 
     if (!planoSlug) {
@@ -153,10 +154,60 @@ export async function POST(request: NextRequest) {
 
     // Calcular valor e ciclo
     const billingCycle = (ciclo as string) || 'YEARLY'
-    const valor = billingCycle === 'YEARLY' ? plano.preco_anual : plano.preco_mensal
+    let valor = billingCycle === 'YEARLY' ? plano.preco_anual : plano.preco_mensal
 
     if (valor <= 0) {
       return NextResponse.json({ error: 'Este plano é gratuito' }, { status: 400 })
+    }
+
+    // Validar e aplicar cupom de desconto
+    let cupomAplicado: string | null = null
+    if (cupom) {
+      const { data: cupomData } = await serviceClient
+        .from('cupons')
+        .select('*')
+        .eq('codigo', cupom.toUpperCase().trim())
+        .eq('ativo', true)
+        .single()
+
+      if (!cupomData) {
+        return NextResponse.json({ error: 'Cupom inválido ou expirado' }, { status: 400 })
+      }
+
+      // Verificar expiração
+      if (cupomData.data_expiracao && new Date(cupomData.data_expiracao) < new Date()) {
+        return NextResponse.json({ error: 'Cupom expirado' }, { status: 400 })
+      }
+
+      // Verificar limite de uso
+      if (cupomData.max_usos && cupomData.usos_atuais >= cupomData.max_usos) {
+        return NextResponse.json({ error: 'Cupom atingiu o limite de usos' }, { status: 400 })
+      }
+
+      // Verificar restrição de plano
+      if (cupomData.plano_restrito && cupomData.plano_restrito !== planoSlug) {
+        return NextResponse.json({ error: 'Cupom não aplicável a este plano' }, { status: 400 })
+      }
+
+      // Verificar valor mínimo
+      if (cupomData.valor_minimo && valor < cupomData.valor_minimo) {
+        return NextResponse.json({ error: `Valor mínimo para este cupom: R$ ${cupomData.valor_minimo}` }, { status: 400 })
+      }
+
+      // Aplicar desconto
+      if (cupomData.tipo_desconto === 'percentual') {
+        valor = valor * (1 - cupomData.valor / 100)
+      } else {
+        valor = Math.max(0, valor - cupomData.valor)
+      }
+
+      // Incrementar uso do cupom
+      await serviceClient
+        .from('cupons')
+        .update({ usos_atuais: cupomData.usos_atuais + 1 })
+        .eq('id', cupomData.id)
+
+      cupomAplicado = cupomData.codigo
     }
 
     // Próxima data de cobrança (hoje)
@@ -249,6 +300,7 @@ export async function POST(request: NextRequest) {
       status: primeiraFatura?.status || subscription.status,
       bankSlipUrl: primeiraFatura?.bankSlipUrl || null,
       invoiceUrl,
+      cupomAplicado,
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro interno'

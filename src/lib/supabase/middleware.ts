@@ -55,6 +55,13 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // ============================================
+  // MODO MANUTENÇÃO
+  // ============================================
+  if (pathname === '/manutencao') {
+    return supabaseResponse
+  }
+
+  // ============================================
   // ROTAS PÚBLICAS (sem autenticação)
   // ============================================
   const publicRoutes = ['/login', '/recuperar-senha', '/cadastro', '/alterar-senha', '/precos', '/termos', '/privacidade']
@@ -120,7 +127,7 @@ export async function updateSession(request: NextRequest) {
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)
       }
-      // Superadmin não tem restrição de assinatura
+      // Superadmin não tem restrição de assinatura nem manutenção
       return supabaseResponse
     } else if (isAdminRoute) {
       if (!usuario || (usuario.perfil !== 'admin' && usuario.perfil !== 'superadmin')) {
@@ -128,6 +135,35 @@ export async function updateSession(request: NextRequest) {
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)
       }
+    }
+  }
+
+  // ============================================
+  // VERIFICAÇÃO MODO MANUTENÇÃO (para não-superadmin)
+  // ============================================
+  if (user && !isPublicRoute && !isSuperadminRoute && !pathname.startsWith('/api')) {
+    try {
+      const { data: manutencaoConfig } = await supabase
+        .from('configuracoes_plataforma')
+        .select('valor')
+        .eq('chave', 'manutencao')
+        .single()
+
+      if (manutencaoConfig?.valor && (manutencaoConfig.valor as Record<string, unknown>).ativo === true) {
+        const { data: usuarioCheck } = await supabase
+          .from('usuarios')
+          .select('perfil')
+          .eq('auth_id', user.id)
+          .single()
+
+        if (usuarioCheck?.perfil !== 'superadmin') {
+          const url = request.nextUrl.clone()
+          url.pathname = '/manutencao'
+          return NextResponse.redirect(url)
+        }
+      }
+    } catch {
+      // Tabela pode não existir ainda, continuar normalmente
     }
   }
 

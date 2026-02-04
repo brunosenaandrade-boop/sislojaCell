@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuthStore } from '@/store/useStore'
+import { superadminService } from '@/services/superadmin.service'
 import { Button } from '@/components/ui/button'
 import { X, Eye } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -11,7 +12,14 @@ export function ImpersonationBanner() {
 
   if (!isImpersonating) return null
 
-  const handleExit = () => {
+  const handleExit = async () => {
+    if (empresa) {
+      await superadminService.logImpersonacao(
+        empresa.id,
+        empresa.nome_fantasia || empresa.nome,
+        'fim'
+      )
+    }
     stopImpersonation()
     router.push('/admin/empresas')
   }

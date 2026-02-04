@@ -484,6 +484,72 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
         </Link>
+        <Link href="/admin/financeiro">
+          <Card className="hover:bg-accent transition-colors cursor-pointer">
+            <CardContent className="pt-6 flex items-center gap-3">
+              <TrendingUp className="h-5 w-5 text-emerald-600" />
+              <div>
+                <p className="font-medium">Financeiro</p>
+                <p className="text-sm text-muted-foreground">Receita, cupons e exportações</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/admin/planos">
+          <Card className="hover:bg-accent transition-colors cursor-pointer">
+            <CardContent className="pt-6 flex items-center gap-3">
+              <CreditCard className="h-5 w-5 text-indigo-600" />
+              <div>
+                <p className="font-medium">Gestão de Planos</p>
+                <p className="text-sm text-muted-foreground">Criar, editar e gerenciar planos</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/admin/suporte">
+          <Card className="hover:bg-accent transition-colors cursor-pointer">
+            <CardContent className="pt-6 flex items-center gap-3">
+              <Shield className="h-5 w-5 text-cyan-600" />
+              <div>
+                <p className="font-medium">Suporte</p>
+                <p className="text-sm text-muted-foreground">Tickets e atendimento</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/admin/comunicacao">
+          <Card className="hover:bg-accent transition-colors cursor-pointer">
+            <CardContent className="pt-6 flex items-center gap-3">
+              <Info className="h-5 w-5 text-amber-600" />
+              <div>
+                <p className="font-medium">Comunicação</p>
+                <p className="text-sm text-muted-foreground">Avisos e notificações</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/admin/metricas">
+          <Card className="hover:bg-accent transition-colors cursor-pointer">
+            <CardContent className="pt-6 flex items-center gap-3">
+              <DollarSign className="h-5 w-5 text-teal-600" />
+              <div>
+                <p className="font-medium">Métricas</p>
+                <p className="text-sm text-muted-foreground">Funil e uso da plataforma</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/admin/manutencao">
+          <Card className="hover:bg-accent transition-colors cursor-pointer">
+            <CardContent className="pt-6 flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              <div>
+                <p className="font-medium">Manutenção</p>
+                <p className="text-sm text-muted-foreground">Modo manutenção do sistema</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   )
