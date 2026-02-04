@@ -56,12 +56,28 @@ export async function GET() {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
+    const serviceClient = getServiceClient()
+
+    // Superadmin não tem empresa — retornar resposta vazia
+    const { data: usuarioCheck } = await serviceClient
+      .from('usuarios')
+      .select('perfil, empresa_id')
+      .eq('auth_id', user.id)
+      .single()
+
+    if (usuarioCheck?.perfil === 'superadmin') {
+      return NextResponse.json({
+        empresa: null,
+        assinatura: null,
+        plano: { nome: 'Superadmin', slug: 'enterprise', features: {} },
+        faturas: [],
+      })
+    }
+
     const empresa = await getEmpresaFromAuth(user.id)
     if (!empresa) {
       return NextResponse.json({ error: 'Empresa não encontrada' }, { status: 404 })
     }
-
-    const serviceClient = getServiceClient()
 
     // Buscar assinatura ativa no banco
     const { data: assinatura } = await serviceClient
