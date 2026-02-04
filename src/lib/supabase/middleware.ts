@@ -181,7 +181,7 @@ export async function updateSession(request: NextRequest) {
   // ============================================
   // 4.1-4.5 VERIFICAÇÃO DE STATUS DA ASSINATURA
   // ============================================
-  if (user && !isPublicRoute && !isRotaLivre && !isSuperadminRoute) {
+  if (user && !isPublicRoute && !isRotaLivre && !isSuperadminRoute && !pathname.startsWith('/api')) {
     const dbAssinatura = getServiceClient()
     const { data: usuario } = await dbAssinatura
       .from('usuarios')

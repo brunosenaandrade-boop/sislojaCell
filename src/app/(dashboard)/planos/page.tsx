@@ -203,7 +203,7 @@ function PlanosContent() {
   const statusInfo = statusLabels[data?.empresa?.status_assinatura || 'trial'] || statusLabels.trial
   const isActive = data?.empresa?.status_assinatura === 'active'
   const isTrial = data?.empresa?.status_assinatura === 'trial'
-  const canSubscribe = isTrial || ['expired', 'cancelled', 'suspended', 'overdue'].includes(data?.empresa?.status_assinatura || '')
+  const canSubscribe = !data || isTrial || ['expired', 'cancelled', 'suspended', 'overdue'].includes(data?.empresa?.status_assinatura || '')
 
   return (
     <div className="space-y-6 p-4 md:p-6">
