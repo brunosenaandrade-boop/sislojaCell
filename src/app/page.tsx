@@ -31,9 +31,9 @@ export default async function HomePage({
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-              LC
+              CF
             </div>
-            <span className="text-lg font-semibold">SisLoja Cell</span>
+            <span className="text-lg font-semibold">CellFlow</span>
           </div>
           <nav className="hidden items-center gap-6 text-sm md:flex">
             <a href="#features" className="text-gray-600 hover:text-gray-900">Funcionalidades</a>
@@ -68,12 +68,11 @@ export default async function HomePage({
             7 dias grátis para testar
           </div>
           <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
-            Sistema completo para sua{' '}
-            <span className="text-blue-600">assistência técnica</span>
+            <span className="text-blue-600">CellFlow</span> — Sistema completo para sua assistência técnica
           </h1>
           <p className="mb-8 text-lg text-gray-600 md:text-xl">
             Gerencie ordens de serviço, vendas, estoque, caixa e clientes em um só lugar.
-            Feito para lojas de celular e videogame.
+            Feito para lojas de celular, videogame e assistência técnica.
           </p>
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
@@ -294,9 +293,9 @@ export default async function HomePage({
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white">
-                LC
+                CF
               </div>
-              <span className="text-sm font-medium text-white">SisLoja Cell</span>
+              <span className="text-sm font-medium text-white">CellFlow</span>
             </div>
             <nav className="flex gap-6 text-sm">
               <Link href="/termos" className="hover:text-white">Termos de Uso</Link>
@@ -306,7 +305,7 @@ export default async function HomePage({
             </nav>
           </div>
           <div className="mt-8 border-t border-gray-800 pt-8 text-center text-xs">
-            &copy; {new Date().getFullYear()} SisLoja Cell. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} CellFlow. Todos os direitos reservados.
           </div>
         </div>
       </footer>
