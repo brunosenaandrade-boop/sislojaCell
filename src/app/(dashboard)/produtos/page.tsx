@@ -324,12 +324,14 @@ export default function ProdutosPage() {
                           {produto.codigo}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
-                              <Package className="h-4 w-4 text-muted-foreground" />
+                          <Link href={`/produtos/${produto.id}/editar`} className="hover:underline">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
+                                <Package className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                              <span className="font-medium">{produto.nome}</span>
                             </div>
-                            <span className="font-medium">{produto.nome}</span>
-                          </div>
+                          </Link>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">{produto.categoria?.nome}</Badge>

@@ -178,7 +178,8 @@ export default function OnboardingPage() {
       }
       if (data) setEmpresa(data)
       toast.success('Sua loja está pronta! Boas vendas!')
-      router.push('/dashboard')
+      // Usar hard navigation para garantir que o middleware veja os dados atualizados
+      window.location.href = '/dashboard'
     } catch {
       toast.error('Erro ao finalizar')
     } finally {
@@ -195,7 +196,8 @@ export default function OnboardingPage() {
         return
       }
       if (data) setEmpresa(data)
-      router.push('/dashboard')
+      // Usar hard navigation para garantir que o middleware veja os dados atualizados
+      window.location.href = '/dashboard'
     } catch {
       toast.error('Erro ao pular')
     } finally {
@@ -209,7 +211,7 @@ export default function OnboardingPage() {
         {/* Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-lg font-bold text-white">
-            LC
+            CF
           </div>
           <h1 className="text-2xl font-bold">Configurar sua loja</h1>
           <p className="text-muted-foreground">

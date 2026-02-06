@@ -32,6 +32,7 @@ import {
   Activity,
   Construction,
   ListOrdered,
+  BookOpen,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -105,6 +106,12 @@ const menuItems: MenuItem[] = [
     title: 'Indicações',
     href: '/indicacoes',
     icon: Gift,
+    storeOnly: true,
+  },
+  {
+    title: 'Ajuda',
+    href: '/ajuda',
+    icon: BookOpen,
     storeOnly: true,
   },
   {

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useState, useCallback, useEffect } from 'react'
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { tutorialSteps, type TutorialStep } from '@/data/tutorialSteps'
 
@@ -124,4 +124,17 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
       {children}
     </TutorialContext.Provider>
   )
+}
+
+export function useTutorial() {
+  const context = useContext(TutorialContext)
+  if (!context) {
+    throw new Error('useTutorial must be used within a TutorialProvider')
+  }
+  return {
+    iniciarTutorial: context.startTutorial,
+    isActive: context.isActive,
+    currentStep: context.currentStep,
+    currentStepData: context.currentStepData,
+  }
 }

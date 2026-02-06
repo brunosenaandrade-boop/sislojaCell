@@ -159,9 +159,11 @@ export default function CaixaPage() {
 
   // Abrir caixa
   const handleAbrirCaixa = async () => {
-    const valor = parseFloat(formValorAbertura)
+    // Limpa formatação BR (troca vírgula por ponto) antes de parsear
+    const valorLimpo = formValorAbertura.replace(',', '.')
+    const valor = parseFloat(valorLimpo)
     if (isNaN(valor) || valor < 0) {
-      toast.error('Informe um valor válido para abertura')
+      toast.error('Informe um valor válido para abertura (ex: 100 ou 200.00)')
       return
     }
     setIsLoading(true)
@@ -185,7 +187,7 @@ export default function CaixaPage() {
 
   // Registrar movimentacao (suprimento/sangria)
   const handleRegistrarMovimentacao = async () => {
-    const valor = parseFloat(movValor)
+    const valor = parseFloat(movValor.replace(',', '.'))
     if (isNaN(valor) || valor <= 0) {
       toast.error('Informe um valor válido')
       return
@@ -228,7 +230,7 @@ export default function CaixaPage() {
 
   // Fechar caixa
   const handleFecharCaixa = async () => {
-    const contado = parseFloat(valorContado)
+    const contado = parseFloat(valorContado.replace(',', '.'))
     if (isNaN(contado) || contado < 0) {
       toast.error('Informe o valor contado no caixa')
       return
@@ -663,13 +665,15 @@ export default function CaixaPage() {
                     type="number"
                     step="0.01"
                     min="0"
-                    placeholder="200,00"
+                    placeholder="0.00"
                     value={formValorAbertura}
                     onChange={(e) => setFormValorAbertura(e.target.value)}
                     className="pl-10 text-lg"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">Valor em dinheiro disponível para troco</p>
+                <p className="text-xs text-muted-foreground">
+                  Valor em dinheiro disponível para troco. Use ponto como decimal (ex: 200.00)
+                </p>
               </div>
             </div>
             <DialogFooter>
@@ -707,7 +711,7 @@ export default function CaixaPage() {
                     type="number"
                     step="0.01"
                     min="0.01"
-                    placeholder="0,00"
+                    placeholder="0.00"
                     value={movValor}
                     onChange={(e) => setMovValor(e.target.value)}
                     className="pl-10"
@@ -803,7 +807,7 @@ export default function CaixaPage() {
                     type="number"
                     step="0.01"
                     min="0"
-                    placeholder="0,00"
+                    placeholder="0.00"
                     value={valorContado}
                     onChange={(e) => setValorContado(e.target.value)}
                     className="pl-10 text-lg"

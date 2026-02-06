@@ -45,6 +45,8 @@ import {
   Filter,
   FileDown,
   Loader2,
+  Edit,
+  RefreshCw,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Produto, MovimentacaoEstoque } from '@/types/database'
@@ -52,7 +54,7 @@ import { produtosService } from '@/services/produtos.service'
 import { estoqueService } from '@/services/estoque.service'
 
 // Tipos
-type TipoMovimentacao = 'entrada' | 'saida'
+type TipoMovimentacao = 'entrada' | 'saida' | 'ajuste'
 
 function EstoqueContent() {
   const searchParams = useSearchParams()
@@ -154,19 +156,18 @@ function EstoqueContent() {
       toast.error('Selecione um produto')
       return
     }
-    if (!movQuantidade || parseInt(movQuantidade) <= 0) {
+    const quantidade = parseInt(movQuantidade)
+    if (isNaN(quantidade) || quantidade < 0 || (movTipo !== 'ajuste' && quantidade <= 0)) {
       toast.error('Informe a quantidade')
       return
     }
-    if (!movMotivo) {
+    if (movTipo !== 'ajuste' && !movMotivo) {
       toast.error('Selecione o motivo')
       return
     }
 
     const produto = produtos.find(p => p.id === movProdutoId)
     if (!produto) return
-
-    const quantidade = parseInt(movQuantidade)
 
     // Validar saida
     if (movTipo === 'saida' && quantidade > produto.estoque_atual) {
@@ -177,12 +178,33 @@ function EstoqueContent() {
     setIsSaving(true)
 
     try {
+      // Se for ajuste, calcula a diferença para registrar como entrada ou saída
+      let tipoReal: 'entrada' | 'saida' = 'entrada'
+      let quantidadeReal = quantidade
+
+      if (movTipo === 'ajuste') {
+        const diferenca = quantidade - produto.estoque_atual
+        if (diferenca === 0) {
+          toast.info('Estoque já está com essa quantidade')
+          setDialogOpen(false)
+          setIsSaving(false)
+          return
+        }
+        tipoReal = diferenca > 0 ? 'entrada' : 'saida'
+        quantidadeReal = Math.abs(diferenca)
+      } else {
+        tipoReal = movTipo
+        quantidadeReal = quantidade
+      }
+
       const { data: movCriada, error } = await estoqueService.registrarMovimentacao({
         produto_id: movProdutoId,
-        tipo: movTipo,
-        quantidade,
-        motivo: movMotivo,
-        observacoes: movObservacao || undefined,
+        tipo: tipoReal,
+        quantidade: quantidadeReal,
+        motivo: movTipo === 'ajuste' ? 'ajuste' : movMotivo,
+        observacoes: movTipo === 'ajuste'
+          ? `Ajuste de inventário: ${produto.estoque_atual} → ${quantidade}${movObservacao ? '. ' + movObservacao : ''}`
+          : (movObservacao || undefined),
       })
 
       if (error) {
@@ -191,9 +213,11 @@ function EstoqueContent() {
       }
 
       // Atualizar estoque local
-      const novoEstoque = movTipo === 'entrada'
-        ? produto.estoque_atual + quantidade
-        : produto.estoque_atual - quantidade
+      const novoEstoque = movTipo === 'ajuste'
+        ? quantidade
+        : movTipo === 'entrada'
+          ? produto.estoque_atual + quantidade
+          : produto.estoque_atual - quantidade
 
       setProdutos(produtos.map(p =>
         p.id === movProdutoId ? { ...p, estoque_atual: novoEstoque } : p
@@ -204,7 +228,10 @@ function EstoqueContent() {
         setMovimentacoes(prev => [{ ...movCriada, produto }, ...prev])
       }
 
-      toast.success(`${movTipo === 'entrada' ? 'Entrada' : 'Saida'} registrada com sucesso!`)
+      const mensagem = movTipo === 'ajuste'
+        ? `Estoque ajustado para ${quantidade} unidades`
+        : `${movTipo === 'entrada' ? 'Entrada' : 'Saida'} registrada com sucesso!`
+      toast.success(mensagem)
       setDialogOpen(false)
     } catch {
       toast.error('Erro ao registrar movimentação')
@@ -275,14 +302,18 @@ function EstoqueContent() {
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Ações */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button onClick={() => abrirMovimentacao('entrada')} className="bg-green-600 hover:bg-green-700">
               <ArrowUpCircle className="mr-2 h-4 w-4" />
               Entrada
             </Button>
             <Button onClick={() => abrirMovimentacao('saida')} variant="destructive">
               <ArrowDownCircle className="mr-2 h-4 w-4" />
-              Saida
+              Saída
+            </Button>
+            <Button onClick={() => abrirMovimentacao('ajuste')} variant="outline">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Definir Estoque
             </Button>
           </div>
           <Button variant="outline" onClick={exportarRelatorio}>
@@ -443,12 +474,12 @@ function EstoqueContent() {
                       produtosFiltrados.map((produto) => (
                         <TableRow key={produto.id} className={produto.estoque_atual === 0 ? 'bg-red-50' : produto.estoque_atual <= produto.estoque_minimo ? 'bg-orange-50' : ''}>
                           <TableCell>
-                            <div>
+                            <Link href={`/produtos/${produto.id}/editar`} className="block hover:underline">
                               <div className="font-medium">{produto.nome}</div>
                               <div className="text-xs text-muted-foreground font-mono">
                                 {produto.codigo}
                               </div>
-                            </div>
+                            </Link>
                           </TableCell>
                           <TableCell>{produto.categoria?.nome || ''}</TableCell>
                           <TableCell className="text-center">
@@ -473,6 +504,15 @@ function EstoqueContent() {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="h-8 w-8 text-blue-600"
+                                onClick={() => abrirMovimentacao('ajuste', produto.id)}
+                                title="Definir estoque"
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-8 w-8 text-green-600"
                                 onClick={() => abrirMovimentacao('entrada', produto.id)}
                                 title="Entrada"
@@ -484,11 +524,21 @@ function EstoqueContent() {
                                 size="icon"
                                 className="h-8 w-8 text-red-600"
                                 onClick={() => abrirMovimentacao('saida', produto.id)}
-                                title="Saida"
+                                title="Saída"
                                 disabled={produto.estoque_atual === 0}
                               >
                                 <ArrowDownCircle className="h-4 w-4" />
                               </Button>
+                              <Link href={`/produtos/${produto.id}/editar`}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  title="Editar produto"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </Link>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -595,12 +645,16 @@ function EstoqueContent() {
               <DialogTitle className="flex items-center gap-2">
                 {movTipo === 'entrada' ? (
                   <><ArrowUpCircle className="h-5 w-5 text-green-600" /> Entrada de Estoque</>
+                ) : movTipo === 'saida' ? (
+                  <><ArrowDownCircle className="h-5 w-5 text-red-600" /> Saída de Estoque</>
                 ) : (
-                  <><ArrowDownCircle className="h-5 w-5 text-red-600" /> Saida de Estoque</>
+                  <><RefreshCw className="h-5 w-5 text-blue-600" /> Definir Estoque</>
                 )}
               </DialogTitle>
               <DialogDescription>
-                Registre a movimentação de estoque
+                {movTipo === 'ajuste'
+                  ? 'Defina a quantidade exata em estoque (não soma, substitui)'
+                  : 'Registre a movimentação de estoque'}
               </DialogDescription>
             </DialogHeader>
 
@@ -613,7 +667,7 @@ function EstoqueContent() {
                   </SelectTrigger>
                   <SelectContent>
                     {produtos
-                      .filter(p => movTipo === 'entrada' || p.estoque_atual > 0)
+                      .filter(p => movTipo === 'entrada' || movTipo === 'ajuste' || p.estoque_atual > 0)
                       .map(produto => (
                         <SelectItem key={produto.id} value={produto.id}>
                           <div className="flex items-center justify-between w-full">
@@ -629,12 +683,12 @@ function EstoqueContent() {
               </div>
 
               <div className="space-y-2">
-                <Label>Quantidade *</Label>
+                <Label>{movTipo === 'ajuste' ? 'Nova quantidade em estoque *' : 'Quantidade *'}</Label>
                 <Input
                   type="number"
-                  min="1"
+                  min={movTipo === 'ajuste' ? '0' : '1'}
                   max={movTipo === 'saida' && movProdutoId ? produtos.find(p => p.id === movProdutoId)?.estoque_atual : undefined}
-                  placeholder="0"
+                  placeholder={movTipo === 'ajuste' ? 'Ex: 5' : '0'}
                   value={movQuantidade}
                   onChange={(e) => setMovQuantidade(e.target.value)}
                 />
@@ -643,28 +697,36 @@ function EstoqueContent() {
                     Disponível: {produtos.find(p => p.id === movProdutoId)?.estoque_atual} unidades
                   </p>
                 )}
+                {movTipo === 'ajuste' && movProdutoId && (
+                  <p className="text-xs text-muted-foreground">
+                    Estoque atual: {produtos.find(p => p.id === movProdutoId)?.estoque_atual} unidades.
+                    O valor digitado será o novo estoque.
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-2">
-                <Label>Motivo *</Label>
-                <Select value={movMotivo} onValueChange={setMovMotivo}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o motivo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(movTipo === 'entrada' ? motivosEntrada : motivosSaida).map(motivo => (
-                      <SelectItem key={motivo.value} value={motivo.value}>
-                        {motivo.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {movTipo !== 'ajuste' && (
+                <div className="space-y-2">
+                  <Label>Motivo *</Label>
+                  <Select value={movMotivo} onValueChange={setMovMotivo}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o motivo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(movTipo === 'entrada' ? motivosEntrada : motivosSaida).map(motivo => (
+                        <SelectItem key={motivo.value} value={motivo.value}>
+                          {motivo.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-2">
-                <Label>Observação</Label>
+                <Label>Observação {movTipo === 'ajuste' ? '(opcional)' : ''}</Label>
                 <Input
-                  placeholder="Ex: Nota fiscal 12345"
+                  placeholder={movTipo === 'ajuste' ? 'Ex: Contagem de inventário' : 'Ex: Nota fiscal 12345'}
                   value={movObservacao}
                   onChange={(e) => setMovObservacao(e.target.value)}
                 />
@@ -678,7 +740,7 @@ function EstoqueContent() {
               <Button
                 onClick={handleSalvarMovimentacao}
                 disabled={isSaving}
-                className={movTipo === 'entrada' ? 'bg-green-600 hover:bg-green-700' : ''}
+                className={movTipo === 'entrada' ? 'bg-green-600 hover:bg-green-700' : movTipo === 'ajuste' ? 'bg-blue-600 hover:bg-blue-700' : ''}
                 variant={movTipo === 'saida' ? 'destructive' : 'default'}
               >
                 {isSaving ? 'Salvando...' : 'Confirmar'}

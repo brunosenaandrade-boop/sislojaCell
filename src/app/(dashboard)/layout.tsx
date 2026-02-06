@@ -11,7 +11,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { TutorialProvider } from '@/components/tutorial/TutorialProvider'
 import { TutorialOverlay } from '@/components/tutorial/TutorialOverlay'
 import { TutorialCard } from '@/components/tutorial/TutorialCard'
-import { HelpButton } from '@/components/tutorial/HelpButton'
+// import { HelpButton } from '@/components/tutorial/HelpButton'
 import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner'
 import { TrialBanner } from '@/components/layout/TrialBanner'
 import { AnnouncementBanner } from '@/components/layout/AnnouncementBanner'
@@ -65,7 +65,7 @@ export default function DashboardLayout({
         <Toaster position="top-right" richColors />
         <TutorialOverlay />
         <TutorialCard />
-        <HelpButton />
+        {/* <HelpButton /> */}
       </div>
     </TutorialProvider>
   )

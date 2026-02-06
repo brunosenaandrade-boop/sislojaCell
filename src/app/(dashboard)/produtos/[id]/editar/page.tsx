@@ -286,11 +286,15 @@ export default function EditarProdutoPage() {
                         type="number"
                         step="0.01"
                         min="0"
+                        placeholder="0.00"
                         value={custo}
                         onChange={(e) => setCusto(e.target.value)}
                         className="pl-10"
                       />
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Use ponto como decimal (ex: 3.20 para R$ 3,20)
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -304,11 +308,15 @@ export default function EditarProdutoPage() {
                         type="number"
                         step="0.01"
                         min="0"
+                        placeholder="0.00"
                         value={precoVenda}
                         onChange={(e) => setPrecoVenda(e.target.value)}
                         className="pl-10"
                       />
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Use ponto como decimal (ex: 49.90 para R$ 49,90)
+                    </p>
                   </div>
                 </div>
 
