@@ -40,38 +40,38 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     icon: Rocket,
     faqs: [
       {
-        pergunta: 'Como comecar a usar o CellFlow?',
-        resposta: 'Apos o cadastro, configure os dados da sua empresa em Configuracoes, cadastre suas categorias de produtos, adicione seus produtos e pronto! Voce ja pode comecar a vender pelo PDV e gerenciar ordens de servico.',
+        pergunta: 'Como começar a usar o CellFlow?',
+        resposta: 'Após o cadastro, configure os dados da sua empresa em Configurações, cadastre suas categorias de produtos, adicione seus produtos e pronto! Você já pode começar a vender pelo PDV e gerenciar ordens de serviço.',
       },
       {
         pergunta: 'Como configurar os dados da minha empresa?',
-        resposta: 'Acesse Configuracoes > Dados da Empresa. La voce pode adicionar nome, CNPJ, endereco, telefone e logo. Essas informacoes aparecerao nos cupons e documentos gerados.',
+        resposta: 'Acesse Configurações > Dados da Empresa. Lá você pode adicionar nome, CNPJ, endereço, telefone e logo. Essas informações aparecerão nos cupons e documentos gerados.',
       },
       {
-        pergunta: 'Como criar usuarios para minha equipe?',
-        resposta: 'Em Configuracoes > Usuarios, clique em "Novo Usuario". Defina nome, email, senha e o perfil (admin, operador ou vendedor). Cada perfil tem permissoes diferentes.',
+        pergunta: 'Como criar usuários para minha equipe?',
+        resposta: 'Em Configurações > Usuários, clique em "Novo Usuário". Defina nome, email, senha e o perfil (admin, operador ou vendedor). Cada perfil tem permissões diferentes.',
       },
       {
-        pergunta: 'Qual a diferenca entre os perfis de usuario?',
-        resposta: 'Admin: acesso total, pode excluir registros e ver relatorios. Operador: pode cadastrar e editar, mas nao excluir. Vendedor: apenas operacoes de venda e OS.',
+        pergunta: 'Qual a diferença entre os perfis de usuário?',
+        resposta: 'Admin: acesso total, pode excluir registros e ver relatórios. Operador: pode cadastrar e editar, mas não excluir. Vendedor: apenas operações de venda e OS.',
       },
     ],
     guias: [
       {
-        titulo: 'Configuracao inicial em 5 passos',
+        titulo: 'Configuração inicial em 5 passos',
         passos: [
-          'Acesse Configuracoes e preencha os dados da empresa',
-          'Va em Produtos > Categorias e crie suas categorias',
-          'Cadastre seus produtos com custo e preco de venda',
-          'Cadastre seus servicos (se aplicavel)',
-          'Faca uma venda teste no PDV para validar',
+          'Acesse Configurações e preencha os dados da empresa',
+          'Vá em Produtos > Categorias e crie suas categorias',
+          'Cadastre seus produtos com custo e preço de venda',
+          'Cadastre seus serviços (se aplicável)',
+          'Faça uma venda teste no PDV para validar',
         ],
       },
     ],
     dicas: [
       {
         titulo: 'Tour Guiado',
-        descricao: 'Use o botao "Iniciar Tour Guiado" no topo desta pagina para conhecer as principais funcoes do sistema.',
+        descricao: 'Use o botão "Iniciar Tour Guiado" no topo desta página para conhecer as principais funções do sistema.',
       },
     ],
   },
@@ -81,24 +81,24 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     icon: Package,
     faqs: [
       {
-        pergunta: 'Como informar valores em reais nos campos de preco?',
-        resposta: 'Use PONTO como separador decimal. Exemplo: para R$ 3,20 digite 3.20. Para R$ 1.500,00 digite 1500.00. O sistema usa o formato americano nos inputs numericos.',
+        pergunta: 'Como informar valores em reais nos campos de preço?',
+        resposta: 'Use PONTO como separador decimal. Exemplo: para R$ 3,20 digite 3.20. Para R$ 1.500,00 digite 1500.00. O sistema usa o formato americano nos inputs numéricos.',
       },
       {
-        pergunta: 'Qual a diferenca entre Custo e Preco de Venda?',
-        resposta: 'Custo e quanto voce paga pelo produto (compra do fornecedor). Preco de Venda e quanto voce cobra do cliente. A diferenca e seu lucro. O sistema calcula automaticamente a margem de lucro.',
+        pergunta: 'Qual a diferença entre Custo e Preço de Venda?',
+        resposta: 'Custo é quanto você paga pelo produto (compra do fornecedor). Preço de Venda é quanto você cobra do cliente. A diferença é seu lucro. O sistema calcula automaticamente a margem de lucro.',
       },
       {
         pergunta: 'Como editar um produto?',
-        resposta: 'Na lista de produtos (/produtos), clique no NOME do produto para ir direto a edicao. Ou clique no menu de tres pontos e selecione "Editar".',
+        resposta: 'Na lista de produtos (/produtos), clique no NOME do produto para ir direto à edição. Ou clique no menu de três pontos e selecione "Editar".',
       },
       {
-        pergunta: 'O que e o codigo do produto?',
-        resposta: 'E um identificador unico para busca rapida. Pode ser o codigo de barras ou um codigo interno. Use o botao "Gerar" para criar um automaticamente.',
+        pergunta: 'O que é o código do produto?',
+        resposta: 'É um identificador único para busca rápida. Pode ser o código de barras ou um código interno. Use o botão "Gerar" para criar um automaticamente.',
       },
       {
         pergunta: 'Como desativar um produto sem excluir?',
-        resposta: 'Na edicao do produto, clique no botao "Ativo" para mudar para "Inativo". Produtos inativos nao aparecem no PDV mas continuam no historico.',
+        resposta: 'Na edição do produto, clique no botão "Ativo" para mudar para "Inativo". Produtos inativos não aparecem no PDV mas continuam no histórico.',
       },
     ],
     guias: [
@@ -108,16 +108,16 @@ export const categoriasAjuda: CategoriaAjuda[] = [
           'Acesse Produtos > Novo Produto',
           'Preencha o nome e selecione a categoria',
           'Informe o Custo usando ponto decimal (ex: 50.00)',
-          'Informe o Preco de Venda (ex: 89.90)',
-          'Defina o estoque inicial e minimo',
+          'Informe o Preço de Venda (ex: 89.90)',
+          'Defina o estoque inicial e mínimo',
           'Clique em Salvar',
         ],
       },
     ],
     dicas: [
       {
-        titulo: 'Margem de lucro saudavel',
-        descricao: 'O sistema indica margem em cores: verde (>50%), azul (30-50%), laranja (<30%). Margens abaixo de 30% podem nao cobrir custos operacionais.',
+        titulo: 'Margem de lucro saudável',
+        descricao: 'O sistema indica margem em cores: verde (>50%), azul (30-50%), laranja (<30%). Margens abaixo de 30% podem não cobrir custos operacionais.',
       },
     ],
   },
@@ -127,58 +127,58 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     icon: Warehouse,
     faqs: [
       {
-        pergunta: 'Qual a diferenca entre Entrada, Saida e Definir Estoque?',
-        resposta: 'ENTRADA: soma a quantidade ao estoque atual (ex: recebeu mercadoria). SAIDA: subtrai do estoque (ex: perda, avaria). DEFINIR ESTOQUE: substitui o valor atual pelo novo (ex: correcao apos inventario).',
+        pergunta: 'Qual a diferença entre Entrada, Saída e Definir Estoque?',
+        resposta: 'ENTRADA: soma a quantidade ao estoque atual (ex: recebeu mercadoria). SAÍDA: subtrai do estoque (ex: perda, avaria). DEFINIR ESTOQUE: substitui o valor atual pelo novo (ex: correção após inventário).',
       },
       {
         pergunta: 'Por que meu estoque somou em vez de definir o valor?',
-        resposta: 'Se voce usou "Entrada de Estoque", ele soma ao atual. Para CORRIGIR o estoque para um valor exato, use "Definir Estoque" (icone de refresh). Isso substitui o valor ao inves de somar.',
+        resposta: 'Se você usou "Entrada de Estoque", ele soma ao atual. Para CORRIGIR o estoque para um valor exato, use "Definir Estoque" (ícone de refresh). Isso substitui o valor ao invés de somar.',
       },
       {
-        pergunta: 'O que e Estoque Baixo?',
-        resposta: 'Quando o estoque atual e MENOR OU IGUAL ao estoque minimo configurado no produto. Exemplo: minimo 5, atual 5 = estoque baixo. Configure o minimo de cada produto para receber alertas.',
+        pergunta: 'O que é Estoque Baixo?',
+        resposta: 'Quando o estoque atual é MENOR OU IGUAL ao estoque mínimo configurado no produto. Exemplo: mínimo 5, atual 5 = estoque baixo. Configure o mínimo de cada produto para receber alertas.',
       },
       {
-        pergunta: 'Como corrigir o estoque apos inventario?',
-        resposta: 'Use a opcao "Definir Estoque" na pagina de Estoque. Selecione o produto, escolha "Definir Estoque" e informe a quantidade real encontrada. Adicione uma observacao como "Correcao de inventario".',
+        pergunta: 'Como corrigir o estoque após inventário?',
+        resposta: 'Use a opção "Definir Estoque" na página de Estoque. Selecione o produto, escolha "Definir Estoque" e informe a quantidade real encontrada. Adicione uma observação como "Correção de inventário".',
       },
       {
         pergunta: 'O estoque baixa automaticamente nas vendas?',
-        resposta: 'Sim! Ao finalizar uma venda no PDV, o estoque dos produtos vendidos e automaticamente decrementado.',
+        resposta: 'Sim! Ao finalizar uma venda no PDV, o estoque dos produtos vendidos é automaticamente decrementado.',
       },
       {
         pergunta: 'O estoque baixa automaticamente nas OS?',
-        resposta: 'Sim, ao adicionar produtos em uma Ordem de Servico, o estoque e automaticamente decrementado.',
+        resposta: 'Sim, ao adicionar produtos em uma Ordem de Serviço, o estoque é automaticamente decrementado.',
       },
     ],
     guias: [
       {
-        titulo: 'Fazer correcao de inventario',
+        titulo: 'Fazer correção de inventário',
         passos: [
-          'Acesse a pagina Estoque',
+          'Acesse a página Estoque',
           'Localize o produto a corrigir',
-          'Clique em "Definir Estoque" (icone de refresh)',
+          'Clique em "Definir Estoque" (ícone de refresh)',
           'Informe a quantidade REAL em estoque',
-          'Adicione observacao: "Correcao de inventario"',
-          'Confirme a operacao',
+          'Adicione observação: "Correção de inventário"',
+          'Confirme a operação',
         ],
       },
       {
         titulo: 'Registrar entrada de mercadoria',
         passos: [
-          'Acesse a pagina Estoque',
+          'Acesse a página Estoque',
           'Localize o produto',
           'Clique em "Entrada de Estoque"',
           'Informe a quantidade recebida',
-          'Adicione o numero da nota fiscal na observacao',
-          'Confirme a operacao',
+          'Adicione o número da nota fiscal na observação',
+          'Confirme a operação',
         ],
       },
     ],
     dicas: [
       {
         titulo: 'Valor em Estoque',
-        descricao: 'O "Valor em Estoque" e calculado como: Custo x Quantidade. Se o valor parece errado, verifique se o custo do produto esta correto.',
+        descricao: 'O "Valor em Estoque" é calculado como: Custo x Quantidade. Se o valor parece errado, verifique se o custo do produto está correto.',
       },
     ],
   },
@@ -188,24 +188,24 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     icon: ShoppingCart,
     faqs: [
       {
-        pergunta: 'Como fazer uma venda rapida?',
-        resposta: 'No PDV, busque o produto pelo nome ou codigo, clique para adicionar ao carrinho, ajuste quantidade se necessario, selecione forma de pagamento e finalize.',
+        pergunta: 'Como fazer uma venda rápida?',
+        resposta: 'No PDV, busque o produto pelo nome ou código, clique para adicionar ao carrinho, ajuste quantidade se necessário, selecione forma de pagamento e finalize.',
       },
       {
         pergunta: 'Como aplicar desconto?',
-        resposta: 'No carrinho, voce pode aplicar desconto por item ou no total. Clique no valor e informe o desconto em reais ou percentual.',
+        resposta: 'No carrinho, você pode aplicar desconto por item ou no total. Clique no valor e informe o desconto em reais ou percentual.',
       },
       {
-        pergunta: 'Quais sao os atalhos do PDV?',
+        pergunta: 'Quais são os atalhos do PDV?',
         resposta: 'F2: Buscar produto. F4: Finalizar venda. F8: Cancelar venda. Esc: Limpar busca. Use os atalhos para agilizar o atendimento.',
       },
       {
-        pergunta: 'Como cancelar uma venda ja finalizada?',
-        resposta: 'Na lista de vendas, localize a venda, clique no menu e selecione "Estornar". O estoque sera automaticamente devolvido.',
+        pergunta: 'Como cancelar uma venda já finalizada?',
+        resposta: 'Na lista de vendas, localize a venda, clique no menu e selecione "Estornar". O estoque será automaticamente devolvido.',
       },
       {
-        pergunta: 'Como vincular um cliente a venda?',
-        resposta: 'No PDV, clique em "Selecionar Cliente" antes de finalizar. Isso permite emitir nota com CPF e manter historico de compras.',
+        pergunta: 'Como vincular um cliente à venda?',
+        resposta: 'No PDV, clique em "Selecionar Cliente" antes de finalizar. Isso permite emitir nota com CPF e manter histórico de compras.',
       },
     ],
     guias: [
@@ -214,9 +214,9 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         passos: [
           'Acesse Vendas (PDV)',
           'Busque e adicione os produtos (F2 para buscar)',
-          'Ajuste quantidades se necessario',
+          'Ajuste quantidades se necessário',
           'Selecione o cliente (opcional)',
-          'Aplique desconto se necessario',
+          'Aplique desconto se necessário',
           'Escolha forma de pagamento',
           'Finalize a venda (F4)',
         ],
@@ -225,7 +225,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     dicas: [
       {
         titulo: 'Atalhos economizam tempo',
-        descricao: 'Memorize F2 (buscar) e F4 (finalizar). Com pratica, voce faz uma venda em segundos sem usar o mouse.',
+        descricao: 'Memorize F2 (buscar) e F4 (finalizar). Com prática, você faz uma venda em segundos sem usar o mouse.',
       },
     ],
   },
@@ -236,70 +236,74 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     faqs: [
       {
         pergunta: 'Por que preciso abrir o caixa?',
-        resposta: 'O controle de caixa permite acompanhar entradas e saidas de dinheiro, fazer fechamento diario e identificar divergencias. E essencial para controle financeiro.',
+        resposta: 'O controle de caixa permite acompanhar entradas e saídas de dinheiro, fazer fechamento diário e identificar divergências. É essencial para controle financeiro.',
       },
       {
-        pergunta: 'O que e Sangria?',
-        resposta: 'Sangria e a retirada de dinheiro do caixa (ex: para deposito bancario, pagamento de fornecedor). Registre sempre para manter o controle.',
+        pergunta: 'O que é Sangria?',
+        resposta: 'Sangria é a retirada de dinheiro do caixa (ex: para depósito bancário, pagamento de fornecedor). Registre sempre para manter o controle.',
       },
       {
-        pergunta: 'O que e Suprimento?',
-        resposta: 'Suprimento e a entrada de dinheiro no caixa que nao vem de vendas (ex: troco inicial, reforco de caixa).',
+        pergunta: 'O que é Suprimento?',
+        resposta: 'Suprimento é a entrada de dinheiro no caixa que não vem de vendas (ex: troco inicial, reforço de caixa).',
       },
       {
-        pergunta: 'O que fazer se o caixa nao fechar?',
-        resposta: 'Verifique: 1) Todas as vendas em dinheiro foram registradas? 2) Sangrias e suprimentos estao corretos? 3) Houve troco errado? Registre a diferenca como ajuste.',
+        pergunta: 'O que fazer se o caixa não fechar?',
+        resposta: 'Verifique: 1) Todas as vendas em dinheiro foram registradas? 2) Sangrias e suprimentos estão corretos? 3) Houve troco errado? Registre a diferença como ajuste.',
+      },
+      {
+        pergunta: 'Como informar o valor de abertura do caixa?',
+        resposta: 'Use PONTO como separador decimal (ex: 200.00 para R$ 200,00). Você também pode usar vírgula, o sistema aceita ambos os formatos.',
       },
     ],
     guias: [
       {
-        titulo: 'Rotina diaria de caixa',
+        titulo: 'Rotina diária de caixa',
         passos: [
           'Abra o caixa informando o valor inicial (troco)',
           'Realize as vendas normalmente',
           'Registre sangrias quando retirar dinheiro',
-          'No fim do dia, conte o dinheiro fisico',
-          'Feche o caixa informando valor em especie',
-          'Analise o relatorio de fechamento',
+          'No fim do dia, conte o dinheiro físico',
+          'Feche o caixa informando valor em espécie',
+          'Analise o relatório de fechamento',
         ],
       },
     ],
     dicas: [
       {
         titulo: 'Confira o caixa periodicamente',
-        descricao: 'Nao espere o fim do dia para conferir. Uma conferencia rapida apos o almoco ajuda a identificar problemas cedo.',
+        descricao: 'Não espere o fim do dia para conferir. Uma conferência rápida após o almoço ajuda a identificar problemas cedo.',
       },
     ],
   },
   {
     id: 'ordens-servico',
-    titulo: 'Ordens de Servico',
+    titulo: 'Ordens de Serviço',
     icon: FileText,
     faqs: [
       {
-        pergunta: 'Como criar uma ordem de servico?',
-        resposta: 'Acesse Ordens de Servico > Nova OS. Selecione o cliente, descreva o problema/servico, adicione produtos e servicos, defina prazo e salve.',
+        pergunta: 'Como criar uma ordem de serviço?',
+        resposta: 'Acesse Ordens de Serviço > Nova OS. Selecione o cliente, descreva o problema/serviço, adicione produtos e serviços, defina prazo e salve.',
       },
       {
-        pergunta: 'Quais sao os status de uma OS?',
-        resposta: 'Aberta (aguardando inicio), Em Andamento (sendo executada), Aguardando Pecas, Aguardando Aprovacao, Pronta (finalizada), Entregue (cliente retirou), Cancelada.',
+        pergunta: 'Quais são os status de uma OS?',
+        resposta: 'Aberta (aguardando início), Em Andamento (sendo executada), Aguardando Peças, Aguardando Aprovação, Pronta (finalizada), Entregue (cliente retirou), Cancelada.',
       },
       {
         pergunta: 'Como adicionar produtos a uma OS?',
-        resposta: 'Na edicao da OS, va na aba "Produtos/Servicos", busque o produto e adicione. O estoque sera decrementado automaticamente.',
+        resposta: 'Na edição da OS, vá na aba "Produtos/Serviços", busque o produto e adicione. O estoque será decrementado automaticamente.',
       },
       {
         pergunta: 'Como imprimir a OS?',
-        resposta: 'Na visualizacao da OS, clique em "Imprimir". O documento inclui dados do cliente, itens, valores e termos de garantia.',
+        resposta: 'Na visualização da OS, clique em "Imprimir". O documento inclui dados do cliente, itens, valores e termos de garantia.',
       },
     ],
     guias: [
       {
         titulo: 'Fluxo completo de uma OS',
         passos: [
-          'Crie a OS com dados do cliente e descricao',
+          'Crie a OS com dados do cliente e descrição',
           'Mude para "Em Andamento" ao iniciar',
-          'Adicione produtos/servicos utilizados',
+          'Adicione produtos/serviços utilizados',
           'Mude para "Pronta" ao finalizar',
           'Notifique o cliente',
           'Receba o pagamento',
@@ -310,22 +314,22 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     dicas: [
       {
         titulo: 'Prazos realistas',
-        descricao: 'Defina prazos com margem de seguranca. E melhor entregar antes do prazo do que atrasar.',
+        descricao: 'Defina prazos com margem de segurança. É melhor entregar antes do prazo do que atrasar.',
       },
     ],
   },
   {
     id: 'configuracoes',
-    titulo: 'Configuracoes',
+    titulo: 'Configurações',
     icon: Settings,
     faqs: [
       {
         pergunta: 'Como alterar a logo da empresa?',
-        resposta: 'Em Configuracoes > Dados da Empresa, clique na area da logo para fazer upload. Use uma imagem quadrada para melhor resultado.',
+        resposta: 'Em Configurações > Dados da Empresa, clique na área da logo para fazer upload. Use uma imagem quadrada para melhor resultado.',
       },
       {
         pergunta: 'Como configurar a impressora?',
-        resposta: 'Em Configuracoes > Impressao, selecione o modelo de impressora termica. O sistema suporta impressoras de 58mm e 80mm.',
+        resposta: 'Em Configurações > Impressão, selecione o modelo de impressora térmica. O sistema suporta impressoras de 58mm e 80mm.',
       },
       {
         pergunta: 'Como alterar minha senha?',
@@ -333,26 +337,26 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       },
       {
         pergunta: 'Como sair do sistema?',
-        resposta: 'Clique no seu nome no canto superior direito e depois em "Sair". Isso encerra sua sessao com seguranca.',
+        resposta: 'Clique no seu nome no canto superior direito e depois em "Sair". Isso encerra sua sessão com segurança.',
       },
     ],
     guias: [
       {
         titulo: 'Personalizar o sistema',
         passos: [
-          'Acesse Configuracoes',
+          'Acesse Configurações',
           'Adicione a logo da sua empresa',
-          'Defina a cor primaria da marca',
+          'Defina a cor primária da marca',
           'Configure os dados fiscais (CNPJ)',
-          'Preencha endereco completo',
-          'Salve as alteracoes',
+          'Preencha endereço completo',
+          'Salve as alterações',
         ],
       },
     ],
     dicas: [
       {
         titulo: 'Backup dos dados',
-        descricao: 'Seus dados sao armazenados na nuvem com backup automatico. Voce nao precisa se preocupar com perda de dados.',
+        descricao: 'Seus dados são armazenados na nuvem com backup automático. Você não precisa se preocupar com perda de dados.',
       },
     ],
   },
