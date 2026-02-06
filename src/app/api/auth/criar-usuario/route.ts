@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
     const empresaId = adminUser.empresa_id
 
     // Verificar limite de usuários do plano
+    let maxUsuarios = -1
     const { data: empresa } = await serviceClient
       .from('empresas')
       .select('plano')
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (plano && plano.max_usuarios !== -1) {
+        maxUsuarios = plano.max_usuarios
         const { count } = await serviceClient
           .from('usuarios')
           .select('id', { count: 'exact', head: true })
@@ -143,6 +145,25 @@ export async function POST(request: NextRequest) {
       // Rollback: apagar usuário auth criado
       await serviceClient.auth.admin.deleteUser(authData.user.id)
       return NextResponse.json({ error: usuarioError.message }, { status: 500 })
+    }
+
+    // Optimistic lock: re-check user count after insert to handle race condition
+    if (maxUsuarios !== -1) {
+      const { count: recount } = await serviceClient
+        .from('usuarios')
+        .select('id', { count: 'exact', head: true })
+        .eq('empresa_id', empresaId)
+        .eq('ativo', true)
+
+      if ((recount || 0) > maxUsuarios) {
+        // Rollback: delete the just-created usuario and auth user
+        await serviceClient.from('usuarios').delete().eq('id', usuario.id)
+        await serviceClient.auth.admin.deleteUser(authData.user.id)
+        return NextResponse.json(
+          { error: `Limite de ${maxUsuarios} usuário(s) atingido. Faça upgrade do plano.` },
+          { status: 403 }
+        )
+      }
     }
 
     return NextResponse.json({ usuario })

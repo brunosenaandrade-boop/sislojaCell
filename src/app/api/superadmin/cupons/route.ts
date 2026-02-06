@@ -106,22 +106,35 @@ export async function PATCH(request: NextRequest) {
     if (!rl.success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
     const body = await request.json()
-    const { id, ...fields } = body
+    const { id } = body
 
     if (!id) {
       return NextResponse.json({ error: 'ID do cupom é obrigatório' }, { status: 400 })
     }
 
+    // Whitelist of allowed fields to prevent mass assignment
+    const ALLOWED_FIELDS = ['codigo', 'descricao', 'tipo_desconto', 'valor', 'plano_slug', 'max_usos', 'validade', 'ativo'] as const
+    const updateFields: Record<string, unknown> = {}
+    for (const field of ALLOWED_FIELDS) {
+      if (body[field] !== undefined) {
+        updateFields[field] = body[field]
+      }
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return NextResponse.json({ error: 'Nenhum campo válido para atualizar' }, { status: 400 })
+    }
+
     // Uppercase codigo if provided
-    if (fields.codigo) {
-      fields.codigo = fields.codigo.toUpperCase()
+    if (typeof updateFields.codigo === 'string') {
+      updateFields.codigo = updateFields.codigo.toUpperCase()
     }
 
     const db = getServiceClient()
 
     const { data: cupom, error } = await db
       .from('cupons')
-      .update(fields)
+      .update(updateFields)
       .eq('id', id)
       .select()
       .single()

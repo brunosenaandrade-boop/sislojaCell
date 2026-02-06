@@ -23,35 +23,55 @@ export const indicacoesService = {
       return { data: empresa.codigo_indicacao, error: null }
     }
 
-    // Gerar código único REF-XXXXXX
+    // Gerar código único REF-XXXXXX com crypto para segurança
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-    let codigo = ''
-    for (let i = 0; i < 6; i++) {
-      codigo += chars[Math.floor(Math.random() * chars.length)]
+    const MAX_RETRIES = 5
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const randomBytes = new Uint8Array(6)
+      crypto.getRandomValues(randomBytes)
+      let codigo = 'REF-'
+      for (let i = 0; i < 6; i++) {
+        codigo += chars[randomBytes[i] % chars.length]
+      }
+
+      // Verificar unicidade
+      const { data: existente } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('codigo_indicacao', codigo)
+        .maybeSingle()
+
+      if (existente) continue
+
+      // Atomic update: only set if still null (guards against concurrent calls)
+      const { data: updated, error } = await supabase
+        .from('empresas')
+        .update({ codigo_indicacao: codigo })
+        .eq('id', empresaId)
+        .is('codigo_indicacao', null)
+        .select('codigo_indicacao')
+        .maybeSingle()
+
+      if (error) return { data: null, error: error.message }
+
+      if (updated?.codigo_indicacao) {
+        return { data: updated.codigo_indicacao, error: null }
+      }
+
+      // Another concurrent call already set a code — return the existing one
+      const { data: current } = await supabase
+        .from('empresas')
+        .select('codigo_indicacao')
+        .eq('id', empresaId)
+        .single()
+
+      if (current?.codigo_indicacao) {
+        return { data: current.codigo_indicacao, error: null }
+      }
     }
-    codigo = `REF-${codigo}`
 
-    // Verificar unicidade
-    const { data: existente } = await supabase
-      .from('empresas')
-      .select('id')
-      .eq('codigo_indicacao', codigo)
-      .maybeSingle()
-
-    if (existente) {
-      // Retry com sufixo extra
-      codigo = `REF-${codigo.slice(4)}${chars[Math.floor(Math.random() * chars.length)]}`
-    }
-
-    // Salvar na empresa
-    const { error } = await supabase
-      .from('empresas')
-      .update({ codigo_indicacao: codigo })
-      .eq('id', empresaId)
-
-    if (error) return { data: null, error: error.message }
-
-    return { data: codigo, error: null }
+    return { data: null, error: 'Não foi possível gerar código de indicação após múltiplas tentativas' }
   },
 
   // 13.3 - Listar minhas indicações

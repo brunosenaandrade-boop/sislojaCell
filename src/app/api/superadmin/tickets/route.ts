@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifySuperadmin, getServiceClient } from '../route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { logApiError } from '@/lib/server-logger'
+import { sanitizeSearch } from '@/lib/sanitize'
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,7 +34,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      query = query.or(`assunto.ilike.%${search}%,protocolo.ilike.%${search}%`)
+      const s = sanitizeSearch(search)
+      query = query.or(`assunto.ilike.%${s}%,protocolo.ilike.%${s}%`)
     }
 
     const { data: tickets, error } = await query
@@ -55,22 +57,34 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const ticketsComMensagem = await Promise.all(
-      (tickets || []).map(async (ticket) => {
-        const { data: mensagens } = await db
-          .from('ticket_mensagens')
-          .select('mensagem, autor_tipo, created_at')
-          .eq('ticket_id', ticket.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
+    // Batch: fetch all messages for all tickets in a single query
+    const ticketIds = (tickets || []).map(t => t.id)
+    const mensagensMap: Record<string, { mensagem: string; autor_tipo: string; created_at: string }> = {}
 
-        return {
-          ...ticket,
-          empresa: empresaMap[ticket.empresa_id] || null,
-          ultima_mensagem: mensagens?.[0] || null,
+    if (ticketIds.length > 0) {
+      const { data: allMensagens } = await db
+        .from('ticket_mensagens')
+        .select('ticket_id, mensagem, autor_tipo, created_at')
+        .in('ticket_id', ticketIds)
+        .order('created_at', { ascending: false })
+
+      for (const msg of allMensagens || []) {
+        // Keep only the most recent message per ticket
+        if (!mensagensMap[msg.ticket_id]) {
+          mensagensMap[msg.ticket_id] = {
+            mensagem: msg.mensagem,
+            autor_tipo: msg.autor_tipo,
+            created_at: msg.created_at,
+          }
         }
-      })
-    )
+      }
+    }
+
+    const ticketsComMensagem = (tickets || []).map((ticket) => ({
+      ...ticket,
+      empresa: empresaMap[ticket.empresa_id] || null,
+      ultima_mensagem: mensagensMap[ticket.id] || null,
+    }))
 
     return NextResponse.json({ data: ticketsComMensagem })
   } catch (err) {

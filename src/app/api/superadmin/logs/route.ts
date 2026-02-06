@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySuperadmin, getServiceClient } from '../route-utils'
 import { logApiError } from '@/lib/server-logger'
+import { sanitizeSearch } from '@/lib/sanitize'
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     if (tipo) query = query.eq('tipo', tipo)
     if (categoria) query = query.eq('categoria', categoria)
     if (empresa_id) query = query.eq('empresa_id', empresa_id)
-    if (search) query = query.ilike('mensagem', '%' + search + '%')
+    if (search) query = query.ilike('mensagem', '%' + sanitizeSearch(search) + '%')
 
     const { data, error } = await query
 

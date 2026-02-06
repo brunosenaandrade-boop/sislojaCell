@@ -16,21 +16,35 @@ export async function GET() {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-    const empresasWithStats = await Promise.all(
-      (empresas || []).map(async (emp) => {
-        const [usuarios, os, vendas] = await Promise.all([
-          db.from('usuarios').select('id', { count: 'exact', head: true }).eq('empresa_id', emp.id),
-          db.from('ordens_servico').select('id', { count: 'exact', head: true }).eq('empresa_id', emp.id),
-          db.from('vendas').select('id', { count: 'exact', head: true }).eq('empresa_id', emp.id),
+    const ids = (empresas || []).map(e => e.id)
+
+    // Batch count queries instead of N+1
+    const [usuariosRes, osRes, vendasRes] = ids.length > 0
+      ? await Promise.all([
+          db.from('usuarios').select('empresa_id').in('empresa_id', ids),
+          db.from('ordens_servico').select('empresa_id').in('empresa_id', ids),
+          db.from('vendas').select('empresa_id').in('empresa_id', ids),
         ])
-        return {
-          ...emp,
-          usuarios_count: usuarios.count ?? 0,
-          os_count: os.count ?? 0,
-          vendas_count: vendas.count ?? 0,
-        }
-      })
-    )
+      : [{ data: [] }, { data: [] }, { data: [] }]
+
+    const countBy = (rows: { empresa_id: string }[] | null) => {
+      const map: Record<string, number> = {}
+      for (const r of rows || []) {
+        map[r.empresa_id] = (map[r.empresa_id] || 0) + 1
+      }
+      return map
+    }
+
+    const usuariosCount = countBy(usuariosRes.data)
+    const osCount = countBy(osRes.data)
+    const vendasCount = countBy(vendasRes.data)
+
+    const empresasWithStats = (empresas || []).map((emp) => ({
+      ...emp,
+      usuarios_count: usuariosCount[emp.id] ?? 0,
+      os_count: osCount[emp.id] ?? 0,
+      vendas_count: vendasCount[emp.id] ?? 0,
+    }))
 
     return NextResponse.json({ data: empresasWithStats })
   } catch (err) {

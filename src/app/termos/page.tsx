@@ -3,8 +3,8 @@ import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Termos de Uso - SisLoja Cell',
-  description: 'Termos de uso do SisLoja Cell - Sistema de gestão para lojas de celular.',
+  title: 'Termos de Uso - CellFlow',
+  description: 'Termos de uso do CellFlow - Sistema de gestão para lojas de celular.',
 }
 
 export default function TermosPage() {
@@ -15,9 +15,9 @@ export default function TermosPage() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-              LC
+              CF
             </div>
-            <span className="text-lg font-semibold">SisLoja Cell</span>
+            <span className="text-lg font-semibold">CellFlow</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -50,7 +50,7 @@ export default function TermosPage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-gray-900">1. Aceitação dos Termos</h2>
             <p>
-              Ao acessar e utilizar o sistema SisLoja Cell, você concorda com estes Termos de Uso.
+              Ao acessar e utilizar o sistema CellFlow, você concorda com estes Termos de Uso.
               Caso não concorde com algum dos termos aqui descritos, não utilize o sistema.
             </p>
           </section>
@@ -58,7 +58,7 @@ export default function TermosPage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-gray-900">2. Descrição do Serviço</h2>
             <p>
-              O SisLoja Cell é um sistema de gestão (SaaS) desenvolvido para lojas de assistência técnica
+              O CellFlow é um sistema de gestão (SaaS) desenvolvido para lojas de assistência técnica
               de celulares, videogames e dispositivos eletrônicos. O sistema oferece funcionalidades de:
               ponto de venda (PDV), ordens de serviço, controle de estoque, gestão de caixa,
               cadastro de clientes e relatórios.
@@ -77,7 +77,7 @@ export default function TermosPage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-gray-900">4. Período de Teste (Trial)</h2>
             <p>
-              O SisLoja Cell oferece um período de teste gratuito de 7 (sete) dias corridos.
+              O CellFlow oferece um período de teste gratuito de 7 (sete) dias corridos.
               Durante o trial, o acesso é limitado a 1 usuário, 50 produtos, 30 ordens de serviço
               e 30 vendas por mês. Após o período de teste, é necessário assinar o plano pago
               para continuar utilizando o sistema.
@@ -118,7 +118,7 @@ export default function TermosPage() {
 
           <section>
             <h2 className="mb-3 text-xl font-semibold text-gray-900">8. Uso Aceitável</h2>
-            <p>Ao utilizar o SisLoja Cell, você concorda em:</p>
+            <p>Ao utilizar o CellFlow, você concorda em:</p>
             <ul className="mt-2 list-disc space-y-1 pl-6">
               <li>Não utilizar o sistema para fins ilegais ou não autorizados</li>
               <li>Não tentar acessar dados de outras empresas</li>
@@ -131,8 +131,8 @@ export default function TermosPage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-gray-900">9. Propriedade Intelectual</h2>
             <p>
-              Todo o conteúdo do SisLoja Cell, incluindo código-fonte, design, marcas e textos,
-              é de propriedade exclusiva do SisLoja Cell. Os dados inseridos por cada empresa
+              Todo o conteúdo do CellFlow, incluindo código-fonte, design, marcas e textos,
+              é de propriedade exclusiva do CellFlow. Os dados inseridos por cada empresa
               permanecem de propriedade da respectiva empresa.
             </p>
           </section>
@@ -148,7 +148,7 @@ export default function TermosPage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-gray-900">11. Limitação de Responsabilidade</h2>
             <p>
-              O SisLoja Cell não se responsabiliza por danos indiretos, incidentais ou consequentes
+              O CellFlow não se responsabiliza por danos indiretos, incidentais ou consequentes
               decorrentes do uso ou impossibilidade de uso do sistema. Nossa responsabilidade máxima
               é limitada ao valor pago pelo serviço nos últimos 12 meses.
             </p>
@@ -179,9 +179,9 @@ export default function TermosPage() {
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white">
-                LC
+                CF
               </div>
-              <span className="text-sm font-medium text-white">SisLoja Cell</span>
+              <span className="text-sm font-medium text-white">CellFlow</span>
             </div>
             <nav className="flex gap-6 text-sm">
               <Link href="/termos" className="text-white">Termos de Uso</Link>
@@ -191,7 +191,7 @@ export default function TermosPage() {
             </nav>
           </div>
           <div className="mt-8 border-t border-gray-800 pt-8 text-center text-xs">
-            &copy; {new Date().getFullYear()} SisLoja Cell. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} CellFlow. Todos os direitos reservados.
           </div>
         </div>
       </footer>

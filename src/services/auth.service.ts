@@ -37,7 +37,7 @@ export const authService = {
           created_at: '',
           updated_at: '',
         }
-        return { data: { usuario, empresa: empresaPlaceholder as any }, error: null }
+        return { data: { usuario, empresa: empresaPlaceholder as Empresa }, error: null }
       }
 
       const { data: empresa, error: empresaError } = await supabase

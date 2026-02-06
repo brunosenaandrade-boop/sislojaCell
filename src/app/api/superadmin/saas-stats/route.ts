@@ -14,9 +14,19 @@ export async function GET() {
 
   const allEmpresas = empresas || []
 
-  // MRR: assinatura anual R$1.800 / 12 = R$150 equivalente mensal
+  // MRR: calculado a partir dos preços reais dos planos
   const ativas = allEmpresas.filter(e => e.status_assinatura === 'active')
-  const mrr = ativas.length * (1800 / 12)
+
+  const { data: planos } = await db
+    .from('planos')
+    .select('slug, preco_mensal, preco_anual')
+
+  const planoPrecos: Record<string, number> = {}
+  for (const p of planos || []) {
+    planoPrecos[p.slug] = p.preco_mensal || (p.preco_anual ? p.preco_anual / 12 : 0)
+  }
+
+  const mrr = ativas.reduce((acc, e) => acc + (planoPrecos[e.plano || 'free'] || 0), 0)
 
   // Distribuição por status
   const statusCount: Record<string, number> = {}

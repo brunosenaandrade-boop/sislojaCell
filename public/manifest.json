@@ -1,7 +1,7 @@
 {
-  "name": "Sistema Loja Celular",
-  "short_name": "LojaCell",
-  "description": "Sistema de gestão para loja de celulares",
+  "name": "CellFlow",
+  "short_name": "CellFlow",
+  "description": "Sistema de gestão para lojas de celular e assistência técnica",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",

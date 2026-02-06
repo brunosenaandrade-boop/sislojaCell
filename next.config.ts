@@ -1,6 +1,6 @@
 import type { NextConfig } from "next"
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sisloja-cell.vercel.app'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cellflow.com.br'
 
 const nextConfig: NextConfig = {
   async headers() {

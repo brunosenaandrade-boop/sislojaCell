@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySuperadmin, getServiceClient } from '../route-utils'
+import { sanitizeSearch } from '@/lib/sanitize'
 
 export async function GET(request: NextRequest) {
   const auth = await verifySuperadmin()
@@ -23,7 +24,10 @@ export async function GET(request: NextRequest) {
   if (perfil) query = query.eq('perfil', perfil)
   if (ativo === 'true') query = query.eq('ativo', true)
   if (ativo === 'false') query = query.eq('ativo', false)
-  if (search) query = query.or('nome.ilike.%' + search + '%,email.ilike.%' + search + '%')
+  if (search) {
+    const s = sanitizeSearch(search)
+    query = query.or('nome.ilike.%' + s + '%,email.ilike.%' + s + '%')
+  }
 
   const { data, error } = await query
 

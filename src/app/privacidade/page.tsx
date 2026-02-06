@@ -3,8 +3,8 @@ import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidade - SisLoja Cell',
-  description: 'Política de privacidade e proteção de dados do SisLoja Cell. Em conformidade com a LGPD.',
+  title: 'Política de Privacidade - CellFlow',
+  description: 'Política de privacidade e proteção de dados do CellFlow. Em conformidade com a LGPD.',
 }
 
 export default function PrivacidadePage() {
@@ -15,9 +15,9 @@ export default function PrivacidadePage() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-              LC
+              CF
             </div>
-            <span className="text-lg font-semibold">SisLoja Cell</span>
+            <span className="text-lg font-semibold">CellFlow</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -50,7 +50,7 @@ export default function PrivacidadePage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-gray-900">1. Introdução</h2>
             <p>
-              O SisLoja Cell respeita a privacidade de seus usuários. Esta política descreve como
+              O CellFlow respeita a privacidade de seus usuários. Esta política descreve como
               coletamos, utilizamos, armazenamos e protegemos seus dados pessoais, em conformidade
               com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).
             </p>
@@ -180,9 +180,9 @@ export default function PrivacidadePage() {
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white">
-                LC
+                CF
               </div>
-              <span className="text-sm font-medium text-white">SisLoja Cell</span>
+              <span className="text-sm font-medium text-white">CellFlow</span>
             </div>
             <nav className="flex gap-6 text-sm">
               <Link href="/termos" className="hover:text-white">Termos de Uso</Link>
@@ -192,7 +192,7 @@ export default function PrivacidadePage() {
             </nav>
           </div>
           <div className="mt-8 border-t border-gray-800 pt-8 text-center text-xs">
-            &copy; {new Date().getFullYear()} SisLoja Cell. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} CellFlow. Todos os direitos reservados.
           </div>
         </div>
       </footer>

@@ -61,6 +61,127 @@ interface CardForm {
 }
 
 // ============================================
+// VALIDAÇÕES
+// ============================================
+
+function isValidLuhn(cardNumber: string): boolean {
+  const digits = cardNumber.replace(/\D/g, '')
+  if (digits.length < 13 || digits.length > 19) return false
+  let sum = 0
+  let alternate = false
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let n = parseInt(digits[i], 10)
+    if (alternate) {
+      n *= 2
+      if (n > 9) n -= 9
+    }
+    sum += n
+    alternate = !alternate
+  }
+  return sum % 10 === 0
+}
+
+function isExpiryValid(month: string, year: string): boolean {
+  const m = parseInt(month, 10)
+  const y = parseInt(year, 10)
+  if (!m || !y || m < 1 || m > 12) return false
+  const fullYear = y < 100 ? 2000 + y : y
+  const now = new Date()
+  const expiry = new Date(fullYear, m) // first day of month after expiry
+  return expiry > now
+}
+
+function isValidCpf(cpf: string): boolean {
+  const digits = cpf.replace(/\D/g, '')
+  if (digits.length !== 11) return false
+  if (/^(\d)\1{10}$/.test(digits)) return false
+  for (let t = 9; t < 11; t++) {
+    let sum = 0
+    for (let i = 0; i < t; i++) {
+      sum += parseInt(digits[i], 10) * (t + 1 - i)
+    }
+    let check = ((sum * 10) % 11) % 10
+    if (parseInt(digits[t], 10) !== check) return false
+  }
+  return true
+}
+
+function isValidCnpj(cnpj: string): boolean {
+  const digits = cnpj.replace(/\D/g, '')
+  if (digits.length !== 14) return false
+  if (/^(\d)\1{13}$/.test(digits)) return false
+  const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+  const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+  for (const [idx, weights] of [[12, weights1], [13, weights2]] as [number, number[]][]) {
+    let sum = 0
+    for (let i = 0; i < weights.length; i++) {
+      sum += parseInt(digits[i], 10) * weights[i]
+    }
+    const check = sum % 11 < 2 ? 0 : 11 - (sum % 11)
+    if (parseInt(digits[idx], 10) !== check) return false
+  }
+  return true
+}
+
+function validateCardForm(form: CardForm): string | null {
+  // Card number: Luhn + 13-19 digits
+  const cardDigits = form.number.replace(/\D/g, '')
+  if (cardDigits.length < 13 || cardDigits.length > 19 || !isValidLuhn(cardDigits)) {
+    return 'Número do cartão inválido'
+  }
+
+  // Holder name: min 3 chars
+  if (form.holderName.trim().length < 3) {
+    return 'Nome no cartão deve ter pelo menos 3 caracteres'
+  }
+
+  // Expiry: not expired
+  if (!isExpiryValid(form.expiryMonth, form.expiryYear)) {
+    return 'Data de validade inválida ou cartão expirado'
+  }
+
+  // CVV: 3-4 digits
+  const cvvDigits = form.ccv.replace(/\D/g, '')
+  if (cvvDigits.length < 3 || cvvDigits.length > 4) {
+    return 'CVV inválido'
+  }
+
+  // CPF/CNPJ: 11 or 14 digits + check digits
+  const docDigits = form.cpfCnpj.replace(/\D/g, '')
+  if (docDigits.length === 11) {
+    if (!isValidCpf(docDigits)) return 'CPF inválido'
+  } else if (docDigits.length === 14) {
+    if (!isValidCnpj(docDigits)) return 'CNPJ inválido'
+  } else {
+    return 'CPF ou CNPJ inválido'
+  }
+
+  // Email: basic regex
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    return 'Email inválido'
+  }
+
+  // Phone: 10-11 digits
+  const phoneDigits = form.phone.replace(/\D/g, '')
+  if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+    return 'Telefone inválido'
+  }
+
+  // CEP: 8 digits
+  const cepDigits = form.postalCode.replace(/\D/g, '')
+  if (cepDigits.length !== 8) {
+    return 'CEP inválido'
+  }
+
+  // Address number: not empty
+  if (!form.addressNumber.trim()) {
+    return 'Número do endereço é obrigatório'
+  }
+
+  return null
+}
+
+// ============================================
 // COMPONENTE PRINCIPAL
 // ============================================
 
@@ -172,12 +293,10 @@ export function CheckoutTransparente({
 
       if (billing === 'CREDIT_CARD') {
         // Validar campos do cartão
-        if (!cardForm.holderName || !cardForm.number || !cardForm.expiryMonth ||
-            !cardForm.expiryYear || !cardForm.ccv || !cardForm.cpfCnpj ||
-            !cardForm.email || !cardForm.phone || !cardForm.postalCode ||
-            !cardForm.addressNumber) {
+        const validationError = validateCardForm(cardForm)
+        if (validationError) {
           setStep('select')
-          toast.error('Preencha todos os campos do cartão')
+          toast.error(validationError)
           return
         }
 

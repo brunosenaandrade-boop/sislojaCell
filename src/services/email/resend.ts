@@ -10,8 +10,8 @@ function getResend(): Resend | null {
   return _resend
 }
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'SisLoja Cell <noreply@sisloja-cell.com.br>'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sisloja-cell.vercel.app'
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'CellFlow <noreply@cellflow.com.br>'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cellflow.com.br'
 
 export interface EmailResult {
   success: boolean
@@ -62,8 +62,8 @@ function emailLayout(content: string) {
   <div style="max-width:600px;margin:0 auto;padding:20px;">
     <!-- Header -->
     <div style="text-align:center;padding:20px 0;">
-      <div style="display:inline-block;background-color:#2563eb;color:#fff;font-weight:bold;font-size:14px;padding:8px 12px;border-radius:8px;">LC</div>
-      <span style="margin-left:8px;font-size:18px;font-weight:600;color:#111;">SisLoja Cell</span>
+      <div style="display:inline-block;background-color:#2563eb;color:#fff;font-weight:bold;font-size:14px;padding:8px 12px;border-radius:8px;">CF</div>
+      <span style="margin-left:8px;font-size:18px;font-weight:600;color:#111;">CellFlow</span>
     </div>
     <!-- Content -->
     <div style="background-color:#fff;border-radius:12px;padding:32px;border:1px solid #e4e4e7;">
@@ -71,7 +71,7 @@ function emailLayout(content: string) {
     </div>
     <!-- Footer -->
     <div style="text-align:center;padding:20px 0;color:#71717a;font-size:12px;">
-      <p>&copy; ${new Date().getFullYear()} SisLoja Cell. Todos os direitos reservados.</p>
+      <p>&copy; ${new Date().getFullYear()} CellFlow. Todos os direitos reservados.</p>
       <p><a href="${APP_URL}" style="color:#2563eb;text-decoration:none;">${APP_URL}</a></p>
     </div>
   </div>
@@ -93,7 +93,7 @@ export const emailService = {
   // 10.2 - Boas-vindas
   async boasVindas(to: string, nomeEmpresa: string): Promise<EmailResult> {
     const html = emailLayout(`
-      <h1 style="font-size:24px;color:#111;margin:0 0 16px;">Bem-vindo ao SisLoja Cell!</h1>
+      <h1 style="font-size:24px;color:#111;margin:0 0 16px;">Bem-vindo ao CellFlow!</h1>
       <p style="color:#52525b;font-size:14px;line-height:1.6;">
         Olá! A empresa <strong>${nomeEmpresa}</strong> foi cadastrada com sucesso.
       </p>
@@ -106,7 +106,7 @@ export const emailService = {
         Se precisar de ajuda, acesse o sistema e clique no botão de ajuda.
       </p>
     `)
-    return sendEmail(to, `Bem-vindo ao SisLoja Cell, ${nomeEmpresa}!`, html)
+    return sendEmail(to, `Bem-vindo ao CellFlow, ${nomeEmpresa}!`, html)
   },
 
   // 10.3 - Trial expirando
@@ -129,7 +129,7 @@ export const emailService = {
         Plano Anual: tudo ilimitado, suporte prioritário, backup dos dados.
       </p>
     `)
-    return sendEmail(to, `[SisLoja Cell] Seu trial expira em ${diasRestantes} dia(s)`, html)
+    return sendEmail(to, `[CellFlow] Seu trial expira em ${diasRestantes} dia(s)`, html)
   },
 
   // 10.4 - Trial expirou
@@ -148,7 +148,7 @@ export const emailService = {
       </p>
       ${ctaButton('Assinar Agora - R$ 150/mês', `${APP_URL}/planos`)}
     `)
-    return sendEmail(to, `[SisLoja Cell] Seu trial expirou — assine agora`, html)
+    return sendEmail(to, `[CellFlow] Seu trial expirou — assine agora`, html)
   },
 
   // 10.5 - Pagamento confirmado
@@ -169,7 +169,7 @@ export const emailService = {
       </div>
       ${ctaButton('Acessar o Sistema', `${APP_URL}/dashboard`)}
     `)
-    return sendEmail(to, `[SisLoja Cell] Pagamento de R$ ${valorFmt} confirmado`, html)
+    return sendEmail(to, `[CellFlow] Pagamento de R$ ${valorFmt} confirmado`, html)
   },
 
   // 10.6 - Pagamento vencido
@@ -189,7 +189,7 @@ export const emailService = {
       </p>
       ${ctaButton('Regularizar Pagamento', `${APP_URL}/planos`)}
     `)
-    return sendEmail(to, `[SisLoja Cell] Fatura de R$ ${valorFmt} vencida`, html)
+    return sendEmail(to, `[CellFlow] Fatura de R$ ${valorFmt} vencida`, html)
   },
 
   // 10.7 - Assinatura cancelada
@@ -200,7 +200,7 @@ export const emailService = {
         Olá, <strong>${nomeEmpresa}</strong>!
       </p>
       <p style="color:#52525b;font-size:14px;line-height:1.6;">
-        Sua assinatura do SisLoja Cell foi cancelada. Seu acesso permanece ativo
+        Sua assinatura do CellFlow foi cancelada. Seu acesso permanece ativo
         até o final do período já pago.
       </p>
       <p style="color:#52525b;font-size:14px;line-height:1.6;">
@@ -211,7 +211,7 @@ export const emailService = {
         Seus dados serão mantidos por 90 dias após o fim do acesso.
       </p>
     `)
-    return sendEmail(to, `[SisLoja Cell] Assinatura cancelada`, html)
+    return sendEmail(to, `[CellFlow] Assinatura cancelada`, html)
   },
 
   // 10.8 - Indicação bem-sucedida
@@ -231,6 +231,6 @@ export const emailService = {
       </p>
       ${ctaButton('Ver Meu Plano', `${APP_URL}/planos`)}
     `)
-    return sendEmail(to, `[SisLoja Cell] Parabéns! +1 mês grátis por indicação`, html)
+    return sendEmail(to, `[CellFlow] Parabéns! +1 mês grátis por indicação`, html)
   },
 }

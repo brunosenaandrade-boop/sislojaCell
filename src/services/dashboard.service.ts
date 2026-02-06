@@ -36,49 +36,43 @@ export const dashboardService = {
     const hojeFim = getHojeFim()
 
     try {
-      // Vendas do dia
-      const { data: vendasDia, error: vendasError } = await supabase
-        .from('vendas')
-        .select('valor_total, valor_custo_total')
-        .eq('empresa_id', empresaId)
-        .gte('created_at', hojeInicio)
-        .lte('created_at', hojeFim)
+      // Run all 4 independent queries in parallel
+      const [vendasResult, osAbertasResult, osFinalizadasResult, produtosResult] = await Promise.all([
+        supabase
+          .from('vendas')
+          .select('valor_total, valor_custo_total')
+          .eq('empresa_id', empresaId)
+          .gte('created_at', hojeInicio)
+          .lte('created_at', hojeFim),
+        supabase
+          .from('ordens_servico')
+          .select('id', { count: 'exact', head: true })
+          .eq('empresa_id', empresaId)
+          .not('status', 'in', '("finalizada","entregue","cancelada")'),
+        supabase
+          .from('ordens_servico')
+          .select('id', { count: 'exact', head: true })
+          .eq('empresa_id', empresaId)
+          .eq('status', 'finalizada'),
+        supabase
+          .from('produtos')
+          .select('id, estoque_atual, estoque_minimo')
+          .eq('empresa_id', empresaId)
+          .eq('ativo', true),
+      ])
 
-      if (vendasError) return { data: null, error: vendasError.message }
+      if (vendasResult.error) return { data: null, error: vendasResult.error.message }
+      if (osAbertasResult.error) return { data: null, error: osAbertasResult.error.message }
+      if (osFinalizadasResult.error) return { data: null, error: osFinalizadasResult.error.message }
+      if (produtosResult.error) return { data: null, error: produtosResult.error.message }
 
+      const vendasDia = vendasResult.data
       const vendas_dia = vendasDia?.reduce((acc: number, v: { valor_total: number | null }) => acc + (v.valor_total || 0), 0) ?? 0
       const custo_dia = vendasDia?.reduce((acc: number, v: { valor_custo_total: number | null }) => acc + (v.valor_custo_total || 0), 0) ?? 0
       const lucro_dia = vendas_dia - custo_dia
       const quantidade_vendas = vendasDia?.length ?? 0
 
-      // OS abertas (não finalizadas/entregues/canceladas)
-      const { count: osAbertasCount, error: osAbertasError } = await supabase
-        .from('ordens_servico')
-        .select('id', { count: 'exact', head: true })
-        .eq('empresa_id', empresaId)
-        .not('status', 'in', '("finalizada","entregue","cancelada")')
-
-      if (osAbertasError) return { data: null, error: osAbertasError.message }
-
-      // OS finalizadas
-      const { count: osFinalizadasCount, error: osFinalizadasError } = await supabase
-        .from('ordens_servico')
-        .select('id', { count: 'exact', head: true })
-        .eq('empresa_id', empresaId)
-        .eq('status', 'finalizada')
-
-      if (osFinalizadasError) return { data: null, error: osFinalizadasError.message }
-
-      // Produtos com estoque baixo (client-side filter: estoque_atual <= estoque_minimo)
-      const { data: todosProdutos, error: todosProdutosError } = await supabase
-        .from('produtos')
-        .select('id, estoque_atual, estoque_minimo')
-        .eq('empresa_id', empresaId)
-        .eq('ativo', true)
-
-      if (todosProdutosError) return { data: null, error: todosProdutosError.message }
-
-      const produtos_estoque_baixo = todosProdutos?.filter(
+      const produtos_estoque_baixo = produtosResult.data?.filter(
         (p: { estoque_atual: number; estoque_minimo: number }) => p.estoque_atual <= p.estoque_minimo
       ).length ?? 0
 
@@ -88,8 +82,8 @@ export const dashboardService = {
           custo_dia,
           lucro_dia,
           quantidade_vendas,
-          os_abertas: osAbertasCount ?? 0,
-          os_finalizadas: osFinalizadasCount ?? 0,
+          os_abertas: osAbertasResult.count ?? 0,
+          os_finalizadas: osFinalizadasResult.count ?? 0,
           produtos_estoque_baixo,
         },
         error: null,

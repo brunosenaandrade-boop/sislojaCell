@@ -118,7 +118,7 @@ export default function IndicacoesPage() {
 
   const handleWhatsApp = () => {
     const text = encodeURIComponent(
-      `Conheça o SisLoja Cell! Sistema completo para lojas de celular. Cadastre-se pelo meu link e ambos ganham benefícios: ${getShareUrl()}`
+      `Conheça o CellFlow! Sistema completo para lojas de celular. Cadastre-se pelo meu link e ambos ganham benefícios: ${getShareUrl()}`
     )
     window.open(`https://wa.me/?text=${text}`, '_blank')
   }

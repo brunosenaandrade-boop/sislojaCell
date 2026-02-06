@@ -24,7 +24,7 @@ export async function POST() {
 
     const webhookUrl = process.env.NEXT_PUBLIC_APP_URL
     const webhookToken = process.env.ASAAS_WEBHOOK_TOKEN
-    const notificationEmail = process.env.ASAAS_NOTIFICATION_EMAIL || 'webhook@sislojacell.com'
+    const notificationEmail = process.env.ASAAS_NOTIFICATION_EMAIL || 'webhook@cellflow.com.br'
 
     if (!webhookUrl) {
       return NextResponse.json(
@@ -44,7 +44,7 @@ export async function POST() {
 
     // Registrar webhook no Asaas
     const { data, error } = await asaasService.registrarWebhook({
-      name: 'SisLojaCell Webhook',
+      name: 'CellFlow Webhook',
       url: fullUrl,
       email: notificationEmail,
       apiVersion: 3,

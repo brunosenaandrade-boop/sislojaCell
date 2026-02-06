@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sistema Loja Celular",
-  description: "Sistema completo de gestão para loja de celulares e assistência técnica",
+  title: "CellFlow",
+  description: "Sistema completo de gestão para lojas de celular e assistência técnica",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "LojaCell",
+    title: "CellFlow",
   },
 };
 

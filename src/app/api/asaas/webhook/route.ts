@@ -3,6 +3,7 @@ import { getServiceClient } from '../../superadmin/route-utils'
 import { emailService } from '@/services/email/resend'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { logApiError } from '@/lib/server-logger'
+import { timingSafeEqual } from 'crypto'
 
 // ============================================
 // WEBHOOK ASAAS - Recebe eventos de pagamento
@@ -20,14 +21,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     }
 
-    // 2.14 - Validar token do webhook (obrigatório em produção)
+    // 2.14 - Validar token do webhook
     const token = request.headers.get('asaas-access-token')
     if (!WEBHOOK_TOKEN) {
-      console.warn('[Webhook] ASAAS_WEBHOOK_TOKEN não configurado - aceitar em dev apenas')
-      if (process.env.NODE_ENV === 'production') {
-        return NextResponse.json({ error: 'Webhook não configurado' }, { status: 500 })
-      }
-    } else if (token !== WEBHOOK_TOKEN) {
+      return NextResponse.json({ error: 'Webhook não configurado' }, { status: 500 })
+    }
+    if (!token || token.length !== WEBHOOK_TOKEN.length ||
+        !timingSafeEqual(Buffer.from(token), Buffer.from(WEBHOOK_TOKEN))) {
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
     }
 

@@ -8,7 +8,7 @@ import {
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Preços - SisLoja Cell',
+  title: 'Preços - CellFlow',
   description: 'A partir de R$ 150/mês no cartão em 12x. Trial grátis de 7 dias sem cartão de crédito. Sistema completo para lojas de celular.',
 }
 
@@ -20,9 +20,9 @@ export default function PrecosPage() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-              LC
+              CF
             </div>
-            <span className="text-lg font-semibold">SisLoja Cell</span>
+            <span className="text-lg font-semibold">CellFlow</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -247,9 +247,9 @@ export default function PrecosPage() {
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white">
-                LC
+                CF
               </div>
-              <span className="text-sm font-medium text-white">SisLoja Cell</span>
+              <span className="text-sm font-medium text-white">CellFlow</span>
             </div>
             <nav className="flex gap-6 text-sm">
               <Link href="/termos" className="hover:text-white">Termos de Uso</Link>
@@ -259,7 +259,7 @@ export default function PrecosPage() {
             </nav>
           </div>
           <div className="mt-8 border-t border-gray-800 pt-8 text-center text-xs">
-            &copy; {new Date().getFullYear()} SisLoja Cell. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} CellFlow. Todos os direitos reservados.
           </div>
         </div>
       </footer>
