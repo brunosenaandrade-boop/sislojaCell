@@ -16,7 +16,7 @@ import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner'
 import { TrialBanner } from '@/components/layout/TrialBanner'
 import { AnnouncementBanner } from '@/components/layout/AnnouncementBanner'
 
-const rotasRestritas = ['/configuracoes', '/relatorios', '/logs']
+const rotasRestritas = ['/configuracoes', '/relatorios']
 const rotasSuperadmin = ['/admin']
 
 export default function DashboardLayout({

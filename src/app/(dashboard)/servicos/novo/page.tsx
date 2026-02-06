@@ -40,7 +40,7 @@ export default function NovoServicoPage() {
   const [descricao, setDescricao] = useState('')
   const [tipo, setTipo] = useState<string>('')
   const [precoBase, setPrecoBase] = useState('')
-  const [tempoEstimado, setTempoEstimado] = useState('')
+  const [tempoEstimado, setTempoEstimado] = useState('60')
 
   // Calculos
   const precoNum = parseFloat(precoBase) || 0
@@ -214,7 +214,7 @@ export default function NovoServicoPage() {
                         type="number"
                         step="0.01"
                         min="0"
-                        placeholder="0,00"
+                        placeholder="0.00"
                         value={precoBase}
                         onChange={(e) => setPrecoBase(e.target.value)}
                         className="pl-10"
