@@ -101,7 +101,7 @@ export default function PlanosPage() {
 
 function PlanosContent() {
   const searchParams = useSearchParams()
-  const { empresa } = useAuthStore()
+  const { empresa, setEmpresa } = useAuthStore()
   const { isAdmin } = usePermissao()
 
   const [data, setData] = useState<AssinaturaResponse | null>(null)
@@ -118,6 +118,10 @@ function PlanosContent() {
       if (res.ok) {
         const json = await res.json()
         setData(json)
+        // Atualizar auth store se o status mudou
+        if (json.empresa && empresa && json.empresa.status_assinatura !== empresa.status_assinatura) {
+          setEmpresa({ ...empresa, status_assinatura: json.empresa.status_assinatura })
+        }
       } else {
         toast.error('Erro ao carregar dados do plano')
       }
@@ -156,9 +160,13 @@ function PlanosContent() {
     setCheckoutOpen(true)
   }
 
-  const handleCheckoutSuccess = () => {
-    toast.success('Pagamento realizado com sucesso! Seu plano será ativado em instantes.')
-    fetchData()
+  const handleCheckoutSuccess = async () => {
+    toast.success('Pagamento realizado com sucesso! Seu plano foi ativado.')
+    await fetchData()
+    // Atualizar o auth store com o novo status da empresa
+    if (empresa) {
+      setEmpresa({ ...empresa, status_assinatura: 'active' })
+    }
   }
 
   const handleCancel = async () => {

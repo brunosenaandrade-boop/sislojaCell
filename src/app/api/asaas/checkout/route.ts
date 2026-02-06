@@ -293,6 +293,22 @@ export async function POST(request: NextRequest) {
       .update({ plano: plano.slug })
       .eq('id', empresa.id)
 
+    // Se pagamento com cartão foi confirmado/recebido, ativar assinatura imediatamente
+    const paymentStatus = primeiraFatura?.status || ''
+    const isPaymentConfirmed = ['RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH'].includes(paymentStatus)
+
+    if (effectiveBillingType === 'CREDIT_CARD' && isPaymentConfirmed) {
+      await serviceClient
+        .from('empresas')
+        .update({ status_assinatura: 'active' })
+        .eq('id', empresa.id)
+
+      await serviceClient
+        .from('assinaturas')
+        .update({ status: 'active' })
+        .eq('asaas_subscription_id', subscription.id)
+    }
+
     return NextResponse.json({
       checkoutUrl,
       subscriptionId: subscription.id,
