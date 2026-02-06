@@ -160,15 +160,56 @@ async function handleCheckoutPaid(
   const checkout = payload.payment as Record<string, unknown> | undefined
   const subscriptionId = (checkout?.subscription || payload.subscription) as string | undefined
   const customerId = (checkout?.customer || payload.customer) as string | undefined
+  const paymentId = checkout?.id as string | undefined
 
-  if (!customerId) return false
+  // Buscar empresa - tentar múltiplas formas
+  let empresa = null
 
-  // Buscar empresa pelo asaas_customer_id
-  const { data: empresa } = await supabase
-    .from('empresas')
-    .select('id')
-    .eq('asaas_customer_id', customerId)
-    .single()
+  // 1. Tentar por asaas_customer_id
+  if (customerId) {
+    const { data } = await supabase
+      .from('empresas')
+      .select('id')
+      .eq('asaas_customer_id', customerId)
+      .maybeSingle()
+    empresa = data
+  }
+
+  // 2. Se não encontrou, tentar pela fatura
+  if (!empresa && paymentId) {
+    const { data: fatura } = await supabase
+      .from('faturas')
+      .select('empresa_id')
+      .eq('asaas_payment_id', paymentId)
+      .maybeSingle()
+
+    if (fatura?.empresa_id) {
+      const { data } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('id', fatura.empresa_id)
+        .single()
+      empresa = data
+    }
+  }
+
+  // 3. Se não encontrou, tentar pela assinatura
+  if (!empresa && subscriptionId) {
+    const { data: assinatura } = await supabase
+      .from('assinaturas')
+      .select('empresa_id')
+      .eq('asaas_subscription_id', subscriptionId)
+      .maybeSingle()
+
+    if (assinatura?.empresa_id) {
+      const { data } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('id', assinatura.empresa_id)
+        .single()
+      empresa = data
+    }
+  }
 
   if (!empresa) return false
 
@@ -187,6 +228,13 @@ async function handleCheckoutPaid(
       .from('assinaturas')
       .update({ status: 'active' })
       .eq('asaas_subscription_id', subscriptionId)
+  } else {
+    // Ativar assinatura pendente mais recente da empresa
+    await supabase
+      .from('assinaturas')
+      .update({ status: 'active' })
+      .eq('empresa_id', empresa.id)
+      .eq('status', 'pending')
   }
 
   return true
@@ -243,7 +291,7 @@ async function handlePaymentReceived(
 
   const paymentId = payment.id as string
   const customerId = payment.customer as string | undefined
-  if (!customerId) return false
+  const subscriptionId = payment.subscription as string | undefined
 
   // Atualizar fatura
   await supabase
@@ -255,21 +303,78 @@ async function handlePaymentReceived(
     })
     .eq('asaas_payment_id', paymentId)
 
-  // Buscar empresa
-  const { data: empresa } = await supabase
-    .from('empresas')
-    .select('id, nome, nome_fantasia, email, status_assinatura')
-    .eq('asaas_customer_id', customerId)
-    .single()
+  // Buscar empresa - tentar múltiplas formas
+  let empresa = null
+
+  // 1. Tentar por asaas_customer_id
+  if (customerId) {
+    const { data } = await supabase
+      .from('empresas')
+      .select('id, nome, nome_fantasia, email, status_assinatura')
+      .eq('asaas_customer_id', customerId)
+      .maybeSingle()
+    empresa = data
+  }
+
+  // 2. Se não encontrou, tentar pela fatura
+  if (!empresa) {
+    const { data: fatura } = await supabase
+      .from('faturas')
+      .select('empresa_id')
+      .eq('asaas_payment_id', paymentId)
+      .maybeSingle()
+
+    if (fatura?.empresa_id) {
+      const { data } = await supabase
+        .from('empresas')
+        .select('id, nome, nome_fantasia, email, status_assinatura')
+        .eq('id', fatura.empresa_id)
+        .single()
+      empresa = data
+    }
+  }
+
+  // 3. Se não encontrou, tentar pela assinatura
+  if (!empresa && subscriptionId) {
+    const { data: assinatura } = await supabase
+      .from('assinaturas')
+      .select('empresa_id')
+      .eq('asaas_subscription_id', subscriptionId)
+      .maybeSingle()
+
+    if (assinatura?.empresa_id) {
+      const { data } = await supabase
+        .from('empresas')
+        .select('id, nome, nome_fantasia, email, status_assinatura')
+        .eq('id', assinatura.empresa_id)
+        .single()
+      empresa = data
+    }
+  }
 
   if (!empresa) return false
 
-  // Ativar empresa se estava suspensa/overdue
+  // Ativar empresa se não estava ativa
   if (empresa.status_assinatura !== 'active') {
     await supabase
       .from('empresas')
       .update({ status_assinatura: 'active' })
       .eq('id', empresa.id)
+  }
+
+  // Ativar assinatura também
+  if (subscriptionId) {
+    await supabase
+      .from('assinaturas')
+      .update({ status: 'active' })
+      .eq('asaas_subscription_id', subscriptionId)
+  } else {
+    // Ativar assinatura pendente mais recente da empresa
+    await supabase
+      .from('assinaturas')
+      .update({ status: 'active' })
+      .eq('empresa_id', empresa.id)
+      .eq('status', 'pending')
   }
 
   // 10.5 - Email: pagamento confirmado

@@ -95,6 +95,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Empresa não encontrada' }, { status: 404 })
     }
 
+    // Verificar se já existe assinatura ativa ou pendente para evitar duplicidade
+    const { data: assinaturaExistente } = await serviceClient
+      .from('assinaturas')
+      .select('id, status')
+      .eq('empresa_id', usuario.empresa_id)
+      .in('status', ['active', 'pending'])
+      .limit(1)
+      .maybeSingle()
+
+    if (assinaturaExistente) {
+      if (assinaturaExistente.status === 'active') {
+        return NextResponse.json(
+          { error: 'Você já possui uma assinatura ativa.' },
+          { status: 400 }
+        )
+      }
+      if (assinaturaExistente.status === 'pending') {
+        return NextResponse.json(
+          { error: 'Você já possui um pagamento pendente. Aguarde a confirmação ou cancele antes de tentar novamente.' },
+          { status: 400 }
+        )
+      }
+    }
+
     const { data: empresa } = await serviceClient
       .from('empresas')
       .select('*')
