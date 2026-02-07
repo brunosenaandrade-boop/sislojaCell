@@ -7,25 +7,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
+import {
   DollarSign,
   TrendingUp,
   TrendingDown,
   ShoppingCart,
   FileText,
-  Package,
-  Users,
   AlertTriangle,
   Cake,
   ArrowRight,
   Loader2,
+  MoreHorizontal,
+  XCircle,
+  Eye,
+  ChevronDown,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { toast } from 'sonner'
 import { dashboardService } from '@/services/dashboard.service'
-import type { Cliente, Venda, OrdemServico } from '@/types/database'
+import { vendasService } from '@/services/vendas.service'
+import { ordensServicoService } from '@/services/ordens-servico.service'
+import type { Cliente, Venda, OrdemServico, StatusOS } from '@/types/database'
 
 const statusColors: Record<string, string> = {
   aberta: 'bg-blue-100 text-blue-800',
@@ -49,6 +69,17 @@ const statusLabels: Record<string, string> = {
   cancelada: 'Cancelada',
 }
 
+const statusFlow: Record<string, string[]> = {
+  aberta: ['em_analise', 'cancelada'],
+  em_analise: ['aguardando_peca', 'aguardando_aprovacao', 'em_andamento', 'cancelada'],
+  aguardando_peca: ['em_andamento', 'cancelada'],
+  aguardando_aprovacao: ['em_andamento', 'cancelada'],
+  em_andamento: ['finalizada', 'aguardando_peca', 'cancelada'],
+  finalizada: ['entregue'],
+  entregue: [],
+  cancelada: [],
+}
+
 interface DashboardResumo {
   vendas_dia: number
   custo_dia: number
@@ -61,6 +92,7 @@ interface DashboardResumo {
 
 export default function DashboardPage() {
   const { usuario } = useAuthStore()
+  const router = useRouter()
   const [resumo, setResumo] = useState<DashboardResumo>({
     vendas_dia: 0,
     custo_dia: 0,
@@ -76,6 +108,15 @@ export default function DashboardPage() {
   const [vendasSemana, setVendasSemana] = useState<Array<{ dia: string; total: number; custo: number; lucro: number }>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isMounted, setIsMounted] = useState(false)
+
+  // State para cancelamento de venda
+  const [dialogCancelarVendaOpen, setDialogCancelarVendaOpen] = useState(false)
+  const [vendaParaCancelar, setVendaParaCancelar] = useState<Venda | null>(null)
+  const [motivoCancelamento, setMotivoCancelamento] = useState('')
+  const [isCanceling, setIsCanceling] = useState(false)
+
+  // State para atualização de status da OS
+  const [isUpdatingOS, setIsUpdatingOS] = useState<string | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
@@ -121,6 +162,85 @@ export default function DashboardPage() {
       style: 'currency',
       currency: 'BRL',
     }).format(value)
+  }
+
+  const handleCancelarVenda = async () => {
+    if (!vendaParaCancelar || !motivoCancelamento.trim()) return
+
+    setIsCanceling(true)
+    try {
+      const { error } = await vendasService.cancelar(vendaParaCancelar.id, motivoCancelamento.trim())
+
+      if (error) {
+        toast.error('Erro ao cancelar venda: ' + error)
+        return
+      }
+
+      // Atualizar lista local
+      setUltimasVendas(prev =>
+        prev.map(v =>
+          v.id === vendaParaCancelar.id
+            ? { ...v, cancelada: true, data_cancelamento: new Date().toISOString(), motivo_cancelamento: motivoCancelamento.trim() }
+            : v
+        )
+      )
+
+      // Atualizar resumo financeiro
+      setResumo(prev => ({
+        ...prev,
+        vendas_dia: prev.vendas_dia - vendaParaCancelar.valor_total,
+        custo_dia: prev.custo_dia - vendaParaCancelar.valor_custo_total,
+        lucro_dia: prev.lucro_dia - vendaParaCancelar.lucro_liquido,
+        quantidade_vendas: prev.quantidade_vendas - 1,
+      }))
+
+      toast.success(`Venda #${vendaParaCancelar.numero} cancelada com sucesso`)
+      setDialogCancelarVendaOpen(false)
+      setVendaParaCancelar(null)
+      setMotivoCancelamento('')
+    } catch {
+      toast.error('Erro ao cancelar venda')
+    } finally {
+      setIsCanceling(false)
+    }
+  }
+
+  const handleAtualizarStatusOS = async (os: OrdemServico, novoStatus: StatusOS) => {
+    if (novoStatus === 'cancelada') {
+      const confirmado = window.confirm(`Tem certeza que deseja cancelar a OS #${os.numero}?`)
+      if (!confirmado) return
+    }
+
+    setIsUpdatingOS(os.id)
+    try {
+      const dados: { data_finalizacao?: string; data_entrega?: string } = {}
+      if (novoStatus === 'finalizada') {
+        dados.data_finalizacao = new Date().toISOString()
+      }
+      if (novoStatus === 'entregue') {
+        dados.data_entrega = new Date().toISOString()
+      }
+
+      const { error } = await ordensServicoService.atualizarStatus(os.id, novoStatus, dados)
+
+      if (error) {
+        toast.error('Erro ao atualizar status: ' + error)
+        return
+      }
+
+      // Atualizar lista local
+      setUltimasOS(prev =>
+        prev.map(o =>
+          o.id === os.id ? { ...o, status: novoStatus } : o
+        )
+      )
+
+      toast.success(`OS #${os.numero} atualizada para ${statusLabels[novoStatus]}`)
+    } catch {
+      toast.error('Erro ao atualizar status da OS')
+    } finally {
+      setIsUpdatingOS(null)
+    }
   }
 
   if (isLoading) {
@@ -337,17 +457,52 @@ export default function DashboardPage() {
                 {ultimasVendas.map((venda) => (
                   <div
                     key={venda.id}
-                    className="flex items-center justify-between border-b pb-2 last:border-0"
+                    className={`flex items-center justify-between border-b pb-2 last:border-0 ${venda.cancelada ? 'opacity-60' : ''}`}
                   >
-                    <div>
+                    <div
+                      className="cursor-pointer hover:underline"
+                      onClick={() => router.push('/vendas/historico')}
+                    >
                       <p className="font-medium">Venda #{venda.numero}</p>
                       <p className="text-sm text-muted-foreground">{(venda.cliente as { id: string; nome: string } | undefined)?.nome || 'Cliente Avulso'}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-medium">{formatCurrency(venda.valor_total)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(venda.created_at), 'HH:mm')}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      {venda.cancelada ? (
+                        <Badge className="bg-red-100 text-red-800">Cancelada</Badge>
+                      ) : (
+                        <div className="text-right">
+                          <p className="font-medium">{formatCurrency(venda.valor_total)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(venda.created_at), 'HH:mm')}
+                          </p>
+                        </div>
+                      )}
+                      {!venda.cancelada && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => router.push('/vendas/historico')}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Ver detalhes
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => {
+                                setVendaParaCancelar(venda)
+                                setMotivoCancelamento('')
+                                setDialogCancelarVendaOpen(true)
+                              }}
+                            >
+                              <XCircle className="mr-2 h-4 w-4" />
+                              Cancelar venda
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -373,22 +528,58 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {ultimasOS.map((os) => (
-                  <div
-                    key={os.id}
-                    className="flex items-center justify-between border-b pb-2 last:border-0"
-                  >
-                    <div>
-                      <p className="font-medium">OS #{os.numero}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {(os.cliente as { id: string; nome: string } | undefined)?.nome || 'Sem cliente'} - {os.modelo || os.tipo_aparelho || 'N/A'}
-                      </p>
+                {ultimasOS.map((os) => {
+                  const transicoesDisponiveis = statusFlow[os.status] || []
+                  return (
+                    <div
+                      key={os.id}
+                      className="flex items-center justify-between border-b pb-2 last:border-0"
+                    >
+                      <div
+                        className="cursor-pointer hover:underline"
+                        onClick={() => router.push(`/ordens-servico/${os.id}`)}
+                      >
+                        <p className="font-medium">OS #{os.numero}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {(os.cliente as { id: string; nome: string } | undefined)?.nome || 'Sem cliente'} - {os.modelo || os.tipo_aparelho || 'N/A'}
+                        </p>
+                      </div>
+                      {transicoesDisponiveis.length > 0 ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors cursor-pointer hover:opacity-80 ${statusColors[os.status]}`}>
+                              {isUpdatingOS === os.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <>
+                                  {statusLabels[os.status]}
+                                  <ChevronDown className="h-3 w-3" />
+                                </>
+                              )}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {transicoesDisponiveis.map((status) => (
+                              <DropdownMenuItem
+                                key={status}
+                                className={status === 'cancelada' ? 'text-red-600' : ''}
+                                onClick={() => handleAtualizarStatusOS(os, status as StatusOS)}
+                              >
+                                <Badge className={`${statusColors[status]} mr-2`}>
+                                  {statusLabels[status]}
+                                </Badge>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <Badge className={statusColors[os.status]}>
+                          {statusLabels[os.status]}
+                        </Badge>
+                      )}
                     </div>
-                    <Badge className={statusColors[os.status]}>
-                      {statusLabels[os.status]}
-                    </Badge>
-                  </div>
-                ))}
+                  )
+                })}
                 {ultimasOS.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-4">Nenhuma OS recente</p>
                 )}
@@ -397,6 +588,57 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
+
+      {/* Dialog de cancelamento de venda */}
+      <Dialog open={dialogCancelarVendaOpen} onOpenChange={setDialogCancelarVendaOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancelar Venda #{vendaParaCancelar?.numero}</DialogTitle>
+            <DialogDescription>
+              Esta ação irá cancelar a venda e reverter o estoque dos produtos. Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/20 dark:text-red-400">
+              <strong>Atenção:</strong> O estoque dos produtos será restaurado e o valor será removido do total de vendas do dia.
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="motivo" className="text-sm font-medium">
+                Motivo do cancelamento <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                id="motivo"
+                placeholder="Informe o motivo do cancelamento..."
+                value={motivoCancelamento}
+                onChange={(e) => setMotivoCancelamento(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDialogCancelarVendaOpen(false)}
+              disabled={isCanceling}
+            >
+              Voltar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelarVenda}
+              disabled={isCanceling || !motivoCancelamento.trim()}
+            >
+              {isCanceling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cancelando...
+                </>
+              ) : (
+                'Confirmar cancelamento'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
