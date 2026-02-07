@@ -36,7 +36,7 @@ export const vendasService = {
     try {
       // 1. Obter próximo número sequencial
       const { data: numeroData, error: numeroError } = await supabase
-        .rpc('get_proximo_numero_venda', { empresa_id: empresaId })
+        .rpc('get_proximo_numero_venda', { p_empresa_id: empresaId })
 
       if (numeroError) return { data: null, error: numeroError.message }
 

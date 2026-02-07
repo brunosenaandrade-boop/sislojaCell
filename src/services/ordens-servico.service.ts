@@ -74,7 +74,7 @@ export const ordensServicoService = {
     try {
       // Obter próximo número sequencial
       const { data: numeroData, error: numeroError } = await supabase
-        .rpc('get_proximo_numero_os', { empresa_id: empresaId })
+        .rpc('get_proximo_numero_os', { p_empresa_id: empresaId })
 
       if (numeroError) return { data: null, error: numeroError.message }
 
