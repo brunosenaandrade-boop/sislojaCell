@@ -242,6 +242,47 @@
     color: white !important;
   }
 
+  /* Preservar inline styles para cor primária da empresa */
+  .cupom-os-badge,
+  .cupom-os-badge * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cupom-os-badge {
+    color: white !important;
+  }
+
+  .cupom-os-badge p,
+  .cupom-os-badge span {
+    color: white !important;
+  }
+
+  /* Permitir inline border-color no header */
+  [style*="border-bottom"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Preservar cores de desbloqueio */
+  .bg-orange-50 {
+    background-color: #fff7ed !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .border-orange-300 {
+    border-color: #fdba74 !important;
+  }
+
+  .text-orange-700 {
+    color: #c2410c !important;
+  }
+
+  .text-orange-600 {
+    color: #ea580c !important;
+  }
+
   /* Bordas visiveis */
   table, th, td {
     border-color: #333 !important;

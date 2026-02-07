@@ -265,6 +265,7 @@ export default function VisualizarOSPage() {
               mostrarLogo: printConfig.mostrarLogo,
               mostrarEndereco: printConfig.mostrarEndereco,
               mostrarTelefone: printConfig.mostrarTelefone,
+              mensagemCupom: printConfig.mensagemCupom,
             }}
           />
         </div>
