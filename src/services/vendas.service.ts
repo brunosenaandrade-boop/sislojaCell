@@ -137,4 +137,89 @@ export const vendasService = {
 
     return { data, error: error?.message ?? null }
   },
+
+  // ============================================
+  // CANCELAR VENDA (COM ESTORNO DE ESTOQUE)
+  // ============================================
+
+  async cancelar(id: string, motivo: string): Promise<{ data: Venda | null; error: string | null }> {
+    const supabase = getSupabase()
+    const empresaId = getEmpresaId()
+
+    try {
+      // 1. Buscar a venda com seus itens
+      const { data: venda, error: vendaError } = await supabase
+        .from('vendas')
+        .select('*, itens:itens_venda(*)')
+        .eq('id', id)
+        .eq('empresa_id', empresaId)
+        .single()
+
+      if (vendaError || !venda) {
+        return { data: null, error: vendaError?.message || 'Venda nao encontrada' }
+      }
+
+      // Verificar se ja esta cancelada
+      if (venda.cancelada) {
+        return { data: null, error: 'Esta venda ja foi cancelada' }
+      }
+
+      // 2. Estornar estoque de cada item
+      for (const item of venda.itens || []) {
+        if (item.produto_id) {
+          // Buscar estoque atual do produto
+          const { data: produto } = await supabase
+            .from('produtos')
+            .select('estoque_atual')
+            .eq('id', item.produto_id)
+            .single()
+
+          if (produto) {
+            const estoqueAnterior = produto.estoque_atual
+            const novoEstoque = estoqueAnterior + item.quantidade
+
+            // Atualizar estoque do produto
+            await supabase
+              .from('produtos')
+              .update({ estoque_atual: novoEstoque })
+              .eq('id', item.produto_id)
+
+            // Registrar movimentacao de estoque (estorno)
+            await supabase.from('movimentacoes_estoque').insert({
+              empresa_id: empresaId,
+              produto_id: item.produto_id,
+              tipo: 'entrada',
+              quantidade: item.quantidade,
+              estoque_anterior: estoqueAnterior,
+              estoque_posterior: novoEstoque,
+              venda_id: id,
+              motivo: `Estorno de venda #${venda.numero} cancelada`,
+              observacoes: motivo,
+            })
+          }
+        }
+      }
+
+      // 3. Marcar venda como cancelada
+      const { data: vendaAtualizada, error: updateError } = await supabase
+        .from('vendas')
+        .update({
+          cancelada: true,
+          data_cancelamento: new Date().toISOString(),
+          motivo_cancelamento: motivo,
+        })
+        .eq('id', id)
+        .eq('empresa_id', empresaId)
+        .select()
+        .single()
+
+      if (updateError) {
+        return { data: null, error: updateError.message }
+      }
+
+      return { data: vendaAtualizada, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
+    }
+  },
 }

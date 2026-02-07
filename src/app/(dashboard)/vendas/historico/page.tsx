@@ -31,9 +31,12 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   ArrowLeft,
   Search,
@@ -48,6 +51,8 @@ import {
   CreditCard,
   QrCode,
   Loader2,
+  XCircle,
+  AlertTriangle,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -75,6 +80,10 @@ export default function HistoricoVendasPage() {
   const [filtroData, setFiltroData] = useState('hoje')
   const [vendaSelecionada, setVendaSelecionada] = useState<Venda | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [dialogCancelarOpen, setDialogCancelarOpen] = useState(false)
+  const [vendaParaCancelar, setVendaParaCancelar] = useState<Venda | null>(null)
+  const [motivoCancelamento, setMotivoCancelamento] = useState('')
+  const [isCanceling, setIsCanceling] = useState(false)
 
   // Carregar vendas
   useEffect(() => {
@@ -96,12 +105,53 @@ export default function HistoricoVendasPage() {
     carregar()
   }, [])
 
-  // Calcular estatísticas
+  // Calcular estatisticas (excluindo vendas canceladas)
+  const vendasAtivas = vendas.filter(v => !v.cancelada)
   const stats = {
-    totalVendas: vendas.reduce((acc, v) => acc + v.valor_total, 0),
-    totalLucro: vendas.reduce((acc, v) => acc + v.lucro_liquido, 0),
-    quantidadeVendas: vendas.length,
-    ticketMedio: vendas.length > 0 ? vendas.reduce((acc, v) => acc + v.valor_total, 0) / vendas.length : 0,
+    totalVendas: vendasAtivas.reduce((acc, v) => acc + v.valor_total, 0),
+    totalLucro: vendasAtivas.reduce((acc, v) => acc + v.lucro_liquido, 0),
+    quantidadeVendas: vendasAtivas.length,
+    ticketMedio: vendasAtivas.length > 0 ? vendasAtivas.reduce((acc, v) => acc + v.valor_total, 0) / vendasAtivas.length : 0,
+  }
+
+  // Funcao para cancelar venda
+  const handleCancelarVenda = async () => {
+    if (!vendaParaCancelar || !motivoCancelamento.trim()) {
+      toast.error('Informe o motivo do cancelamento')
+      return
+    }
+
+    setIsCanceling(true)
+    try {
+      const { error } = await vendasService.cancelar(vendaParaCancelar.id, motivoCancelamento)
+      if (error) {
+        toast.error('Erro ao cancelar venda: ' + error)
+        return
+      }
+
+      toast.success(`Venda #${vendaParaCancelar.numero} cancelada com sucesso. Estoque estornado.`)
+
+      // Atualizar lista de vendas
+      setVendas(vendas.map(v =>
+        v.id === vendaParaCancelar.id
+          ? { ...v, cancelada: true, data_cancelamento: new Date().toISOString(), motivo_cancelamento: motivoCancelamento }
+          : v
+      ))
+
+      setDialogCancelarOpen(false)
+      setVendaParaCancelar(null)
+      setMotivoCancelamento('')
+    } catch {
+      toast.error('Erro ao cancelar venda')
+    } finally {
+      setIsCanceling(false)
+    }
+  }
+
+  const abrirDialogCancelar = (venda: Venda) => {
+    setVendaParaCancelar(venda)
+    setMotivoCancelamento('')
+    setDialogCancelarOpen(true)
   }
 
   // Filtrar vendas
@@ -238,9 +288,16 @@ export default function HistoricoVendasPage() {
                     </TableRow>
                   ) : (
                     vendasFiltradas.map((venda) => (
-                      <TableRow key={venda.id}>
+                      <TableRow key={venda.id} className={venda.cancelada ? 'opacity-60 bg-red-50' : ''}>
                         <TableCell className="font-medium">
-                          #{venda.numero}
+                          <div className="flex items-center gap-2">
+                            #{venda.numero}
+                            {venda.cancelada && (
+                              <Badge variant="destructive" className="text-xs">
+                                Cancelada
+                              </Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           {venda.cliente ? (
@@ -273,10 +330,10 @@ export default function HistoricoVendasPage() {
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right font-medium">
+                        <TableCell className={`text-right font-medium ${venda.cancelada ? 'line-through text-muted-foreground' : ''}`}>
                           {formatCurrency(venda.valor_total)}
                         </TableCell>
-                        <TableCell className="text-right font-medium text-green-600">
+                        <TableCell className={`text-right font-medium ${venda.cancelada ? 'line-through text-muted-foreground' : 'text-green-600'}`}>
                           {formatCurrency(venda.lucro_liquido)}
                         </TableCell>
                         <TableCell>
@@ -295,6 +352,15 @@ export default function HistoricoVendasPage() {
                                 <Printer className="mr-2 h-4 w-4" />
                                 Reimprimir Cupom
                               </DropdownMenuItem>
+                              {!venda.cancelada && (
+                                <DropdownMenuItem
+                                  onClick={() => abrirDialogCancelar(venda)}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <XCircle className="mr-2 h-4 w-4" />
+                                  Cancelar Venda
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -361,15 +427,98 @@ export default function HistoricoVendasPage() {
                   </div>
                 </div>
 
-                {/* Ações */}
+                {/* Acoes */}
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1">
                     <Printer className="mr-2 h-4 w-4" />
                     Reimprimir
                   </Button>
+                  {!vendaSelecionada.cancelada && (
+                    <Button
+                      variant="destructive"
+                      className="flex-1"
+                      onClick={() => {
+                        setVendaSelecionada(null)
+                        abrirDialogCancelar(vendaSelecionada)
+                      }}
+                    >
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Cancelar
+                    </Button>
+                  )}
                 </div>
+
+                {vendaSelecionada.cancelada && (
+                  <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm">
+                    <div className="flex items-center gap-2 text-red-700 font-medium mb-1">
+                      <AlertTriangle className="h-4 w-4" />
+                      Venda Cancelada
+                    </div>
+                    {vendaSelecionada.data_cancelamento && (
+                      <p className="text-red-600 text-xs">
+                        Em {format(new Date(vendaSelecionada.data_cancelamento), "dd/MM/yyyy 'as' HH:mm", { locale: ptBR })}
+                      </p>
+                    )}
+                    {vendaSelecionada.motivo_cancelamento && (
+                      <p className="text-red-600 text-xs mt-1">
+                        Motivo: {vendaSelecionada.motivo_cancelamento}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog Cancelar Venda */}
+        <Dialog open={dialogCancelarOpen} onOpenChange={setDialogCancelarOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-5 w-5" />
+                Cancelar Venda #{vendaParaCancelar?.numero}
+              </DialogTitle>
+              <DialogDescription>
+                Esta acao ira cancelar a venda e estornar o estoque de todos os produtos.
+                Esta acao nao pode ser desfeita.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+                <p className="font-medium">Ao cancelar esta venda:</p>
+                <ul className="list-disc list-inside mt-1 space-y-1">
+                  <li>O estoque dos produtos sera estornado</li>
+                  <li>A venda ficara marcada como cancelada</li>
+                  <li>Os valores nao serao contabilizados nos relatorios</li>
+                </ul>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Motivo do Cancelamento *</Label>
+                <Textarea
+                  id="motivo"
+                  placeholder="Informe o motivo do cancelamento..."
+                  value={motivoCancelamento}
+                  onChange={(e) => setMotivoCancelamento(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDialogCancelarOpen(false)}>
+                Voltar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleCancelarVenda}
+                disabled={!motivoCancelamento.trim() || isCanceling}
+              >
+                {isCanceling ? 'Cancelando...' : 'Confirmar Cancelamento'}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

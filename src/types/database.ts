@@ -216,6 +216,9 @@ export interface Venda {
   lucro_liquido: number
   forma_pagamento: FormaPagamento
   observacoes?: string
+  cancelada: boolean
+  data_cancelamento?: string
+  motivo_cancelamento?: string
   created_at: string
   updated_at: string
   // Relacionamentos
