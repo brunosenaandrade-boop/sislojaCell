@@ -348,43 +348,42 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
   }
 
   // ===== Layout térmico (58mm / 80mm) =====
-  const larguraClasses: Record<string, string> = {
-    '58': 'w-[58mm]',
-    '80': 'w-[80mm]',
-  }
+  // 58mm: área imprimível real ~48mm, padding menor
+  // 80mm: área imprimível real ~72mm, padding normal
+  const is58mm = largura === '58'
 
   return (
-    <div className={`${larguraClasses[largura]} mx-auto p-4 bg-white text-black font-mono text-xs`}>
+    <div className={`${is58mm ? 'w-[58mm] p-2 text-[10px]' : 'w-[80mm] p-3 text-xs'} mx-auto bg-white text-black font-mono`}>
       {/* Cabeçalho */}
-      <div className="text-center border-b border-dashed border-black pb-2 mb-2">
+      <div className="text-center border-b border-dashed border-black pb-1 mb-1">
         {mostrarLogo && empresa?.logo_url && (
           <img
             src={empresa.logo_url}
             alt={nomeEmpresa}
-            className="h-12 mx-auto mb-1 object-contain"
+            className={`${is58mm ? 'h-8' : 'h-12'} mx-auto mb-1 object-contain`}
           />
         )}
-        <h1 className="text-base font-bold">{nomeEmpresa}</h1>
-        {empresa?.cnpj && <p className="text-[10px]">CNPJ: {empresa.cnpj}</p>}
+        <h1 className={`${is58mm ? 'text-sm' : 'text-base'} font-bold`}>{nomeEmpresa}</h1>
+        {empresa?.cnpj && <p className={is58mm ? 'text-[8px]' : 'text-[10px]'}>CNPJ: {empresa.cnpj}</p>}
 
         {mostrarEndereco && empresa?.endereco && (
-          <p className="text-[10px]">
+          <p className={is58mm ? 'text-[8px]' : 'text-[10px]'}>
             {empresa.endereco}
             {empresa.numero ? `, ${empresa.numero}` : ''}
-            {empresa.bairro ? ` - ${empresa.bairro}` : ''}
+            {is58mm ? '' : (empresa.bairro ? ` - ${empresa.bairro}` : '')}
           </p>
         )}
         {mostrarEndereco && empresa?.cidade && (
-          <p className="text-[10px]">
+          <p className={is58mm ? 'text-[8px]' : 'text-[10px]'}>
             {empresa.cidade}{empresa.estado ? `/${empresa.estado}` : ''}
-            {empresa.cep ? ` - CEP: ${empresa.cep}` : ''}
+            {is58mm ? '' : (empresa.cep ? ` - CEP: ${empresa.cep}` : '')}
           </p>
         )}
 
         {mostrarTelefone && (
           <>
-            {empresa?.telefone && <p className="text-[10px]">Tel: {empresa.telefone}</p>}
-            {empresa?.whatsapp && empresa.whatsapp !== empresa.telefone && (
+            {empresa?.telefone && <p className={is58mm ? 'text-[8px]' : 'text-[10px]'}>Tel: {empresa.telefone}</p>}
+            {!is58mm && empresa?.whatsapp && empresa.whatsapp !== empresa.telefone && (
               <p className="text-[10px]">WhatsApp: {empresa.whatsapp}</p>
             )}
           </>
@@ -392,13 +391,13 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
       </div>
 
       {/* Título */}
-      <div className="text-center mb-2">
-        <h2 className="font-bold text-sm">{getTituloTermico()}</h2>
-        <p className="text-lg font-bold">OS #{os.numero}</p>
+      <div className="text-center mb-1">
+        <h2 className={`font-bold ${is58mm ? 'text-xs' : 'text-sm'}`}>{getTituloTermico()}</h2>
+        <p className={`font-bold ${is58mm ? 'text-base' : 'text-lg'}`}>OS #{os.numero}</p>
       </div>
 
       {/* Data e Operador */}
-      <div className="text-center text-[10px] mb-2">
+      <div className={`text-center ${is58mm ? 'text-[8px]' : 'text-[10px]'} mb-1`}>
         <p>Data: {format(new Date(os.data_entrada), "dd/MM/yyyy 'as' HH:mm", { locale: ptBR })}</p>
         {os.data_previsao && (
           <p>Previsão: {format(new Date(os.data_previsao), 'dd/MM/yyyy', { locale: ptBR })}</p>
@@ -406,41 +405,41 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
         {operador && <p>Operador: {operador}</p>}
       </div>
 
-      <div className="border-t border-dashed border-black my-2" />
+      <div className={`border-t border-dashed border-black ${is58mm ? 'my-1' : 'my-2'}`} />
 
       {/* Cliente */}
-      <div className="mb-2">
-        <p className="font-bold">CLIENTE:</p>
-        <p>{os.cliente?.nome}</p>
-        {os.cliente?.telefone && <p>Tel: {os.cliente.telefone}</p>}
-        {os.cliente?.cpf && <p>CPF: {os.cliente.cpf}</p>}
+      <div className={is58mm ? 'mb-1' : 'mb-2'}>
+        <p className={`font-bold ${is58mm ? 'text-[9px]' : ''}`}>CLIENTE:</p>
+        <p className={is58mm ? 'text-[9px]' : ''}>{os.cliente?.nome}</p>
+        {os.cliente?.telefone && <p className={is58mm ? 'text-[8px]' : ''}>Tel: {os.cliente.telefone}</p>}
+        {os.cliente?.cpf && <p className={is58mm ? 'text-[8px]' : ''}>CPF: {os.cliente.cpf}</p>}
       </div>
 
-      <div className="border-t border-dashed border-black my-2" />
+      <div className={`border-t border-dashed border-black ${is58mm ? 'my-1' : 'my-2'}`} />
 
       {/* Aparelho */}
-      <div className="mb-2">
-        <p className="font-bold">APARELHO:</p>
-        <p>{os.marca} {os.modelo}</p>
-        {os.cor && <p>Cor: {os.cor}</p>}
-        {os.imei && <p>IMEI: {os.imei}</p>}
+      <div className={is58mm ? 'mb-1' : 'mb-2'}>
+        <p className={`font-bold ${is58mm ? 'text-[9px]' : ''}`}>APARELHO:</p>
+        <p className={is58mm ? 'text-[9px]' : ''}>{os.marca} {os.modelo}</p>
+        {os.cor && <p className={is58mm ? 'text-[8px]' : ''}>Cor: {os.cor}</p>}
+        {os.imei && <p className={is58mm ? 'text-[8px]' : ''}>IMEI: {os.imei}</p>}
       </div>
 
       {/* Desbloqueio */}
       {tipo === 'entrada' && os.tipo_desbloqueio && os.tipo_desbloqueio !== 'sem_senha' && (
-        <div className="border border-black p-2 my-2 bg-gray-100">
-          <p className="font-bold text-center">DESBLOQUEIO DO APARELHO</p>
+        <div className={`border border-black ${is58mm ? 'p-1 my-1' : 'p-2 my-2'} bg-gray-100`}>
+          <p className={`font-bold text-center ${is58mm ? 'text-[9px]' : ''}`}>DESBLOQUEIO</p>
           {os.tipo_desbloqueio === 'padrao' && os.padrao_desbloqueio && (
             <>
-              <p className="text-center text-[10px] mb-1">Padrão de desenho:</p>
-              <div className="text-center font-mono text-sm font-bold">
+              <p className={`text-center ${is58mm ? 'text-[7px]' : 'text-[10px]'} mb-1`}>Padrão:</p>
+              <div className={`text-center font-mono ${is58mm ? 'text-xs' : 'text-sm'} font-bold`}>
                 {[0, 1, 2].map(row => (
                   <div key={row}>
                     {[1, 2, 3].map(col => {
                       const point = row * 3 + col
                       const order = os.padrao_desbloqueio?.indexOf(point) ?? -1
                       return (
-                        <span key={col} className="inline-block w-6 text-center">
+                        <span key={col} className={`inline-block ${is58mm ? 'w-4' : 'w-6'} text-center`}>
                           {order >= 0 ? order + 1 : '·'}
                         </span>
                       )
@@ -448,70 +447,70 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
                   </div>
                 ))}
               </div>
-              <p className="text-center text-[10px] mt-1">
-                Sequência: {os.padrao_desbloqueio.join(' → ')}
+              <p className={`text-center ${is58mm ? 'text-[7px]' : 'text-[10px]'} mt-1`}>
+                Seq: {os.padrao_desbloqueio.join('→')}
               </p>
             </>
           )}
           {os.tipo_desbloqueio === 'pin' && os.pin_desbloqueio && (
-            <p className="text-center text-base font-bold">PIN: {os.pin_desbloqueio}</p>
+            <p className={`text-center ${is58mm ? 'text-sm' : 'text-base'} font-bold`}>PIN: {os.pin_desbloqueio}</p>
           )}
           {os.tipo_desbloqueio === 'senha' && os.senha_aparelho && (
-            <p className="text-center text-base font-bold">{os.senha_aparelho}</p>
+            <p className={`text-center ${is58mm ? 'text-sm' : 'text-base'} font-bold`}>{os.senha_aparelho}</p>
           )}
-          <p className="text-center text-[10px]">(Guarde este comprovante)</p>
+          <p className={`text-center ${is58mm ? 'text-[7px]' : 'text-[10px]'}`}>(Guarde este comprovante)</p>
         </div>
       )}
 
       {tipo === 'entrada' && !os.tipo_desbloqueio && os.senha_aparelho && (
-        <div className="border border-black p-2 my-2 bg-gray-100">
-          <p className="font-bold text-center">SENHA DO APARELHO</p>
-          <p className="text-center text-base font-bold">{os.senha_aparelho}</p>
-          <p className="text-center text-[10px]">(Guarde este comprovante)</p>
+        <div className={`border border-black ${is58mm ? 'p-1 my-1' : 'p-2 my-2'} bg-gray-100`}>
+          <p className={`font-bold text-center ${is58mm ? 'text-[9px]' : ''}`}>SENHA</p>
+          <p className={`text-center ${is58mm ? 'text-sm' : 'text-base'} font-bold`}>{os.senha_aparelho}</p>
+          <p className={`text-center ${is58mm ? 'text-[7px]' : 'text-[10px]'}`}>(Guarde este comprovante)</p>
         </div>
       )}
 
       {tipo === 'entrega' && os.senha_aparelho_masked && (
-        <div className="border border-black p-2 my-2 bg-gray-100">
-          <p className="font-bold text-center">SENHA DO APARELHO</p>
-          <p className="text-center text-base font-bold">{os.senha_aparelho_masked}</p>
+        <div className={`border border-black ${is58mm ? 'p-1 my-1' : 'p-2 my-2'} bg-gray-100`}>
+          <p className={`font-bold text-center ${is58mm ? 'text-[9px]' : ''}`}>SENHA</p>
+          <p className={`text-center ${is58mm ? 'text-sm' : 'text-base'} font-bold`}>{os.senha_aparelho_masked}</p>
         </div>
       )}
 
       {/* Condição */}
       {tipo !== 'entrega' && os.condicao_entrada && (
-        <div className="mb-2">
-          <p className="font-bold">CONDIÇÃO:</p>
-          <p className="text-[10px]">{os.condicao_entrada}</p>
+        <div className={is58mm ? 'mb-1' : 'mb-2'}>
+          <p className={`font-bold ${is58mm ? 'text-[9px]' : ''}`}>CONDIÇÃO:</p>
+          <p className={is58mm ? 'text-[8px]' : 'text-[10px]'}>{os.condicao_entrada}</p>
         </div>
       )}
 
       {/* Acessórios */}
       {tipo !== 'entrega' && os.acessorios && (
-        <div className="mb-2">
-          <p className="font-bold">ACESSÓRIOS:</p>
-          <p className="text-[10px]">{os.acessorios}</p>
+        <div className={is58mm ? 'mb-1' : 'mb-2'}>
+          <p className={`font-bold ${is58mm ? 'text-[9px]' : ''}`}>ACESSÓRIOS:</p>
+          <p className={is58mm ? 'text-[8px]' : 'text-[10px]'}>{os.acessorios}</p>
         </div>
       )}
 
-      <div className="border-t border-dashed border-black my-2" />
+      <div className={`border-t border-dashed border-black ${is58mm ? 'my-1' : 'my-2'}`} />
 
       {/* Problema */}
       {tipo !== 'entrega' && (
-        <div className="mb-2">
-          <p className="font-bold">PROBLEMA RELATADO:</p>
-          <p className="text-[10px]">{os.problema_relatado}</p>
+        <div className={is58mm ? 'mb-1' : 'mb-2'}>
+          <p className={`font-bold ${is58mm ? 'text-[9px]' : ''}`}>PROBLEMA:</p>
+          <p className={is58mm ? 'text-[8px]' : 'text-[10px]'}>{os.problema_relatado}</p>
         </div>
       )}
 
       {/* Serviços (entrega) */}
       {tipo === 'entrega' && os.itens && os.itens.length > 0 && (
-        <div className="mb-2">
-          <p className="font-bold">SERVIÇOS REALIZADOS:</p>
+        <div className={is58mm ? 'mb-1' : 'mb-2'}>
+          <p className={`font-bold ${is58mm ? 'text-[9px]' : ''}`}>SERVIÇOS:</p>
           {os.itens.map(item => (
-            <div key={item.id} className="flex justify-between text-[10px]">
-              <span>{item.quantidade}x {item.descricao}</span>
-              <span>{formatCurrency(item.valor_unitario * item.quantidade)}</span>
+            <div key={item.id} className={`flex justify-between ${is58mm ? 'text-[8px]' : 'text-[10px]'}`}>
+              <span className="truncate mr-1">{item.quantidade}x {item.descricao}</span>
+              <span className="whitespace-nowrap">{formatCurrency(item.valor_unitario * item.quantidade)}</span>
             </div>
           ))}
         </div>
@@ -520,20 +519,20 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
       {/* Itens (completa) */}
       {tipo === 'completa' && os.itens && os.itens.length > 0 && (
         <>
-          <div className="border-t border-dashed border-black my-2" />
-          <div className="mb-2">
-            <p className="font-bold">SERVIÇOS/PEÇAS:</p>
+          <div className={`border-t border-dashed border-black ${is58mm ? 'my-1' : 'my-2'}`} />
+          <div className={is58mm ? 'mb-1' : 'mb-2'}>
+            <p className={`font-bold ${is58mm ? 'text-[9px]' : ''}`}>ITENS:</p>
             {os.itens.map(item => (
-              <div key={item.id} className="flex justify-between text-[10px]">
-                <span>{item.quantidade}x {item.descricao}</span>
-                <span>{formatCurrency(item.valor_unitario * item.quantidade)}</span>
+              <div key={item.id} className={`flex justify-between ${is58mm ? 'text-[8px]' : 'text-[10px]'}`}>
+                <span className="truncate mr-1">{item.quantidade}x {item.descricao}</span>
+                <span className="whitespace-nowrap">{formatCurrency(item.valor_unitario * item.quantidade)}</span>
               </div>
             ))}
           </div>
 
-          <div className="border-t border-dashed border-black my-2" />
+          <div className={`border-t border-dashed border-black ${is58mm ? 'my-1' : 'my-2'}`} />
 
-          <div className="mb-2">
+          <div className={is58mm ? 'mb-1 text-[9px]' : 'mb-2'}>
             <div className="flex justify-between">
               <span>Serviços:</span>
               <span>{formatCurrency(os.valor_servicos)}</span>
@@ -548,7 +547,7 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
                 <span>-{formatCurrency(os.valor_desconto)}</span>
               </div>
             )}
-            <div className="flex justify-between font-bold text-sm border-t border-black mt-1 pt-1">
+            <div className={`flex justify-between font-bold ${is58mm ? 'text-[10px]' : 'text-sm'} border-t border-black mt-1 pt-1`}>
               <span>TOTAL:</span>
               <span>{formatCurrency(os.valor_total)}</span>
             </div>
@@ -559,58 +558,86 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
       {/* Total (entrega) */}
       {tipo === 'entrega' && (
         <>
-          <div className="border-t border-dashed border-black my-2" />
-          <div className="flex justify-between font-bold text-sm">
+          <div className={`border-t border-dashed border-black ${is58mm ? 'my-1' : 'my-2'}`} />
+          <div className={`flex justify-between font-bold ${is58mm ? 'text-[10px]' : 'text-sm'}`}>
             <span>TOTAL:</span>
             <span>{formatCurrency(os.valor_total)}</span>
           </div>
         </>
       )}
 
-      <div className="border-t border-dashed border-black my-2" />
+      <div className={`border-t border-dashed border-black ${is58mm ? 'my-1' : 'my-2'}`} />
 
       {/* Termos */}
       {tipo === 'entrada' && (
-        <div className="text-[8px] text-center mb-2">
-          <p className="font-bold mb-1">TERMOS DE RESPONSABILIDADE</p>
-          <p>1. O prazo para retirada do aparelho é de 90 (noventa) dias corridos a partir da data de entrada.</p>
-          <p>2. Após este prazo, a empresa não se responsabiliza pelo aparelho.</p>
-          <p>3. A garantia do serviço é de 90 (noventa) dias, exceto danos causados por mau uso, quedas ou contato com líquidos.</p>
-          <p>4. O cliente autoriza a abertura e manuseio do aparelho para fins de diagnóstico e reparo.</p>
-          <p>5. Peças substituídas não serão devolvidas, salvo solicitação prévia.</p>
+        <div className={`${is58mm ? 'text-[6px]' : 'text-[8px]'} text-center mb-1`}>
+          <p className="font-bold mb-1">TERMOS</p>
+          {is58mm ? (
+            <>
+              <p>Prazo retirada: 90 dias</p>
+              <p>Garantia: 90 dias</p>
+              <p>(exceto mau uso)</p>
+            </>
+          ) : (
+            <>
+              <p>1. O prazo para retirada do aparelho é de 90 (noventa) dias corridos a partir da data de entrada.</p>
+              <p>2. Após este prazo, a empresa não se responsabiliza pelo aparelho.</p>
+              <p>3. A garantia do serviço é de 90 (noventa) dias, exceto danos causados por mau uso, quedas ou contato com líquidos.</p>
+              <p>4. O cliente autoriza a abertura e manuseio do aparelho para fins de diagnóstico e reparo.</p>
+              <p>5. Peças substituídas não serão devolvidas, salvo solicitação prévia.</p>
+            </>
+          )}
         </div>
       )}
 
       {tipo === 'entrega' && (
-        <div className="text-[8px] text-center mb-2">
-          <p>Declaro que recebi o aparelho acima descrito</p>
-          <p>em perfeitas condições de funcionamento.</p>
-          <p className="mt-1">Garantia do serviço: 90 dias</p>
-          <p>(exceto danos por mau uso)</p>
+        <div className={`${is58mm ? 'text-[6px]' : 'text-[8px]'} text-center mb-1`}>
+          {is58mm ? (
+            <>
+              <p>Recebi em perfeitas condições</p>
+              <p>Garantia: 90 dias</p>
+            </>
+          ) : (
+            <>
+              <p>Declaro que recebi o aparelho acima descrito</p>
+              <p>em perfeitas condições de funcionamento.</p>
+              <p className="mt-1">Garantia do serviço: 90 dias</p>
+              <p>(exceto danos por mau uso)</p>
+            </>
+          )}
         </div>
       )}
 
       {tipo === 'completa' && (
-        <div className="text-[8px] text-center mb-2">
-          <p>Prazo para retirada: 90 dias</p>
-          <p>Após este prazo, a empresa não se</p>
-          <p>responsabiliza pelo aparelho.</p>
-          <p className="mt-1">Garantia do serviço: 90 dias</p>
-          <p>(exceto danos por mau uso)</p>
+        <div className={`${is58mm ? 'text-[6px]' : 'text-[8px]'} text-center mb-1`}>
+          {is58mm ? (
+            <>
+              <p>Prazo retirada: 90 dias</p>
+              <p>Garantia: 90 dias</p>
+            </>
+          ) : (
+            <>
+              <p>Prazo para retirada: 90 dias</p>
+              <p>Após este prazo, a empresa não se</p>
+              <p>responsabiliza pelo aparelho.</p>
+              <p className="mt-1">Garantia do serviço: 90 dias</p>
+              <p>(exceto danos por mau uso)</p>
+            </>
+          )}
         </div>
       )}
 
-      <div className="border-t border-dashed border-black my-2" />
+      <div className={`border-t border-dashed border-black ${is58mm ? 'my-1' : 'my-2'}`} />
 
       {/* Assinatura */}
-      <div className="mt-4">
-        <div className="border-t border-black mt-8 pt-1 text-center">
-          <p className="text-[10px]">Assinatura do Cliente</p>
+      <div className={is58mm ? 'mt-2' : 'mt-4'}>
+        <div className={`border-t border-black ${is58mm ? 'mt-4' : 'mt-8'} pt-1 text-center`}>
+          <p className={is58mm ? 'text-[8px]' : 'text-[10px]'}>Assinatura do Cliente</p>
         </div>
       </div>
 
       {/* Rodapé */}
-      <div className="text-center mt-4 text-[8px]">
+      <div className={`text-center ${is58mm ? 'mt-2 text-[6px]' : 'mt-4 text-[8px]'}`}>
         <p>Obrigado pela preferência!</p>
         <p>{format(new Date(), "dd/MM/yyyy HH:mm")}</p>
       </div>

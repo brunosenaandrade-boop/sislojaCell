@@ -180,18 +180,63 @@
   }
 
   /* Preservar cores especificas para badges e elementos visuais importantes */
-  .bg-gray-900,
-  .bg-blue-100,
-  .bg-green-100,
-  .bg-orange-100,
-  .bg-gray-100 {
+  .bg-gray-900 {
+    background-color: #111827 !important;
+    color: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Textos devem ser pretos */
+  .bg-blue-100 {
+    background-color: #dbeafe !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .bg-green-100 {
+    background-color: #dcfce7 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .bg-orange-100 {
+    background-color: #ffedd5 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .bg-gray-100 {
+    background-color: #f3f4f6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .bg-gray-50 {
+    background-color: #f9fafb !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .text-blue-700 {
+    color: #1d4ed8 !important;
+  }
+
+  .text-green-700 {
+    color: #15803d !important;
+  }
+
+  /* Textos devem ser pretos (exceto dentro de elementos com bg escuro) */
   p, span, div, td, th, li, h1, h2, h3, h4, h5, h6 {
     color: black !important;
+  }
+
+  /* Texto branco dentro de backgrounds escuros - maior especificidade */
+  .bg-gray-900 p,
+  .bg-gray-900 span,
+  .bg-gray-900 div,
+  .bg-gray-900 *,
+  .text-white {
+    color: white !important;
   }
 
   /* Bordas visiveis */
