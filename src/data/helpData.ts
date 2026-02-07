@@ -6,6 +6,8 @@ import {
   DollarSign,
   FileText,
   Settings,
+  AlertTriangle,
+  CreditCard,
   LucideIcon,
 } from 'lucide-react'
 
@@ -357,6 +359,156 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       {
         titulo: 'Backup dos dados',
         descricao: 'Seus dados são armazenados na nuvem com backup automático. Você não precisa se preocupar com perda de dados.',
+      },
+    ],
+  },
+  {
+    id: 'problemas',
+    titulo: 'Problemas e Soluções',
+    icon: AlertTriangle,
+    faqs: [
+      {
+        pergunta: 'Erro "O telefone informado é inválido" no pagamento',
+        resposta: 'O gateway de pagamento exige um telefone real com DDD. Acesse Configurações > Dados da Empresa e atualize o campo Telefone com um número válido de 10 ou 11 dígitos (ex: 11987654321). Números fictícios como 99999-9999 são rejeitados.',
+      },
+      {
+        pergunta: 'Erro "CPF ou CNPJ inválido" no pagamento',
+        resposta: 'O documento informado não passou na validação. Acesse Configurações > Dados da Empresa e verifique se o CPF (11 dígitos) ou CNPJ (14 dígitos) está correto. Certifique-se de que não há números a mais ou a menos.',
+      },
+      {
+        pergunta: 'Erro "Você já possui uma assinatura ativa"',
+        resposta: 'Sua empresa já tem um plano pago ativo. Para trocar de plano, cancele a assinatura atual em Meu Plano antes de assinar um novo. Se achar que é um erro, entre em contato com o suporte.',
+      },
+      {
+        pergunta: 'Erro "Você já possui um pagamento pendente"',
+        resposta: 'Existe um pagamento aguardando confirmação (PIX ou Boleto). Aguarde a confirmação (pode levar até 3 dias úteis para boleto) ou acesse Meu Plano para cancelar e tentar novamente.',
+      },
+      {
+        pergunta: 'O pagamento foi aprovado mas o plano não ativou',
+        resposta: 'Aguarde alguns segundos e atualize a página. Se persistir, faça logout e login novamente. O sistema processa os pagamentos automaticamente via webhook.',
+      },
+      {
+        pergunta: 'Erro ao criar Ordem de Serviço',
+        resposta: 'Verifique se: 1) Você selecionou um cliente, 2) O aparelho foi informado, 3) O problema foi descrito. Se o erro persistir, atualize a página e tente novamente.',
+      },
+      {
+        pergunta: 'Meu estoque ficou negativo',
+        resposta: 'Isso acontece quando há mais saídas do que entradas registradas. Use "Definir Estoque" para corrigir com a quantidade real após um inventário físico.',
+      },
+      {
+        pergunta: 'O valor está sendo salvo errado (ex: 350 em vez de 3.50)',
+        resposta: 'Use PONTO como separador decimal, não vírgula. Para R$ 3,50 digite 3.50. Para R$ 1.500,00 digite 1500.00. O sistema usa formato americano nos campos numéricos.',
+      },
+      {
+        pergunta: 'Sessão expirada / "Não autenticado"',
+        resposta: 'Sua sessão expirou por segurança. Faça login novamente. Isso acontece após um período de inatividade ou quando você acessa de outro dispositivo.',
+      },
+      {
+        pergunta: 'A página não carrega ou fica em branco',
+        resposta: 'Tente: 1) Atualizar a página (F5), 2) Limpar cache do navegador (Ctrl+Shift+Del), 3) Tentar outro navegador (Chrome recomendado), 4) Verificar sua conexão com internet.',
+      },
+      {
+        pergunta: 'Erro "Limite do plano atingido"',
+        resposta: 'Você atingiu o limite do seu plano atual (produtos, vendas ou OS). Faça upgrade para um plano superior em Meu Plano para continuar usando o sistema sem restrições.',
+      },
+      {
+        pergunta: 'Não consigo excluir um produto/cliente',
+        resposta: 'Itens vinculados a vendas ou OS não podem ser excluídos para manter o histórico. Use a opção "Inativar" em vez de excluir. Itens inativos não aparecem nas buscas mas ficam no histórico.',
+      },
+    ],
+    guias: [
+      {
+        titulo: 'Corrigir dados para pagamento',
+        passos: [
+          'Acesse Configurações no menu lateral',
+          'Verifique se o Telefone tem 10-11 dígitos com DDD',
+          'Verifique se o CPF tem 11 dígitos ou CNPJ tem 14',
+          'Verifique se o E-mail está correto',
+          'Salve as alterações',
+          'Tente o pagamento novamente em Meu Plano',
+        ],
+      },
+      {
+        titulo: 'Resolver problemas de carregamento',
+        passos: [
+          'Pressione F5 para atualizar a página',
+          'Se não resolver, pressione Ctrl+Shift+Del',
+          'Marque "Cache" e clique em Limpar',
+          'Feche e abra o navegador novamente',
+          'Se persistir, tente no modo anônimo (Ctrl+Shift+N)',
+        ],
+      },
+    ],
+    dicas: [
+      {
+        titulo: 'Dados da empresa são essenciais',
+        descricao: 'Mantenha os dados da empresa atualizados em Configurações. Telefone e documento válidos são obrigatórios para processar pagamentos.',
+      },
+      {
+        titulo: 'Use o navegador recomendado',
+        descricao: 'O CellFlow funciona melhor no Google Chrome ou Microsoft Edge atualizados. Evite navegadores desatualizados ou com muitas extensões.',
+      },
+    ],
+  },
+  {
+    id: 'pagamentos',
+    titulo: 'Pagamentos e Planos',
+    icon: CreditCard,
+    faqs: [
+      {
+        pergunta: 'Quais formas de pagamento são aceitas?',
+        resposta: 'PIX (confirmação instantânea), Cartão de Crédito (confirmação imediata) e Boleto Bancário (até 3 dias úteis para compensar).',
+      },
+      {
+        pergunta: 'O PIX é confirmado na hora?',
+        resposta: 'Sim! O PIX tem confirmação automática em segundos. Após pagar, aguarde a tela atualizar ou atualize manualmente.',
+      },
+      {
+        pergunta: 'Por que o cartão pede tantos dados?',
+        resposta: 'Por segurança antifraude. O gateway valida: CPF do titular, CEP, telefone e e-mail. Isso protege você e seu cartão contra uso indevido.',
+      },
+      {
+        pergunta: 'Posso parcelar o plano anual?',
+        resposta: 'Sim, o plano anual pode ser parcelado em até 12x no cartão de crédito. O valor à vista tem desconto em relação ao mensal.',
+      },
+      {
+        pergunta: 'Como cancelar minha assinatura?',
+        resposta: 'Acesse Meu Plano e clique em "Cancelar Assinatura". O acesso continua até o fim do período pago. Não há reembolso proporcional.',
+      },
+      {
+        pergunta: 'O que acontece se eu não pagar?',
+        resposta: 'Após o vencimento, você tem 7 dias de tolerância. Depois, o acesso é suspenso mas seus dados ficam guardados por 90 dias. Regularize para reativar.',
+      },
+      {
+        pergunta: 'Como alterar a forma de pagamento?',
+        resposta: 'Cancele a assinatura atual e faça uma nova assinatura escolhendo a nova forma de pagamento desejada.',
+      },
+      {
+        pergunta: 'Recebi cobrança duplicada, o que fazer?',
+        resposta: 'Isso não deveria acontecer (o sistema bloqueia). Mas se ocorreu, entre em contato imediatamente pelo suporte que faremos o estorno.',
+      },
+    ],
+    guias: [
+      {
+        titulo: 'Assinar um plano passo a passo',
+        passos: [
+          'Acesse "Meu Plano" no menu lateral',
+          'Escolha entre Mensal ou Anual',
+          'Selecione a forma de pagamento (PIX, Cartão ou Boleto)',
+          'Para cartão: preencha todos os dados solicitados',
+          'Confirme o pagamento',
+          'Aguarde a confirmação (PIX/Cartão: segundos, Boleto: até 3 dias)',
+        ],
+      },
+    ],
+    dicas: [
+      {
+        titulo: 'PIX é mais rápido',
+        descricao: 'Se precisa liberar o plano imediatamente, use PIX. A confirmação é automática em segundos após o pagamento.',
+      },
+      {
+        titulo: 'Plano Anual economiza',
+        descricao: 'O plano anual tem desconto significativo em relação a 12 meses do plano mensal. Ideal para quem já validou o sistema.',
       },
     ],
   },
