@@ -28,7 +28,7 @@ export function TrialBanner() {
   else if (diasRestantes <= 3) bgColor = 'bg-yellow-500'
 
   return (
-    <div className={`${bgColor} px-4 py-2 text-center text-sm font-medium text-white`}>
+    <div className={`${bgColor} px-4 py-2 text-center text-sm font-medium text-white print:hidden`}>
       <div className="flex items-center justify-center gap-2">
         <Clock className="h-4 w-4" />
         <span>

@@ -158,7 +158,10 @@
   aside,
   footer,
   .sidebar,
-  .no-print {
+  .no-print,
+  [data-radix-popper-content-wrapper],
+  [role="menu"],
+  [data-state="open"] {
     display: none !important;
   }
 
