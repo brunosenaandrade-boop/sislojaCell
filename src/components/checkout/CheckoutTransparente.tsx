@@ -22,7 +22,6 @@ import {
   Loader2,
   QrCode,
   CreditCard,
-  FileText,
   CheckCircle2,
   XCircle,
   Copy,
@@ -35,7 +34,7 @@ import { toast } from 'sonner'
 // ============================================
 
 type Step = 'select' | 'processing' | 'awaiting' | 'success' | 'error'
-type BillingType = 'PIX' | 'CREDIT_CARD' | 'BOLETO'
+type BillingType = 'PIX' | 'CREDIT_CARD'
 
 interface CheckoutTransparenteProps {
   open: boolean
@@ -205,10 +204,6 @@ export function CheckoutTransparente({
   const [pixPayload, setPixPayload] = useState('')
   const [pixCopied, setPixCopied] = useState(false)
 
-  // Boleto state
-  const [boletoLine, setBoletoLine] = useState('')
-  const [boletoUrl, setBoletoUrl] = useState('')
-  const [boletoCopied, setBoletoCopied] = useState(false)
 
   // Card form state
   const [cardForm, setCardForm] = useState<CardForm>({
@@ -236,11 +231,8 @@ export function CheckoutTransparente({
       setPaymentId(null)
       setPixQrImage('')
       setPixPayload('')
-      setBoletoLine('')
-      setBoletoUrl('')
       setErrorMsg('')
       setPixCopied(false)
-      setBoletoCopied(false)
     }
   }, [open])
 
@@ -349,18 +341,6 @@ export function CheckoutTransparente({
           setErrorMsg('Erro ao gerar QR Code PIX')
           setStep('error')
         }
-      } else if (billing === 'BOLETO' && json.paymentId) {
-        // Buscar dados do boleto
-        const boletoRes = await fetch(`/api/asaas/payment/${json.paymentId}/boleto`)
-        if (boletoRes.ok) {
-          const boletoData = await boletoRes.json()
-          setBoletoLine(boletoData.identificationField)
-          setBoletoUrl(boletoData.bankSlipUrl || json.bankSlipUrl || '')
-          setStep('awaiting')
-        } else {
-          setErrorMsg('Erro ao gerar boleto')
-          setStep('error')
-        }
       } else if (billing === 'CREDIT_CARD') {
         // Cartão é processado imediatamente
         const status = json.status
@@ -393,13 +373,6 @@ export function CheckoutTransparente({
     setPixCopied(true)
     toast.success('Código PIX copiado!')
     setTimeout(() => setPixCopied(false), 2000)
-  }
-
-  const handleCopyBoleto = () => {
-    navigator.clipboard.writeText(boletoLine)
-    setBoletoCopied(true)
-    toast.success('Linha digitável copiada!')
-    setTimeout(() => setBoletoCopied(false), 2000)
   }
 
   const updateCard = (field: keyof CardForm, value: string) => {
@@ -504,96 +477,50 @@ export function CheckoutTransparente({
   }
 
   // ============================================
-  // RENDER - AGUARDANDO (PIX / BOLETO)
+  // RENDER - AGUARDANDO PIX
   // ============================================
   if (step === 'awaiting') {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {activeBilling === 'PIX' ? 'Pagamento via PIX' : 'Pagamento via Boleto'}
-            </DialogTitle>
+            <DialogTitle>Pagamento via PIX</DialogTitle>
           </DialogHeader>
 
-          {activeBilling === 'PIX' && (
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-sm text-muted-foreground">
-                Escaneie o QR Code ou copie o código para pagar
-              </p>
-              <div className="rounded-lg border bg-white p-4">
-                {pixQrImage && (
-                  <img
-                    src={`data:image/png;base64,${pixQrImage}`}
-                    alt="QR Code PIX"
-                    className="h-48 w-48"
-                  />
-                )}
-              </div>
-              <div className="w-full">
-                <Label className="text-xs text-muted-foreground">Código Copia e Cola</Label>
-                <div className="mt-1 flex items-center gap-2">
-                  <Input
-                    value={pixPayload}
-                    readOnly
-                    className="text-xs"
-                  />
-                  <Button variant="outline" size="icon" onClick={handleCopyPix}>
-                    {pixCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Aguardando confirmação do pagamento...
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Valor: <strong>{formatCurrency(valor)}</strong>
-              </p>
-            </div>
-          )}
-
-          {activeBilling === 'BOLETO' && (
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-sm text-muted-foreground">
-                Copie a linha digitável ou baixe o PDF do boleto
-              </p>
-              <div className="w-full">
-                <Label className="text-xs text-muted-foreground">Linha Digitável</Label>
-                <div className="mt-1 flex items-center gap-2">
-                  <Input
-                    value={boletoLine}
-                    readOnly
-                    className="text-xs font-mono"
-                  />
-                  <Button variant="outline" size="icon" onClick={handleCopyBoleto}>
-                    {boletoCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-              {boletoUrl && (
-                <Button variant="outline" asChild>
-                  <a href={boletoUrl} target="_blank" rel="noopener noreferrer">
-                    <FileText className="mr-2 h-4 w-4" />
-                    Baixar Boleto PDF
-                  </a>
-                </Button>
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              Escaneie o QR Code ou copie o código para pagar
+            </p>
+            <div className="rounded-lg border bg-white p-4">
+              {pixQrImage && (
+                <img
+                  src={`data:image/png;base64,${pixQrImage}`}
+                  alt="QR Code PIX"
+                  className="h-48 w-48"
+                />
               )}
-              <p className="text-xs text-muted-foreground">
-                Valor: <strong>{formatCurrency(valor)}</strong> — O boleto pode levar até 3 dias
-                úteis para compensar.
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onOpenChange(false)
-                  toast.info('Aguarde a compensação do boleto. Sua assinatura será ativada automaticamente.')
-                }}
-              >
-                Fechar
-              </Button>
             </div>
-          )}
+            <div className="w-full">
+              <Label className="text-xs text-muted-foreground">Código Copia e Cola</Label>
+              <div className="mt-1 flex items-center gap-2">
+                <Input
+                  value={pixPayload}
+                  readOnly
+                  className="text-xs"
+                />
+                <Button variant="outline" size="icon" onClick={handleCopyPix}>
+                  {pixCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Aguardando confirmação do pagamento...
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Valor: <strong>{formatCurrency(valor)}</strong>
+            </p>
+          </div>
         </DialogContent>
       </Dialog>
     )
@@ -625,7 +552,7 @@ export function CheckoutTransparente({
         </DialogHeader>
 
         <Tabs defaultValue="PIX" onValueChange={(v) => setActiveBilling(v as BillingType)}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="PIX" className="gap-1">
               <QrCode className="h-4 w-4" />
               PIX
@@ -633,10 +560,6 @@ export function CheckoutTransparente({
             <TabsTrigger value="CREDIT_CARD" className="gap-1">
               <CreditCard className="h-4 w-4" />
               Cartão
-            </TabsTrigger>
-            <TabsTrigger value="BOLETO" className="gap-1">
-              <FileText className="h-4 w-4" />
-              Boleto
             </TabsTrigger>
           </TabsList>
 
@@ -806,21 +729,6 @@ export function CheckoutTransparente({
               Pagar {installments === '1'
                 ? formatCurrency(valor)
                 : `${installments}x de ${formatCurrency(valor / Number(installments))}`}
-            </Button>
-          </TabsContent>
-
-          {/* ===== ABA BOLETO ===== */}
-          <TabsContent value="BOLETO" className="space-y-4">
-            <div className="rounded-lg border bg-muted/30 p-4 text-center">
-              <FileText className="mx-auto mb-2 h-12 w-12 text-blue-600" />
-              <p className="text-sm font-medium">Pagamento via Boleto Bancário</p>
-              <p className="text-xs text-muted-foreground">
-                O boleto será gerado e pode levar até 3 dias úteis para compensar
-              </p>
-            </div>
-            <Button className="w-full" onClick={() => handleCheckout('BOLETO')}>
-              <FileText className="mr-2 h-4 w-4" />
-              Gerar Boleto — {formatCurrency(valor)}
             </Button>
           </TabsContent>
         </Tabs>

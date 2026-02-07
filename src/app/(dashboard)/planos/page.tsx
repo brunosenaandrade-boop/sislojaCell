@@ -343,7 +343,7 @@ function PlanosContent() {
                   Assinar Agora
                 </Button>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  PIX, cartão ou boleto
+                  PIX ou cartão de crédito
                 </p>
               </div>
             </div>
