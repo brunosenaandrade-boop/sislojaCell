@@ -148,7 +148,24 @@ export async function POST(request: NextRequest) {
       const cpfCnpj = empresa.cnpj || empresa.cpf
       if (!cpfCnpj) {
         return NextResponse.json(
-          { error: 'CPF ou CNPJ da empresa é obrigatório para pagamento. Atualize os dados no Onboarding ou Configurações.' },
+          { error: 'CPF ou CNPJ da empresa é obrigatório para pagamento. Acesse Configurações e preencha o documento.' },
+          { status: 400 }
+        )
+      }
+
+      // Validar telefone antes de enviar ao gateway
+      const telefoneNumeros = empresa.telefone?.replace(/\D/g, '') || ''
+      if (!telefoneNumeros || telefoneNumeros.length < 10 || telefoneNumeros.length > 11) {
+        return NextResponse.json(
+          { error: 'Telefone da empresa é obrigatório e deve ter 10 ou 11 dígitos (com DDD). Acesse Configurações e atualize o campo Telefone.' },
+          { status: 400 }
+        )
+      }
+
+      // Rejeitar telefones fictícios comuns
+      if (/^(\d)\1{9,}$/.test(telefoneNumeros)) {
+        return NextResponse.json(
+          { error: 'O telefone informado parece ser fictício. Acesse Configurações e informe um telefone real para receber notificações de pagamento.' },
           { status: 400 }
         )
       }
@@ -162,9 +179,22 @@ export async function POST(request: NextRequest) {
       })
 
       if (customerError || !customer) {
+        // Mapear erros do Asaas para mensagens amigáveis com instruções
+        let errorMessage = customerError || 'Erro ao criar cliente no gateway'
+
+        if (customerError?.toLowerCase().includes('telefone')) {
+          errorMessage = 'O telefone da sua empresa é inválido. Acesse Configurações e atualize o campo Telefone com um número real (ex: 11987654321).'
+        } else if (customerError?.toLowerCase().includes('cpf') || customerError?.toLowerCase().includes('cnpj')) {
+          errorMessage = 'O CPF/CNPJ da sua empresa é inválido. Acesse Configurações e corrija o documento.'
+        } else if (customerError?.toLowerCase().includes('email')) {
+          errorMessage = 'O e-mail da sua empresa é inválido. Acesse Configurações e corrija o e-mail.'
+        } else if (customerError?.toLowerCase().includes('nome') || customerError?.toLowerCase().includes('name')) {
+          errorMessage = 'O nome da sua empresa é inválido. Acesse Configurações e corrija o nome.'
+        }
+
         return NextResponse.json(
-          { error: customerError || 'Erro ao criar cliente no gateway' },
-          { status: 500 }
+          { error: errorMessage },
+          { status: 400 }
         )
       }
 
