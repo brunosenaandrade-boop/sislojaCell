@@ -37,13 +37,21 @@ export const dashboardService = {
 
     try {
       // Run all 4 independent queries in parallel
-      const [vendasResult, osAbertasResult, osFinalizadasResult, produtosResult] = await Promise.all([
+      const [vendasResult, osPagasHojeResult, osAbertasResult, osFinalizadasResult, produtosResult] = await Promise.all([
         supabase
           .from('vendas')
           .select('valor_total, valor_custo_total')
           .eq('empresa_id', empresaId)
+          .eq('cancelada', false)
           .gte('created_at', hojeInicio)
           .lte('created_at', hojeFim),
+        supabase
+          .from('ordens_servico')
+          .select('id, valor_total')
+          .eq('empresa_id', empresaId)
+          .eq('pago', true)
+          .gte('data_pagamento', hojeInicio)
+          .lte('data_pagamento', hojeFim),
         supabase
           .from('ordens_servico')
           .select('id', { count: 'exact', head: true })
@@ -62,15 +70,34 @@ export const dashboardService = {
       ])
 
       if (vendasResult.error) return { data: null, error: vendasResult.error.message }
+      if (osPagasHojeResult.error) return { data: null, error: osPagasHojeResult.error.message }
       if (osAbertasResult.error) return { data: null, error: osAbertasResult.error.message }
       if (osFinalizadasResult.error) return { data: null, error: osFinalizadasResult.error.message }
       if (produtosResult.error) return { data: null, error: produtosResult.error.message }
 
+      // Receita e custo de vendas
       const vendasDia = vendasResult.data
-      const vendas_dia = vendasDia?.reduce((acc: number, v: { valor_total: number | null }) => acc + (v.valor_total || 0), 0) ?? 0
-      const custo_dia = vendasDia?.reduce((acc: number, v: { valor_custo_total: number | null }) => acc + (v.valor_custo_total || 0), 0) ?? 0
+      const receitaVendas = vendasDia?.reduce((acc: number, v: { valor_total: number | null }) => acc + (v.valor_total || 0), 0) ?? 0
+      const custoVendas = vendasDia?.reduce((acc: number, v: { valor_custo_total: number | null }) => acc + (v.valor_custo_total || 0), 0) ?? 0
+
+      // Receita e custo de OS pagas hoje
+      const osPagas = osPagasHojeResult.data ?? []
+      const receitaOS = osPagas.reduce((acc: number, o: { valor_total: number | null }) => acc + (o.valor_total || 0), 0)
+      let custoOS = 0
+      const osPagasIds = osPagas.map((o: { id: string }) => o.id)
+      if (osPagasIds.length > 0) {
+        const { data: itensOS } = await supabase
+          .from('itens_os')
+          .select('valor_custo, quantidade')
+          .in('os_id', osPagasIds)
+        custoOS = (itensOS ?? []).reduce((acc: number, item: { valor_custo: number | null; quantidade: number | null }) =>
+          acc + ((item.valor_custo || 0) * (item.quantidade || 0)), 0)
+      }
+
+      const vendas_dia = receitaVendas + receitaOS
+      const custo_dia = custoVendas + custoOS
       const lucro_dia = vendas_dia - custo_dia
-      const quantidade_vendas = vendasDia?.length ?? 0
+      const quantidade_vendas = (vendasDia?.length ?? 0) + osPagas.length
 
       const produtos_estoque_baixo = produtosResult.data?.filter(
         (p: { estoque_atual: number; estoque_minimo: number }) => p.estoque_atual <= p.estoque_minimo
@@ -187,14 +214,38 @@ export const dashboardService = {
     seteDiasAtras.setDate(hoje.getDate() - 6)
     seteDiasAtras.setHours(0, 0, 0, 0)
 
-    const { data: vendas, error } = await supabase
-      .from('vendas')
-      .select('created_at, valor_total, valor_custo_total')
-      .eq('empresa_id', empresaId)
-      .gte('created_at', seteDiasAtras.toISOString())
-      .lte('created_at', hoje.toISOString())
+    const [vendasRes, osPagasRes] = await Promise.all([
+      supabase
+        .from('vendas')
+        .select('created_at, valor_total, valor_custo_total')
+        .eq('empresa_id', empresaId)
+        .eq('cancelada', false)
+        .gte('created_at', seteDiasAtras.toISOString())
+        .lte('created_at', hoje.toISOString()),
+      supabase
+        .from('ordens_servico')
+        .select('id, data_pagamento, valor_total')
+        .eq('empresa_id', empresaId)
+        .eq('pago', true)
+        .gte('data_pagamento', seteDiasAtras.toISOString())
+        .lte('data_pagamento', hoje.toISOString()),
+    ])
 
-    if (error) return { data: [], error: error.message }
+    if (vendasRes.error) return { data: [], error: vendasRes.error.message }
+
+    // Buscar custos das OS pagas
+    const osPagas = osPagasRes.data ?? []
+    const osPagasIds = osPagas.map((o: { id: string }) => o.id)
+    const custosPorOS: Record<string, number> = {}
+    if (osPagasIds.length > 0) {
+      const { data: itensOS } = await supabase
+        .from('itens_os')
+        .select('os_id, valor_custo, quantidade')
+        .in('os_id', osPagasIds)
+      for (const item of itensOS ?? []) {
+        custosPorOS[item.os_id] = (custosPorOS[item.os_id] || 0) + ((item.valor_custo || 0) * (item.quantidade || 0))
+      }
+    }
 
     // Agrupar por dia
     const porDia: Record<string, { total: number; custo: number }> = {}
@@ -208,11 +259,21 @@ export const dashboardService = {
     }
 
     // Somar vendas por dia
-    for (const venda of vendas ?? []) {
+    for (const venda of vendasRes.data ?? []) {
       const chave = venda.created_at.split('T')[0]
       if (porDia[chave]) {
         porDia[chave].total += venda.valor_total || 0
         porDia[chave].custo += venda.valor_custo_total || 0
+      }
+    }
+
+    // Somar OS pagas por dia
+    for (const os of osPagas) {
+      if (!os.data_pagamento) continue
+      const chave = os.data_pagamento.split('T')[0]
+      if (porDia[chave]) {
+        porDia[chave].total += os.valor_total || 0
+        porDia[chave].custo += custosPorOS[os.id] || 0
       }
     }
 

@@ -51,6 +51,7 @@ import {
   KeyRound,
   ShieldOff,
   Loader2,
+  Tag,
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -124,6 +125,9 @@ export default function EditarOSPage() {
   const [observacoes, setObservacoes] = useState('')
   const [diagnostico, setDiagnostico] = useState('')
 
+  // Desconto
+  const [desconto, setDesconto] = useState('')
+
   // Itens da OS
   const [itensOS, setItensOS] = useState<ItemOSLocal[]>([])
   const [itensRemovidos, setItensRemovidos] = useState<string[]>([]) // IDs dos itens removidos
@@ -178,6 +182,9 @@ export default function EditarOSPage() {
         setProblemaRelatado(os.problema_relatado || '')
         setObservacoes(os.observacoes || '')
         setDiagnostico(os.diagnostico || '')
+        if (os.valor_desconto && os.valor_desconto > 0) {
+          setDesconto(String(os.valor_desconto))
+        }
 
         // Carregar itens existentes
         if (os.itens && os.itens.length > 0) {
@@ -214,6 +221,9 @@ export default function EditarOSPage() {
     .reduce((acc, i) => acc + i.valor_unitario * i.quantidade, 0)
 
   const totalGeral = totalServicos + totalProdutos
+
+  const descontoValor = Math.min(Math.max(parseFloat(desconto) || 0, 0), totalGeral)
+  const totalFinal = totalGeral - descontoValor
 
   // Buscar cliente
   const clientesFiltrados = clientes.filter(c =>
@@ -332,7 +342,8 @@ export default function EditarOSPage() {
         diagnostico: diagnostico || null,
         valor_servicos: totalServicos,
         valor_produtos: totalProdutos,
-        valor_total: totalGeral,
+        valor_desconto: descontoValor,
+        valor_total: totalFinal,
       }
 
       const { error } = await ordensServicoService.atualizar(osId, osData as Partial<OrdemServico>)
@@ -911,10 +922,26 @@ export default function EditarOSPage() {
                     <span className="text-muted-foreground">Pecas/Produtos</span>
                     <span>{formatCurrency(totalProdutos)}</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Tag className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-sm text-muted-foreground shrink-0">Desconto</span>
+                    <div className="flex-1 flex items-center gap-1">
+                      <span className="text-sm text-muted-foreground">R$</span>
+                      <Input type="number" min="0" step="0.01" placeholder="0,00"
+                        value={desconto} onChange={(e) => setDesconto(e.target.value)}
+                        className="h-7 text-sm text-right" />
+                    </div>
+                  </div>
+                  {descontoValor > 0 && (
+                    <div className="flex justify-between text-sm text-red-500">
+                      <span>Desconto</span>
+                      <span>- {formatCurrency(descontoValor)}</span>
+                    </div>
+                  )}
                   <Separator />
                   <div className="flex justify-between font-medium text-lg">
                     <span>Total</span>
-                    <span className="text-green-600">{formatCurrency(totalGeral)}</span>
+                    <span className="text-green-600">{formatCurrency(totalFinal)}</span>
                   </div>
                 </div>
 

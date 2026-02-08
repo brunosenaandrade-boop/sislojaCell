@@ -24,42 +24,80 @@ export const relatoriosService = {
     const empresaId = getEmpresaId()
 
     try {
-      const { data: vendas, error } = await supabase
-        .from('vendas')
-        .select('created_at, valor_total, valor_custo_total')
-        .eq('empresa_id', empresaId)
-        .gte('created_at', dataInicio)
-        .lte('created_at', dataFim)
-        .order('created_at', { ascending: true })
+      const [vendasRes, osPagasRes] = await Promise.all([
+        supabase
+          .from('vendas')
+          .select('created_at, valor_total, valor_custo_total')
+          .eq('empresa_id', empresaId)
+          .eq('cancelada', false)
+          .gte('created_at', dataInicio)
+          .lte('created_at', dataFim)
+          .order('created_at', { ascending: true }),
+        supabase
+          .from('ordens_servico')
+          .select('id, data_pagamento, valor_total')
+          .eq('empresa_id', empresaId)
+          .eq('pago', true)
+          .gte('data_pagamento', dataInicio)
+          .lte('data_pagamento', dataFim)
+          .order('data_pagamento', { ascending: true }),
+      ])
 
-      if (error) return { data: [], error: error.message }
+      if (vendasRes.error) return { data: [], error: vendasRes.error.message }
+
+      // Buscar custos das OS pagas
+      const osPagas = osPagasRes.data ?? []
+      const osPagasIds = osPagas.map((o: { id: string }) => o.id)
+      const custosPorOS: Record<string, number> = {}
+      if (osPagasIds.length > 0) {
+        const { data: itensOS } = await supabase
+          .from('itens_os')
+          .select('os_id, valor_custo, quantidade')
+          .in('os_id', osPagasIds)
+        for (const item of itensOS ?? []) {
+          custosPorOS[item.os_id] = (custosPorOS[item.os_id] || 0) + ((item.valor_custo || 0) * (item.quantidade || 0))
+        }
+      }
+
+      // Helper para calcular chave do período
+      const getChave = (dateStr: string) => {
+        const data = new Date(dateStr)
+        if (agrupamento === 'dia') {
+          return data.toISOString().split('T')[0]
+        } else if (agrupamento === 'semana') {
+          const diaSemana = data.getDay()
+          const inicioSemana = new Date(data)
+          inicioSemana.setDate(data.getDate() - diaSemana)
+          return inicioSemana.toISOString().split('T')[0]
+        } else {
+          return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`
+        }
+      }
 
       // Agrupar conforme o tipo
       const agrupado: Record<string, { total_vendas: number; total_custo: number; quantidade_vendas: number }> = {}
 
-      for (const venda of vendas ?? []) {
-        const data = new Date(venda.created_at)
-        let chave: string
-
-        if (agrupamento === 'dia') {
-          chave = data.toISOString().split('T')[0]
-        } else if (agrupamento === 'semana') {
-          // Início da semana (domingo)
-          const diaSemana = data.getDay()
-          const inicioSemana = new Date(data)
-          inicioSemana.setDate(data.getDate() - diaSemana)
-          chave = inicioSemana.toISOString().split('T')[0]
-        } else {
-          // Mês
-          chave = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`
-        }
-
+      for (const venda of vendasRes.data ?? []) {
+        const chave = getChave(venda.created_at)
         if (!agrupado[chave]) {
           agrupado[chave] = { total_vendas: 0, total_custo: 0, quantidade_vendas: 0 }
         }
 
         agrupado[chave].total_vendas += venda.valor_total || 0
         agrupado[chave].total_custo += venda.valor_custo_total || 0
+        agrupado[chave].quantidade_vendas += 1
+      }
+
+      // Somar OS pagas
+      for (const os of osPagas) {
+        if (!os.data_pagamento) continue
+        const chave = getChave(os.data_pagamento)
+        if (!agrupado[chave]) {
+          agrupado[chave] = { total_vendas: 0, total_custo: 0, quantidade_vendas: 0 }
+        }
+
+        agrupado[chave].total_vendas += os.valor_total || 0
+        agrupado[chave].total_custo += custosPorOS[os.id] || 0
         agrupado[chave].quantidade_vendas += 1
       }
 
@@ -139,6 +177,7 @@ export const relatoriosService = {
         .from('vendas')
         .select('id')
         .eq('empresa_id', empresaId)
+        .eq('cancelada', false)
 
       if (dataInicio) {
         vendasQuery = vendasQuery.gte('created_at', dataInicio)

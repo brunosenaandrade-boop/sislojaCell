@@ -69,11 +69,12 @@ const statusLabels: Record<string, string> = {
   cancelada: 'Cancelada',
 }
 
+// Fluxo mais permissivo para ações rápidas no dashboard
 const statusFlow: Record<string, string[]> = {
-  aberta: ['em_analise', 'cancelada'],
-  em_analise: ['aguardando_peca', 'aguardando_aprovacao', 'em_andamento', 'cancelada'],
-  aguardando_peca: ['em_andamento', 'cancelada'],
-  aguardando_aprovacao: ['em_andamento', 'cancelada'],
+  aberta: ['em_analise', 'em_andamento', 'finalizada', 'cancelada'],
+  em_analise: ['aguardando_peca', 'aguardando_aprovacao', 'em_andamento', 'finalizada', 'cancelada'],
+  aguardando_peca: ['em_andamento', 'finalizada', 'cancelada'],
+  aguardando_aprovacao: ['em_andamento', 'finalizada', 'cancelada'],
   em_andamento: ['finalizada', 'aguardando_peca', 'cancelada'],
   finalizada: ['entregue'],
   entregue: [],
@@ -283,14 +284,14 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Vendas do Dia
+                Faturamento do Dia
               </CardTitle>
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <AnimatedCounter value={resumo.vendas_dia} formatter={formatCurrency} className="text-2xl font-bold" />
               <p className="text-xs text-muted-foreground">
-                {resumo.quantidade_vendas} vendas realizadas
+                {resumo.quantidade_vendas} vendas e OS realizadas
               </p>
             </CardContent>
           </Card>
@@ -299,14 +300,14 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Custo dos Produtos
+                Custos
               </CardTitle>
               <TrendingDown className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
               <AnimatedCounter value={resumo.custo_dia} formatter={formatCurrency} className="text-2xl font-bold text-red-600" />
               <p className="text-xs text-muted-foreground">
-                Custo total das vendas
+                Custo total de vendas e OS
               </p>
             </CardContent>
           </Card>
@@ -396,8 +397,8 @@ export default function DashboardPage() {
         {/* Gráfico de Vendas da Semana */}
         <Card>
           <CardHeader>
-            <CardTitle>Vendas da Semana</CardTitle>
-            <CardDescription>Vendas e lucro por dia da semana</CardDescription>
+            <CardTitle>Faturamento da Semana</CardTitle>
+            <CardDescription>Vendas, OS e lucro por dia da semana</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -429,7 +430,7 @@ export default function DashboardPage() {
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="total" name="Vendas" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="total" name="Faturamento" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="lucro" name="Lucro" fill="#22c55e" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>}

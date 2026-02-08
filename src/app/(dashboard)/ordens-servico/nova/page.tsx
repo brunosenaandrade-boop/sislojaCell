@@ -51,6 +51,7 @@ import {
   KeyRound,
   ShieldOff,
   Loader2,
+  Tag,
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -118,6 +119,9 @@ export default function NovaOSPage() {
   const [problemaRelatado, setProblemaRelatado] = useState('')
   const [observacoes, setObservacoes] = useState('')
 
+  // Desconto
+  const [desconto, setDesconto] = useState('')
+
   // Itens da OS
   const [itensOS, setItensOS] = useState<ItemOS[]>([])
   const [dialogServicoOpen, setDialogServicoOpen] = useState(false)
@@ -160,6 +164,9 @@ export default function NovaOSPage() {
     .reduce((acc, i) => acc + i.valor_unitario * i.quantidade, 0)
 
   const totalGeral = totalServicos + totalProdutos
+
+  const descontoValor = Math.min(Math.max(parseFloat(desconto) || 0, 0), totalGeral)
+  const totalFinal = totalGeral - descontoValor
 
   // Buscar cliente
   const clientesFiltrados = clientes.filter(c =>
@@ -275,8 +282,8 @@ export default function NovaOSPage() {
         observacoes: observacoes || undefined,
         valor_servicos: totalServicos,
         valor_produtos: totalProdutos,
-        valor_desconto: 0,
-        valor_total: totalGeral,
+        valor_desconto: descontoValor,
+        valor_total: totalFinal,
         status: 'aberta',
         pago: false,
         data_entrada: new Date().toISOString(),
@@ -828,10 +835,26 @@ export default function NovaOSPage() {
                     <span className="text-muted-foreground">Peças/Produtos</span>
                     <span>{formatCurrency(totalProdutos)}</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Tag className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-sm text-muted-foreground shrink-0">Desconto</span>
+                    <div className="flex-1 flex items-center gap-1">
+                      <span className="text-sm text-muted-foreground">R$</span>
+                      <Input type="number" min="0" step="0.01" placeholder="0,00"
+                        value={desconto} onChange={(e) => setDesconto(e.target.value)}
+                        className="h-7 text-sm text-right" />
+                    </div>
+                  </div>
+                  {descontoValor > 0 && (
+                    <div className="flex justify-between text-sm text-red-500">
+                      <span>Desconto</span>
+                      <span>- {formatCurrency(descontoValor)}</span>
+                    </div>
+                  )}
                   <Separator />
                   <div className="flex justify-between font-medium text-lg">
                     <span>Total</span>
-                    <span className="text-green-600">{formatCurrency(totalGeral)}</span>
+                    <span className="text-green-600">{formatCurrency(totalFinal)}</span>
                   </div>
                 </div>
 
