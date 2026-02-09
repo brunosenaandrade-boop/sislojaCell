@@ -20,24 +20,77 @@ export interface EmailResult {
   error?: string
 }
 
+/**
+ * Converte caracteres acentuados/especiais para HTML entities.
+ * Garante que o corpo do email renderize corretamente em qualquer client.
+ */
+function encodeHtmlEntities(str: string): string {
+  return str
+    .replace(/[\u00C0-\u024F\u1E00-\u1EFF]/g, (char) => `&#${char.charCodeAt(0)};`)
+    .replace(/[\u2000-\u206F\u2190-\u27BF\u{1F000}-\u{1FFFF}]/gu, (char) => {
+      const cp = char.codePointAt(0)
+      return cp ? `&#${cp};` : ''
+    })
+    .replace(/\u2014/g, '&#8212;') // em dash
+    .replace(/\u2013/g, '&#8211;') // en dash
+}
+
+/**
+ * Codifica o subject em MIME RFC 2047 (base64 UTF-8)
+ * para garantir que caracteres acentuados cheguem corretos.
+ */
+function encodeMimeSubject(subject: string): string {
+  const hasNonAscii = /[^\x00-\x7F]/.test(subject)
+  if (!hasNonAscii) return subject
+  const encoded = Buffer.from(subject, 'utf-8').toString('base64')
+  return `=?UTF-8?B?${encoded}?=`
+}
+
+/**
+ * Gera versão plain-text do HTML (fallback para email clients).
+ */
+function htmlToText(html: string): string {
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/h[1-6]>/gi, '\n\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&copy;/g, '(c)')
+    .replace(/&#\d+;/g, (entity) => {
+      const code = parseInt(entity.replace('&#', '').replace(';', ''))
+      return String.fromCodePoint(code)
+    })
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 async function sendEmail(to: string, subject: string, html: string): Promise<EmailResult> {
   const resend = getResend()
   if (!resend) {
-    console.warn('[Email] RESEND_API_KEY não configurada, email não enviado:', subject)
+    console.warn('[Email] RESEND_API_KEY n\u00e3o configurada, email n\u00e3o enviado:', subject)
     return { success: true } // fail-open em dev
   }
 
   try {
+    const safeHtml = encodeHtmlEntities(html)
+    const safeSubject = encodeMimeSubject(subject)
+    const textVersion = htmlToText(html)
+
     const { error } = await resend.emails.send({
       from: FROM_EMAIL,
       to,
-      subject,
-      html,
+      subject: safeSubject,
+      html: safeHtml,
+      text: textVersion,
       replyTo: REPLY_TO_EMAIL,
       headers: {
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'high',
+        'X-Mailer': 'CellFlow',
       },
     })
 
@@ -226,7 +279,7 @@ export const emailService = {
   // 10.8 - Indicação bem-sucedida
   async indicacaoSucesso(to: string, nomeEmpresa: string, nomeIndicado: string): Promise<EmailResult> {
     const html = emailLayout(`
-      <h1 style="font-size:24px;color:#16a34a;margin:0 0 16px;">Você ganhou 1 mês grátis! 🎉</h1>
+      <h1 style="font-size:24px;color:#16a34a;margin:0 0 16px;">Voc&#234; ganhou 1 m&#234;s gr&#225;tis!</h1>
       <p style="color:#52525b;font-size:14px;line-height:1.6;">
         Olá, <strong>${nomeEmpresa}</strong>!
       </p>
