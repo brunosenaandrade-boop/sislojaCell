@@ -14,36 +14,6 @@ const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'CellFlow <contato@cellflow.
 const REPLY_TO_EMAIL = process.env.RESEND_REPLY_TO || 'suporte@cellflow.com.br'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cellflow.com.br'
 
-// Converte caracteres acentuados para entidades HTML (compatível com todos os clientes de email)
-function encodeHtmlEntities(text: string): string {
-  return text
-    .replace(/á/g, '&aacute;')
-    .replace(/à/g, '&agrave;')
-    .replace(/ã/g, '&atilde;')
-    .replace(/â/g, '&acirc;')
-    .replace(/é/g, '&eacute;')
-    .replace(/ê/g, '&ecirc;')
-    .replace(/í/g, '&iacute;')
-    .replace(/ó/g, '&oacute;')
-    .replace(/ô/g, '&ocirc;')
-    .replace(/õ/g, '&otilde;')
-    .replace(/ú/g, '&uacute;')
-    .replace(/ü/g, '&uuml;')
-    .replace(/ç/g, '&ccedil;')
-    .replace(/Á/g, '&Aacute;')
-    .replace(/À/g, '&Agrave;')
-    .replace(/Ã/g, '&Atilde;')
-    .replace(/Â/g, '&Acirc;')
-    .replace(/É/g, '&Eacute;')
-    .replace(/Ê/g, '&Ecirc;')
-    .replace(/Í/g, '&Iacute;')
-    .replace(/Ó/g, '&Oacute;')
-    .replace(/Ô/g, '&Ocirc;')
-    .replace(/Õ/g, '&Otilde;')
-    .replace(/Ú/g, '&Uacute;')
-    .replace(/Ü/g, '&Uuml;')
-    .replace(/Ç/g, '&Ccedil;')
-}
 
 export interface EmailResult {
   success: boolean
@@ -89,7 +59,6 @@ async function sendEmail(to: string, subject: string, html: string): Promise<Ema
 // ============================================
 
 function emailLayout(content: string) {
-  const encodedContent = encodeHtmlEntities(content)
   return `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -107,7 +76,7 @@ function emailLayout(content: string) {
     </div>
     <!-- Content -->
     <div style="background-color:#fff;border-radius:12px;padding:32px;border:1px solid #e4e4e7;">
-      ${encodedContent}
+      ${content}
     </div>
     <!-- Footer -->
     <div style="text-align:center;padding:20px 0;color:#71717a;font-size:12px;">
