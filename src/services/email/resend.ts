@@ -273,4 +273,21 @@ export const emailService = {
     `)
     return sendEmail(to, `[CellFlow] Parabéns! +1 mês grátis por indicação`, html)
   },
+
+  // 10.9 - Aviso de renovação próxima
+  async assinaturaRenovando(to: string, nomeEmpresa: string, valor: number, dataVencimento: string, diasRestantes: number): Promise<EmailResult> {
+    const valorFmt = valor.toFixed(2).replace('.', ',')
+    const html = emailLayout(`
+      <h1 style="font-size:24px;color:#f59e0b;margin:0 0 16px;">Renovação em ${diasRestantes} dia${diasRestantes > 1 ? 's' : ''}</h1>
+      <p style="color:#52525b;font-size:14px;line-height:1.6;">
+        Olá, <strong>${nomeEmpresa}</strong>!
+      </p>
+      <p style="color:#52525b;font-size:14px;line-height:1.6;">
+        Sua fatura de <strong>R$ ${valorFmt}</strong> vence em <strong>${dataVencimento}</strong>.
+        Certifique-se de que o pagamento esteja em dia para evitar interrupção no acesso.
+      </p>
+      ${ctaButton('Ver Meu Plano', `${APP_URL}/planos`)}
+    `)
+    return sendEmail(to, `[CellFlow] Sua fatura vence em ${diasRestantes} dia${diasRestantes > 1 ? 's' : ''}`, html)
+  },
 }

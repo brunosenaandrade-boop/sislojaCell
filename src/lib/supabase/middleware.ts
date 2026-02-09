@@ -197,7 +197,7 @@ export async function updateSession(request: NextRequest) {
     if (usuario?.empresa_id) {
       const { data: empresa } = await dbAssinatura
         .from('empresas')
-        .select('status_assinatura, trial_fim, meses_bonus, onboarding_completo')
+        .select('status_assinatura, trial_fim, meses_bonus, grace_period_fim, onboarding_completo')
         .eq('id', usuario.empresa_id)
         .single()
 
@@ -237,6 +237,14 @@ export async function updateSession(request: NextRequest) {
           // 4.5 - Se tem meses bônus, não bloqueia (consumido no webhook)
           if ((empresa.meses_bonus || 0) > 0) {
             return supabaseResponse
+          }
+
+          // 4.6 - Grace period: se overdue mas ainda dentro do prazo de 3 dias, permite acesso
+          if (status === 'overdue' && empresa.grace_period_fim) {
+            const graceFim = new Date(empresa.grace_period_fim as string)
+            if (graceFim > new Date()) {
+              return supabaseResponse
+            }
           }
 
           const url = request.nextUrl.clone()

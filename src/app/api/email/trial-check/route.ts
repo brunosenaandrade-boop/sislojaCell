@@ -91,6 +91,72 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
+    // AVISO DE RENOVAÇÃO - Faturas vencendo em 7, 3 e 1 dias
+    // ============================================
+    let avisosRenovacao = 0
+    for (const dias of [7, 3, 1]) {
+      const dataLimite = new Date(agora)
+      dataLimite.setDate(dataLimite.getDate() + dias)
+      const inicioJanela = new Date(dataLimite)
+      inicioJanela.setHours(0, 0, 0, 0)
+      const fimJanela = new Date(dataLimite)
+      fimJanela.setHours(23, 59, 59, 999)
+
+      const { data: faturasPendentes } = await supabase
+        .from('faturas')
+        .select('empresa_id, valor, data_vencimento')
+        .eq('status', 'pending')
+        .gte('data_vencimento', inicioJanela.toISOString().split('T')[0])
+        .lte('data_vencimento', fimJanela.toISOString().split('T')[0])
+
+      if (faturasPendentes) {
+        for (const fatura of faturasPendentes) {
+          const { data: empresa } = await supabase
+            .from('empresas')
+            .select('email, nome, nome_fantasia, status_assinatura')
+            .eq('id', fatura.empresa_id)
+            .eq('status_assinatura', 'active')
+            .maybeSingle()
+
+          if (empresa?.email) {
+            await emailService.assinaturaRenovando(
+              empresa.email,
+              empresa.nome_fantasia || empresa.nome,
+              fatura.valor,
+              new Date(fatura.data_vencimento + 'T00:00:00').toLocaleDateString('pt-BR'),
+              dias
+            )
+            avisosRenovacao++
+          }
+        }
+      }
+    }
+
+    // ============================================
+    // GRACE PERIOD EXPIRADO - Suspender empresas
+    // ============================================
+    let gracePeriodExpirados = 0
+    const { data: empresasGrace } = await supabase
+      .from('empresas')
+      .select('id, email, nome, nome_fantasia')
+      .eq('status_assinatura', 'overdue')
+      .lt('grace_period_fim', agora.toISOString())
+      .not('grace_period_fim', 'is', null)
+
+    if (empresasGrace) {
+      for (const empresa of empresasGrace) {
+        await supabase
+          .from('empresas')
+          .update({
+            status_assinatura: 'suspended',
+            grace_period_fim: null,
+          })
+          .eq('id', empresa.id)
+        gracePeriodExpirados++
+      }
+    }
+
+    // ============================================
     // INDICAÇÕES - Qualificar aguardando há 30+ dias
     // ============================================
     const indicacoesQualificadas = await verificarIndicacoesAguardando(supabase)
@@ -99,6 +165,8 @@ export async function POST(request: NextRequest) {
       success: true,
       emails_enviados: emailsEnviados,
       trials_expirados: expiradas?.length || 0,
+      avisos_renovacao: avisosRenovacao,
+      grace_period_expirados: gracePeriodExpirados,
       indicacoes_qualificadas: indicacoesQualificadas,
     })
   } catch (err) {

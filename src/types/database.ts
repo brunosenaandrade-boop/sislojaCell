@@ -27,6 +27,7 @@ export interface Empresa {
   plano: string
   status_assinatura: StatusAssinatura
   trial_fim?: string
+  grace_period_fim?: string
   assinatura_id?: string
   codigo_indicacao?: string
   indicada_por?: string

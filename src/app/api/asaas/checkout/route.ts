@@ -309,6 +309,15 @@ export async function POST(request: NextRequest) {
       ? null // Checkout transparente: não precisa de URL externa
       : invoiceUrl || `${process.env.ASAAS_API_URL?.replace('/api/v3', '')}/c/${subscription.id}` || null
 
+    // Calcular data_fim baseado no ciclo
+    const dataFim = new Date()
+    switch (billingCycle) {
+      case 'MONTHLY': dataFim.setMonth(dataFim.getMonth() + 1); break
+      case 'QUARTERLY': dataFim.setMonth(dataFim.getMonth() + 3); break
+      case 'SEMIANNUALLY': dataFim.setMonth(dataFim.getMonth() + 6); break
+      case 'YEARLY': dataFim.setFullYear(dataFim.getFullYear() + 1); break
+    }
+
     // Criar registro da assinatura no banco
     const { error: assinaturaDbErr } = await serviceClient.from('assinaturas').insert({
       empresa_id: empresa.id,
@@ -316,6 +325,7 @@ export async function POST(request: NextRequest) {
       status: 'pending',
       ciclo: billingCycle,
       valor,
+      data_fim: dataFim.toISOString(),
       asaas_subscription_id: subscription.id,
       asaas_customer_id: asaasCustomerId,
     })

@@ -112,6 +112,16 @@ export async function POST(request: NextRequest) {
         break
       }
 
+      // ============================================
+      // Eventos de SUBSCRIPTION (assinatura)
+      // ============================================
+      case 'SUBSCRIPTION_DELETED':
+      case 'SUBSCRIPTION_CANCELLED':
+      case 'SUBSCRIPTION_EXPIRED': {
+        processado = await handleSubscriptionCancelled(supabase, payload)
+        break
+      }
+
       default:
         // Evento não tratado - apenas logado
         processado = true
@@ -358,23 +368,39 @@ async function handlePaymentReceived(
   if (empresa.status_assinatura !== 'active') {
     await supabase
       .from('empresas')
-      .update({ status_assinatura: 'active' })
+      .update({
+        status_assinatura: 'active',
+        grace_period_fim: null,
+      })
       .eq('id', empresa.id)
   }
 
-  // Ativar assinatura também
-  if (subscriptionId) {
+  // Ativar assinatura e renovar data_fim
+  const assinaturaFilter = subscriptionId
+    ? supabase.from('assinaturas').select('id, ciclo').eq('asaas_subscription_id', subscriptionId).maybeSingle()
+    : supabase.from('assinaturas').select('id, ciclo').eq('empresa_id', empresa.id).in('status', ['pending', 'active']).order('created_at', { ascending: false }).limit(1).maybeSingle()
+
+  const { data: assinaturaAtual } = await assinaturaFilter
+
+  if (assinaturaAtual) {
+    // Calcular nova data_fim baseado no ciclo
+    const novaDataFim = new Date()
+    switch (assinaturaAtual.ciclo) {
+      case 'MONTHLY': novaDataFim.setMonth(novaDataFim.getMonth() + 1); break
+      case 'QUARTERLY': novaDataFim.setMonth(novaDataFim.getMonth() + 3); break
+      case 'SEMIANNUALLY': novaDataFim.setMonth(novaDataFim.getMonth() + 6); break
+      case 'YEARLY': novaDataFim.setFullYear(novaDataFim.getFullYear() + 1); break
+    }
+
+    await supabase
+      .from('assinaturas')
+      .update({ status: 'active', data_fim: novaDataFim.toISOString() })
+      .eq('id', assinaturaAtual.id)
+  } else if (subscriptionId) {
     await supabase
       .from('assinaturas')
       .update({ status: 'active' })
       .eq('asaas_subscription_id', subscriptionId)
-  } else {
-    // Ativar assinatura pendente mais recente da empresa
-    await supabase
-      .from('assinaturas')
-      .update({ status: 'active' })
-      .eq('empresa_id', empresa.id)
-      .eq('status', 'pending')
   }
 
   // 10.5 - Email: pagamento confirmado
@@ -407,10 +433,10 @@ async function handlePaymentOverdue(
     .update({ status: 'overdue' })
     .eq('asaas_payment_id', paymentId)
 
-  // Marcar empresa como overdue
+  // Marcar empresa como overdue (com grace period de 3 dias)
   const { data: empresa } = await supabase
     .from('empresas')
-    .select('id, nome, nome_fantasia, email, meses_bonus')
+    .select('id, nome, nome_fantasia, email, meses_bonus, grace_period_fim')
     .eq('asaas_customer_id', customerId)
     .single()
 
@@ -430,15 +456,27 @@ async function handlePaymentOverdue(
 
     // Se nenhuma row foi atualizada, o bônus já foi consumido por outro request
     if (count === 0) {
+      // Iniciar grace period de 3 dias em vez de bloquear imediatamente
+      const gracePeriodFim = new Date()
+      gracePeriodFim.setDate(gracePeriodFim.getDate() + 3)
       await supabase
         .from('empresas')
-        .update({ status_assinatura: 'overdue' })
+        .update({
+          status_assinatura: 'overdue',
+          grace_period_fim: gracePeriodFim.toISOString(),
+        })
         .eq('id', empresa.id)
     }
   } else {
+    // Iniciar grace period de 3 dias em vez de bloquear imediatamente
+    const gracePeriodFim = new Date()
+    gracePeriodFim.setDate(gracePeriodFim.getDate() + 3)
     await supabase
       .from('empresas')
-      .update({ status_assinatura: 'overdue' })
+      .update({
+        status_assinatura: 'overdue',
+        grace_period_fim: gracePeriodFim.toISOString(),
+      })
       .eq('id', empresa.id)
 
     // 10.6 - Email: pagamento vencido
@@ -622,6 +660,78 @@ async function handlePaymentRefunded(
 
     await cancelarIndicacaoPendente(supabase, empresa.id)
   }
+
+  return true
+}
+
+async function handleSubscriptionCancelled(
+  supabase: SupabaseClient,
+  payload: Record<string, unknown>
+): Promise<boolean> {
+  const subscription = (payload.subscription || payload) as Record<string, unknown>
+  const subscriptionId = subscription?.id as string | undefined
+  const customerId = subscription?.customer as string | undefined
+
+  if (!subscriptionId && !customerId) return false
+
+  // Buscar empresa
+  let empresa = null
+
+  if (subscriptionId) {
+    const { data: assinatura } = await supabase
+      .from('assinaturas')
+      .select('empresa_id')
+      .eq('asaas_subscription_id', subscriptionId)
+      .maybeSingle()
+
+    if (assinatura?.empresa_id) {
+      const { data } = await supabase
+        .from('empresas')
+        .select('id, email, nome, nome_fantasia')
+        .eq('id', assinatura.empresa_id)
+        .single()
+      empresa = data
+    }
+  }
+
+  if (!empresa && customerId) {
+    const { data } = await supabase
+      .from('empresas')
+      .select('id, email, nome, nome_fantasia')
+      .eq('asaas_customer_id', customerId)
+      .maybeSingle()
+    empresa = data
+  }
+
+  if (!empresa) return false
+
+  // Atualizar status da empresa
+  await supabase
+    .from('empresas')
+    .update({ status_assinatura: 'cancelled' })
+    .eq('id', empresa.id)
+
+  // Atualizar assinatura local
+  if (subscriptionId) {
+    await supabase
+      .from('assinaturas')
+      .update({
+        status: 'cancelled',
+        data_cancelamento: new Date().toISOString(),
+      })
+      .eq('asaas_subscription_id', subscriptionId)
+  }
+
+  // Enviar email de cancelamento
+  if (empresa.email) {
+    emailService.assinaturaCancelada(
+      empresa.email,
+      empresa.nome_fantasia || empresa.nome
+    ).catch(() => {})
+  }
+
+  // Cancelar indicações pendentes
+  await cancelarIndicacaoPendente(supabase, empresa.id)
 
   return true
 }
