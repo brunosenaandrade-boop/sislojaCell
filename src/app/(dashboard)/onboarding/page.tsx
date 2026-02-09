@@ -210,7 +210,9 @@ export default function OnboardingPage() {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="mb-8 text-center">
-          <img src="/logo.jpeg" alt="CellFlow" className="mx-auto mb-4 h-12 w-12 rounded-xl object-cover" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-lg font-bold text-white">
+            CF
+          </div>
           <h1 className="text-2xl font-bold">Configurar sua loja</h1>
           <p className="text-muted-foreground">
             Complete os passos abaixo para começar a usar o sistema
@@ -228,7 +230,7 @@ export default function OnboardingPage() {
                       i < currentStep
                         ? 'bg-green-600 text-white'
                         : i === currentStep
-                          ? 'bg-violet-600 text-white'
+                          ? 'bg-blue-600 text-white'
                           : 'bg-muted text-muted-foreground'
                     }`}
                   >
@@ -413,7 +415,7 @@ export default function OnboardingPage() {
                       onClick={() => setTipoImpressora('térmica')}
                       className={`rounded-lg border-2 p-4 text-center transition-colors ${
                         tipoImpressora === 'térmica'
-                          ? 'border-violet-600 bg-violet-50'
+                          ? 'border-blue-600 bg-blue-50'
                           : 'border-muted hover:border-gray-300'
                       }`}
                     >
@@ -426,7 +428,7 @@ export default function OnboardingPage() {
                       onClick={() => setTipoImpressora('padrão')}
                       className={`rounded-lg border-2 p-4 text-center transition-colors ${
                         tipoImpressora === 'padrão'
-                          ? 'border-violet-600 bg-violet-50'
+                          ? 'border-blue-600 bg-blue-50'
                           : 'border-muted hover:border-gray-300'
                       }`}
                     >
@@ -446,7 +448,7 @@ export default function OnboardingPage() {
                         onClick={() => setLarguraPapel('58')}
                         className={`rounded-lg border-2 p-3 text-center transition-colors ${
                           larguraPapel === '58'
-                            ? 'border-violet-600 bg-violet-50'
+                            ? 'border-blue-600 bg-blue-50'
                             : 'border-muted hover:border-gray-300'
                         }`}
                       >
@@ -457,7 +459,7 @@ export default function OnboardingPage() {
                         onClick={() => setLarguraPapel('80')}
                         className={`rounded-lg border-2 p-3 text-center transition-colors ${
                           larguraPapel === '80'
-                            ? 'border-violet-600 bg-violet-50'
+                            ? 'border-blue-600 bg-blue-50'
                             : 'border-muted hover:border-gray-300'
                         }`}
                       >
@@ -503,7 +505,7 @@ export default function OnboardingPage() {
                     onClick={() => setCadastroTipo('produto')}
                     className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                       cadastroTipo === 'produto'
-                        ? 'bg-violet-600 text-white'
+                        ? 'bg-blue-600 text-white'
                         : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     }`}
                   >
@@ -514,7 +516,7 @@ export default function OnboardingPage() {
                     onClick={() => setCadastroTipo('servico')}
                     className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                       cadastroTipo === 'servico'
-                        ? 'bg-violet-600 text-white'
+                        ? 'bg-blue-600 text-white'
                         : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     }`}
                   >

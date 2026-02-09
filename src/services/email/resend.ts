@@ -71,7 +71,7 @@ function emailLayout(content: string) {
   <div style="max-width:600px;margin:0 auto;padding:20px;">
     <!-- Header -->
     <div style="text-align:center;padding:20px 0;">
-      <div style="display:inline-block;background-color:#7C3AED;color:#fff;font-weight:bold;font-size:14px;padding:8px 12px;border-radius:8px;">CF</div>
+      <div style="display:inline-block;background-color:#2563eb;color:#fff;font-weight:bold;font-size:14px;padding:8px 12px;border-radius:8px;">CF</div>
       <span style="margin-left:8px;font-size:18px;font-weight:600;color:#111;">CellFlow</span>
     </div>
     <!-- Content -->
@@ -81,7 +81,7 @@ function emailLayout(content: string) {
     <!-- Footer -->
     <div style="text-align:center;padding:20px 0;color:#71717a;font-size:12px;">
       <p>&copy; ${new Date().getFullYear()} CellFlow. Todos os direitos reservados.</p>
-      <p><a href="${APP_URL}" style="color:#7C3AED;text-decoration:none;">${APP_URL}</a></p>
+      <p><a href="${APP_URL}" style="color:#2563eb;text-decoration:none;">${APP_URL}</a></p>
     </div>
   </div>
 </body>
@@ -90,7 +90,7 @@ function emailLayout(content: string) {
 
 function ctaButton(text: string, url: string) {
   return `<div style="text-align:center;margin:24px 0;">
-    <a href="${url}" style="display:inline-block;background-color:#7C3AED;color:#fff;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;">${text}</a>
+    <a href="${url}" style="display:inline-block;background-color:#2563eb;color:#fff;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;">${text}</a>
   </div>`
 }
 

@@ -255,7 +255,7 @@ export function Sidebar() {
               ) : (
                 <div
                   className="flex h-8 w-8 items-center justify-center rounded text-white font-bold"
-                  style={{ backgroundColor: empresa?.cor_primaria || '#7C3AED' }}
+                  style={{ backgroundColor: empresa?.cor_primaria || '#3B82F6' }}
                 >
                   {(empresa?.nome_fantasia || empresa?.nome || 'L')[0]}
                 </div>

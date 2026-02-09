@@ -349,7 +349,7 @@ export default function ProdutosPage() {
                               margem >= 50
                                 ? 'text-green-600 border-green-600'
                                 : margem >= 30
-                                ? 'text-violet-600 border-violet-600'
+                                ? 'text-blue-600 border-blue-600'
                                 : 'text-orange-600 border-orange-600'
                             }
                           >

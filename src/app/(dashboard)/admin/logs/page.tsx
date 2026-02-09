@@ -77,7 +77,7 @@ function TipoBadge({ tipo }: { tipo: string }) {
       )
     case 'info':
       return (
-        <Badge className="gap-1 bg-violet-500 hover:bg-violet-600 text-white">
+        <Badge className="gap-1 bg-blue-500 hover:bg-blue-600 text-white">
           <Info className="h-3 w-3" />
           Info
         </Badge>
@@ -134,7 +134,7 @@ function LogDetailPanel({ log }: { log: LogEntry }) {
             <div>
               <span className="text-muted-foreground">Endpoint: </span>
               <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
-                {method && <span className="text-violet-500 font-semibold">{method} </span>}
+                {method && <span className="text-blue-500 font-semibold">{method} </span>}
                 {endpoint}
               </code>
             </div>

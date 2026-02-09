@@ -504,7 +504,7 @@ function EstoqueContent() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-violet-600"
+                                className="h-8 w-8 text-blue-600"
                                 onClick={() => abrirMovimentacao('ajuste', produto.id)}
                                 title="Definir estoque"
                               >
@@ -648,7 +648,7 @@ function EstoqueContent() {
                 ) : movTipo === 'saida' ? (
                   <><ArrowDownCircle className="h-5 w-5 text-red-600" /> Saída de Estoque</>
                 ) : (
-                  <><RefreshCw className="h-5 w-5 text-violet-600" /> Definir Estoque</>
+                  <><RefreshCw className="h-5 w-5 text-blue-600" /> Definir Estoque</>
                 )}
               </DialogTitle>
               <DialogDescription>
@@ -740,7 +740,7 @@ function EstoqueContent() {
               <Button
                 onClick={handleSalvarMovimentacao}
                 disabled={isSaving}
-                className={movTipo === 'entrada' ? 'bg-green-600 hover:bg-green-700' : movTipo === 'ajuste' ? 'bg-violet-600 hover:bg-violet-700' : ''}
+                className={movTipo === 'entrada' ? 'bg-green-600 hover:bg-green-700' : movTipo === 'ajuste' ? 'bg-blue-600 hover:bg-blue-700' : ''}
                 variant={movTipo === 'saida' ? 'destructive' : 'default'}
               >
                 {isSaving ? 'Salvando...' : 'Confirmar'}

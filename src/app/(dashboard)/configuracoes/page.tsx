@@ -832,7 +832,7 @@ export default function ConfiguracoesPage() {
                             whatsapp: whatsapp || undefined, endereco: enderecoEmpresa || undefined,
                             cidade: cidadeEmpresa || undefined, estado: estadoEmpresa || undefined,
                             cep: cepEmpresa || undefined, logo_url: logoPreview || undefined,
-                            cor_primaria: '#7C3AED', cor_secundaria: '#5B21B6',
+                            cor_primaria: '#2563eb', cor_secundaria: '#1e40af',
                             ativo: true, created_at: '', updated_at: '',
                           } as Empresa}
                           operador="Operador"
@@ -873,7 +873,7 @@ export default function ConfiguracoesPage() {
                             whatsapp: whatsapp || undefined, endereco: enderecoEmpresa || undefined,
                             cidade: cidadeEmpresa || undefined, estado: estadoEmpresa || undefined,
                             cep: cepEmpresa || undefined, logo_url: logoPreview || undefined,
-                            cor_primaria: '#7C3AED', cor_secundaria: '#5B21B6',
+                            cor_primaria: '#2563eb', cor_secundaria: '#1e40af',
                             ativo: true, created_at: '', updated_at: '',
                           } as Empresa}
                           operador="Operador"
@@ -913,7 +913,7 @@ export default function ConfiguracoesPage() {
                             whatsapp: whatsapp || undefined, endereco: enderecoEmpresa || undefined,
                             cidade: cidadeEmpresa || undefined, estado: estadoEmpresa || undefined,
                             cep: cepEmpresa || undefined, logo_url: logoPreview || undefined,
-                            cor_primaria: '#7C3AED', cor_secundaria: '#5B21B6',
+                            cor_primaria: '#2563eb', cor_secundaria: '#1e40af',
                             ativo: true, created_at: '', updated_at: '',
                           } as Empresa}
                           operador="Operador"

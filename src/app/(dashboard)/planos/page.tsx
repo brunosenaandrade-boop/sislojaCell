@@ -74,7 +74,7 @@ interface AssinaturaResponse {
 }
 
 const statusLabels: Record<string, { label: string; color: string }> = {
-  trial: { label: 'Trial Grátis', color: 'bg-violet-100 text-violet-700' },
+  trial: { label: 'Trial Grátis', color: 'bg-blue-100 text-blue-700' },
   active: { label: 'Ativa', color: 'bg-green-100 text-green-700' },
   overdue: { label: 'Pagamento Pendente', color: 'bg-yellow-100 text-yellow-700' },
   suspended: { label: 'Suspensa', color: 'bg-red-100 text-red-700' },
@@ -241,7 +241,7 @@ function PlanosContent() {
             {isTrial && data?.empresa?.trial_dias_restantes !== undefined && (
               <div>
                 <p className="text-sm text-muted-foreground">Dias Restantes</p>
-                <p className={`text-lg font-semibold ${data.empresa.trial_dias_restantes <= 2 ? 'text-red-600' : 'text-violet-600'}`}>
+                <p className={`text-lg font-semibold ${data.empresa.trial_dias_restantes <= 2 ? 'text-red-600' : 'text-blue-600'}`}>
                   {data.empresa.trial_dias_restantes} dias
                 </p>
               </div>
@@ -304,7 +304,7 @@ function PlanosContent() {
 
       {/* Subscribe Card */}
       {canSubscribe && (
-        <Card className="border-violet-200">
+        <Card className="border-blue-200">
           <CardContent className="pt-6">
             <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
               <div>
@@ -356,7 +356,7 @@ function PlanosContent() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Gift className="h-5 w-5 text-violet-600" />
+              <Gift className="h-5 w-5 text-blue-600" />
               Programa de Indicação
             </CardTitle>
           </CardHeader>
@@ -422,7 +422,7 @@ function PlanosContent() {
                               href={fatura.link_pix || fatura.link_boleto || '#'}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-violet-600 hover:underline"
+                              className="flex items-center gap-1 text-blue-600 hover:underline"
                             >
                               <ExternalLink className="h-3 w-3" />
                               Pagar

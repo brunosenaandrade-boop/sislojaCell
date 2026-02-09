@@ -62,7 +62,7 @@ import {
 import { toast } from 'sonner'
 import Link from 'next/link'
 
-const COLORS = ['#7C3AED', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
 const formatCurrency = (v: number | string) =>
   `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
@@ -416,7 +416,7 @@ export default function FinanceiroAdminPage() {
                         <Line
                           type="monotone"
                           dataKey="mrr"
-                          stroke="#7C3AED"
+                          stroke="#3b82f6"
                           strokeWidth={2}
                           dot={{ r: 4 }}
                           activeDot={{ r: 6 }}

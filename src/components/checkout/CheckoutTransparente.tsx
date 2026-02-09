@@ -468,7 +468,7 @@ export function CheckoutTransparente({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md">
           <div className="flex flex-col items-center gap-4 py-12">
-            <Loader2 className="h-12 w-12 animate-spin text-violet-600" />
+            <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
             <p className="text-sm text-muted-foreground">Processando pagamento...</p>
           </div>
         </DialogContent>
@@ -566,7 +566,7 @@ export function CheckoutTransparente({
           {/* ===== ABA PIX ===== */}
           <TabsContent value="PIX" className="space-y-4">
             <div className="rounded-lg border bg-muted/30 p-4 text-center">
-              <QrCode className="mx-auto mb-2 h-12 w-12 text-violet-600" />
+              <QrCode className="mx-auto mb-2 h-12 w-12 text-blue-600" />
               <p className="text-sm font-medium">Pagamento instantâneo via PIX</p>
               <p className="text-xs text-muted-foreground">
                 O QR Code será gerado ao clicar no botão abaixo
