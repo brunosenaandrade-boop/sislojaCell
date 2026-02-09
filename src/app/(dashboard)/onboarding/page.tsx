@@ -210,9 +210,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-lg font-bold text-white">
-            CF
-          </div>
+          <img src="/logo.jpeg" alt="CellFlow" className="mx-auto mb-4 h-12 w-12 rounded-xl object-cover" />
           <h1 className="text-2xl font-bold">Configurar sua loja</h1>
           <p className="text-muted-foreground">
             Complete os passos abaixo para começar a usar o sistema
