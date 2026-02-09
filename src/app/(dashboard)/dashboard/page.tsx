@@ -92,8 +92,16 @@ interface DashboardResumo {
 }
 
 export default function DashboardPage() {
-  const { usuario } = useAuthStore()
+  const { usuario, empresa } = useAuthStore()
   const router = useRouter()
+
+  // Superadmin sem impersonação não tem empresa real - redirecionar para /admin
+  useEffect(() => {
+    if (usuario?.perfil === 'superadmin' && (!empresa?.id || empresa.id === 'superadmin')) {
+      router.replace('/admin')
+    }
+  }, [usuario, empresa, router])
+
   const [resumo, setResumo] = useState<DashboardResumo>({
     vendas_dia: 0,
     custo_dia: 0,
@@ -121,6 +129,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsMounted(true)
+
+    // Não carregar dados se for superadmin sem empresa real
+    if (usuario?.perfil === 'superadmin' && (!empresa?.id || empresa.id === 'superadmin')) {
+      setIsLoading(false)
+      return
+    }
+
     const fetchData = async () => {
       setIsLoading(true)
       try {

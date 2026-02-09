@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
-import { Search, PlayCircle, Lightbulb, BookOpen, CheckCircle2 } from 'lucide-react'
+import { Search, PlayCircle, Lightbulb, BookOpen, CheckCircle2, MessageCircle, Camera, Mic, Video } from 'lucide-react'
 import { categoriasAjuda, buscarNaAjuda, type CategoriaAjuda } from '@/data/helpData'
 import { useTutorial } from '@/components/tutorial/TutorialProvider'
 
@@ -56,6 +56,49 @@ export default function AjudaPage() {
             className="pl-9"
           />
         </div>
+
+        {/* Suporte Direto via WhatsApp */}
+        <Card className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <h3 className="font-semibold text-green-800 dark:text-green-300">
+                    Suporte Direto via WhatsApp
+                  </h3>
+                </div>
+                <p className="text-sm text-green-700 dark:text-green-400 mb-3">
+                  Precisa de ajuda? Fale diretamente com nosso suporte. Para agilizar o atendimento, ao relatar um problema:
+                </p>
+                <div className="flex flex-wrap gap-3 text-xs text-green-700 dark:text-green-400">
+                  <span className="flex items-center gap-1">
+                    <Camera className="h-3.5 w-3.5" />
+                    Envie prints da tela do erro
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Mic className="h-3.5 w-3.5" />
+                    Grave um audio explicando o ocorrido
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Video className="h-3.5 w-3.5" />
+                    Ou grave um video mostrando o problema
+                  </span>
+                </div>
+              </div>
+              <a
+                href="https://wa.me/5548998649898?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20o%20CellFlow"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="bg-green-600 hover:bg-green-700 text-white shrink-0 w-full sm:w-auto">
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Chamar no WhatsApp
+                </Button>
+              </a>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Resultados de busca ou Tabs */}
         {busca.trim() ? (
