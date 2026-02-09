@@ -14,7 +14,7 @@ export default function TermosPage() {
       <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-600 text-sm font-bold text-white">
               CF
             </div>
             <span className="text-lg font-semibold">CellFlow</span>
@@ -28,7 +28,7 @@ export default function TermosPage() {
             </Link>
             <Link
               href="/cadastro"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700"
             >
               Começar Grátis
             </Link>
@@ -178,7 +178,7 @@ export default function TermosPage() {
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600 text-xs font-bold text-white">
                 CF
               </div>
               <span className="text-sm font-medium text-white">CellFlow</span>

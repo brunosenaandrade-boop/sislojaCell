@@ -40,7 +40,7 @@ export function AnnouncementBanner() {
       case 'important':
         return { bg: 'bg-red-50 border-red-200', text: 'text-red-800', icon: Bell, iconColor: 'text-red-600' }
       default:
-        return { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-800', icon: Info, iconColor: 'text-blue-600' }
+        return { bg: 'bg-violet-50 border-violet-200', text: 'text-violet-800', icon: Info, iconColor: 'text-violet-600' }
     }
   }
 

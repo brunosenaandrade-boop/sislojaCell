@@ -150,8 +150,8 @@ export default function EmpresasAdminPage() {
       nome: empresa.nome,
       nome_fantasia: empresa.nome_fantasia,
       cnpj: empresa.cnpj,
-      cor_primaria: empresa.cor_primaria || '#3B82F6',
-      cor_secundaria: empresa.cor_secundaria || '#1e40af',
+      cor_primaria: empresa.cor_primaria || '#7C3AED',
+      cor_secundaria: empresa.cor_secundaria || '#5B21B6',
       ativo: empresa.ativo,
       plano: empresa.plano || 'free',
       status_assinatura: empresa.status_assinatura || 'trial',
@@ -361,7 +361,7 @@ export default function EmpresasAdminPage() {
                               setTrialDialogOpen(true)
                             }}
                           >
-                            <Clock className="h-4 w-4 text-blue-600" />
+                            <Clock className="h-4 w-4 text-violet-600" />
                           </Button>
                           <Button
                             variant="ghost"

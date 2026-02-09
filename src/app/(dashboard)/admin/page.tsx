@@ -98,7 +98,7 @@ export default function AdminDashboardPage() {
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 
   const platformCards = [
-    { title: 'Total de Empresas', value: stats?.total_empresas ?? 0, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { title: 'Total de Empresas', value: stats?.total_empresas ?? 0, icon: Building2, color: 'text-violet-600', bg: 'bg-violet-50' },
     { title: 'Empresas Ativas', value: stats?.empresas_ativas ?? 0, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
     { title: 'Total de Usuários', value: stats?.total_usuarios ?? 0, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
     { title: 'Ordens de Serviço', value: stats?.total_os ?? 0, icon: FileText, color: 'text-orange-600', bg: 'bg-orange-50' },
@@ -159,8 +159,8 @@ export default function AdminDashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Assinantes Ativos</CardTitle>
-                  <div className="rounded-lg p-2 bg-blue-50">
-                    <CreditCard className="h-4 w-4 text-blue-600" />
+                  <div className="rounded-lg p-2 bg-violet-50">
+                    <CreditCard className="h-4 w-4 text-violet-600" />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -223,7 +223,7 @@ export default function AdminDashboardPage() {
                     const total = Object.values(saasStats.status_distribuicao).reduce((a, b) => a + b, 0)
                     const pct = total > 0 ? (count / total) * 100 : 0
                     const colors: Record<string, string> = {
-                      trial: 'bg-blue-500', active: 'bg-green-500', overdue: 'bg-yellow-500',
+                      trial: 'bg-violet-500', active: 'bg-green-500', overdue: 'bg-yellow-500',
                       suspended: 'bg-red-500', cancelled: 'bg-gray-400', expired: 'bg-gray-300',
                     }
                     return (
@@ -249,7 +249,7 @@ export default function AdminDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                  <Gift className="h-4 w-4 text-blue-600" />
+                  <Gift className="h-4 w-4 text-violet-600" />
                   Programa de Indicação
                 </CardTitle>
               </CardHeader>
@@ -393,7 +393,7 @@ export default function AdminDashboardPage() {
                       ? 'border-red-200 bg-red-50'
                       : alert.tipo === 'aviso'
                       ? 'border-yellow-200 bg-yellow-50'
-                      : 'border-blue-200 bg-blue-50'
+                      : 'border-violet-200 bg-violet-50'
                   }`}
                 >
                   {alert.tipo === 'critico' ? (
@@ -401,7 +401,7 @@ export default function AdminDashboardPage() {
                   ) : alert.tipo === 'aviso' ? (
                     <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 shrink-0" />
                   ) : (
-                    <Info className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                    <Info className="h-5 w-5 text-violet-600 mt-0.5 shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -429,7 +429,7 @@ export default function AdminDashboardPage() {
         <Link href="/admin/empresas">
           <Card className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="pt-6 flex items-center gap-3">
-              <Building2 className="h-5 w-5 text-blue-600" />
+              <Building2 className="h-5 w-5 text-violet-600" />
               <div>
                 <p className="font-medium">Gerenciar Empresas</p>
                 <p className="text-sm text-muted-foreground">Ativar, desativar, visualizar</p>

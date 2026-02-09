@@ -430,7 +430,7 @@ export default function DashboardPage() {
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="total" name="Faturamento" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="total" name="Faturamento" fill="#7C3AED" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="lucro" name="Lucro" fill="#22c55e" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>}

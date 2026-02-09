@@ -65,7 +65,7 @@ function TipoBadge({ tipo }: { tipo: TipoAviso }) {
   switch (tipo) {
     case 'info':
       return (
-        <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200">
+        <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-200">
           Info
         </Badge>
       )

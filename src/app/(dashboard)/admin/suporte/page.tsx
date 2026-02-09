@@ -52,7 +52,7 @@ const statusConfig: Record<
   StatusTicket,
   { label: string; className: string }
 > = {
-  aberto: { label: 'Aberto', className: 'bg-blue-100 text-blue-700' },
+  aberto: { label: 'Aberto', className: 'bg-violet-100 text-violet-700' },
   em_atendimento: {
     label: 'Em Atendimento',
     className: 'bg-yellow-100 text-yellow-700',
@@ -69,7 +69,7 @@ const prioridadeConfig: Record<
   { label: string; className: string }
 > = {
   baixa: { label: 'Baixa', className: 'bg-gray-100 text-gray-700' },
-  media: { label: 'Média', className: 'bg-blue-100 text-blue-700' },
+  media: { label: 'Média', className: 'bg-violet-100 text-violet-700' },
   alta: { label: 'Alta', className: 'bg-orange-100 text-orange-700' },
   urgente: { label: 'Urgente', className: 'bg-red-100 text-red-700' },
 }
@@ -500,7 +500,7 @@ export default function SuporteAdminPage() {
                             className={
                               isSuperadmin
                                 ? 'bg-green-100 text-green-700 hover:bg-green-100 text-xs'
-                                : 'bg-blue-100 text-blue-700 hover:bg-blue-100 text-xs'
+                                : 'bg-violet-100 text-violet-700 hover:bg-violet-100 text-xs'
                             }
                           >
                             {isSuperadmin ? 'Suporte' : 'Empresa'}
@@ -513,7 +513,7 @@ export default function SuporteAdminPage() {
                           className={`rounded-lg px-3 py-2 max-w-[85%] text-sm ${
                             isSuperadmin
                               ? 'bg-green-50 border border-green-200'
-                              : 'bg-blue-50 border border-blue-200'
+                              : 'bg-violet-50 border border-violet-200'
                           }`}
                         >
                           <p className="whitespace-pre-wrap">{msg.mensagem}</p>

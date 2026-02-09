@@ -143,7 +143,7 @@ export default function OrdensServicoPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.abertas}</div>
+              <div className="text-2xl font-bold text-violet-600">{stats.abertas}</div>
             </CardContent>
           </Card>
           <Card>

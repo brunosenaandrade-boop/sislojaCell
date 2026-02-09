@@ -19,7 +19,7 @@ export default function PrecosPage() {
       <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-600 text-sm font-bold text-white">
               CF
             </div>
             <span className="text-lg font-semibold">CellFlow</span>
@@ -33,7 +33,7 @@ export default function PrecosPage() {
             </Link>
             <Link
               href="/cadastro"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded-lg bg-gradient-to-r from-purple-600 to-blue-500 px-4 py-2 text-sm font-medium text-white hover:from-purple-700 hover:to-blue-600"
             >
               Começar Grátis
             </Link>
@@ -95,8 +95,8 @@ export default function PrecosPage() {
           </div>
 
           {/* PLANO ANUAL */}
-          <div className="overflow-hidden rounded-2xl border-2 border-blue-600 bg-white shadow-lg">
-            <div className="bg-blue-600 px-6 py-3 text-center text-sm font-medium text-white">
+          <div className="overflow-hidden rounded-2xl border-2 border-violet-600 bg-white shadow-lg">
+            <div className="bg-violet-600 px-6 py-3 text-center text-sm font-medium text-white">
               Mais popular
             </div>
             <div className="p-8">
@@ -111,7 +111,7 @@ export default function PrecosPage() {
               </div>
               <Link
                 href="/cadastro"
-                className="mb-6 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700"
+                className="mb-6 flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-500 py-3 font-medium text-white hover:from-purple-700 hover:to-blue-600"
               >
                 Começar com 7 dias grátis
                 <ArrowRight className="h-4 w-4" />
@@ -150,7 +150,7 @@ export default function PrecosPage() {
                 <tr className="border-b bg-gray-50">
                   <th className="px-6 py-4 text-left font-medium text-gray-700">Recurso</th>
                   <th className="px-6 py-4 text-center font-medium text-gray-700">Trial</th>
-                  <th className="px-6 py-4 text-center font-medium text-blue-600">Plano Anual</th>
+                  <th className="px-6 py-4 text-center font-medium text-violet-600">Plano Anual</th>
                 </tr>
               </thead>
               <tbody>
@@ -223,17 +223,17 @@ export default function PrecosPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t bg-blue-600 py-16">
+      <section className="border-t bg-gradient-to-r from-purple-600 to-blue-500 py-16">
         <div className="mx-auto max-w-3xl px-4 text-center">
           <h2 className="mb-4 text-3xl font-bold text-white">
             Pronto para organizar sua loja?
           </h2>
-          <p className="mb-8 text-blue-100">
+          <p className="mb-8 text-violet-100">
             Comece agora com 7 dias grátis. Sem compromisso.
           </p>
           <Link
             href="/cadastro"
-            className="inline-flex items-center gap-2 rounded-lg bg-white px-8 py-3 font-medium text-blue-600 hover:bg-blue-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-white px-8 py-3 font-medium text-violet-600 hover:bg-violet-50"
           >
             Criar conta grátis
             <ArrowRight className="h-4 w-4" />
@@ -246,7 +246,7 @@ export default function PrecosPage() {
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600 text-xs font-bold text-white">
                 CF
               </div>
               <span className="text-sm font-medium text-white">CellFlow</span>

@@ -30,7 +30,7 @@ export default async function HomePage({
       <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-600 text-sm font-bold text-white">
               CF
             </div>
             <span className="text-lg font-semibold">CellFlow</span>
@@ -50,7 +50,7 @@ export default async function HomePage({
             </Link>
             <Link
               href={`/cadastro${refParam}`}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded-lg bg-gradient-to-r from-purple-600 to-blue-500 px-4 py-2 text-sm font-medium text-white hover:from-purple-700 hover:to-blue-600"
             >
               Começar Grátis
             </Link>
@@ -63,12 +63,12 @@ export default async function HomePage({
       {/* ============================================ */}
       <section className="mx-auto max-w-6xl px-4 pb-20 pt-16 text-center md:pt-24">
         <div className="mx-auto max-w-3xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm text-blue-700">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-sm text-violet-700">
             <Gift className="h-4 w-4" />
             7 dias grátis para testar
           </div>
           <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
-            <span className="text-blue-600">CellFlow</span> — Sistema completo para sua assistência técnica
+            <span className="text-violet-600">CellFlow</span> — Sistema completo para sua assistência técnica
           </h1>
           <p className="mb-8 text-lg text-gray-600 md:text-xl">
             Gerencie ordens de serviço, vendas, estoque, caixa e clientes em um só lugar.
@@ -77,7 +77,7 @@ export default async function HomePage({
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href={`/cadastro${refParam}`}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-base font-medium text-white hover:bg-blue-700"
+              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-500 px-6 py-3 text-base font-medium text-white hover:from-purple-700 hover:to-blue-600"
             >
               Começar Grátis por 7 Dias
               <ArrowRight className="h-4 w-4" />
@@ -117,7 +117,7 @@ export default async function HomePage({
               { icon: Gift, title: 'Programa de Indicação', desc: 'Indique outras lojas e ganhe meses grátis de acesso para cada indicação bem-sucedida.' },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="rounded-xl border bg-white p-6">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 text-violet-600">
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">{title}</h3>
@@ -144,7 +144,7 @@ export default async function HomePage({
               { step: '3', title: 'Comece a vender', desc: 'Abra o caixa, crie ordens de serviço, faça vendas e acompanhe tudo pelo dashboard.' },
             ].map(({ step, title, desc }) => (
               <div key={step} className="text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-xl font-bold text-white">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-600 text-xl font-bold text-white">
                   {step}
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">{title}</h3>
@@ -165,8 +165,8 @@ export default async function HomePage({
             <p className="text-gray-600">Um único plano com tudo incluso. Sem surpresas.</p>
           </div>
           <div className="mx-auto max-w-md">
-            <div className="overflow-hidden rounded-2xl border-2 border-blue-600 bg-white shadow-lg">
-              <div className="bg-blue-600 px-6 py-3 text-center text-sm font-medium text-white">
+            <div className="overflow-hidden rounded-2xl border-2 border-violet-600 bg-white shadow-lg">
+              <div className="bg-violet-600 px-6 py-3 text-center text-sm font-medium text-white">
                 Mais popular
               </div>
               <div className="p-8">
@@ -181,7 +181,7 @@ export default async function HomePage({
                 </div>
                 <Link
                   href={`/cadastro${refParam}`}
-                  className="mb-6 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700"
+                  className="mb-6 flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-500 py-3 font-medium text-white hover:from-purple-700 hover:to-blue-600"
                 >
                   Começar com 7 dias grátis
                   <ArrowRight className="h-4 w-4" />
@@ -267,17 +267,17 @@ export default async function HomePage({
       {/* ============================================ */}
       {/* CTA FINAL */}
       {/* ============================================ */}
-      <section className="border-t bg-blue-600 py-16">
+      <section className="border-t bg-gradient-to-r from-purple-600 to-blue-500 py-16">
         <div className="mx-auto max-w-3xl px-4 text-center">
           <h2 className="mb-4 text-3xl font-bold text-white">
             Pronto para organizar sua loja?
           </h2>
-          <p className="mb-8 text-blue-100">
+          <p className="mb-8 text-violet-100">
             Comece agora com 7 dias grátis. Sem compromisso, sem cartão de crédito.
           </p>
           <Link
             href={`/cadastro${refParam}`}
-            className="inline-flex items-center gap-2 rounded-lg bg-white px-8 py-3 font-medium text-blue-600 hover:bg-blue-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-white px-8 py-3 font-medium text-violet-600 hover:bg-violet-50"
           >
             Criar conta grátis
             <ArrowRight className="h-4 w-4" />
@@ -292,7 +292,7 @@ export default async function HomePage({
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600 text-xs font-bold text-white">
                 CF
               </div>
               <span className="text-sm font-medium text-white">CellFlow</span>

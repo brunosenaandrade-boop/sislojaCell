@@ -147,18 +147,18 @@ export default function IndicacoesPage() {
       </div>
 
       {/* Card: Como funciona */}
-      <Card className="border-blue-200 bg-blue-50/50">
+      <Card className="border-violet-200 bg-violet-50/50">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 font-bold text-xs">1</div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 font-bold text-xs">1</div>
               <div>
                 <p className="font-medium">Compartilhe seu link</p>
                 <p className="text-muted-foreground">Envie para outras lojas de celular</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 font-bold text-xs">2</div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 font-bold text-xs">2</div>
               <div>
                 <p className="font-medium">Loja se cadastra e assina</p>
                 <p className="text-muted-foreground">Precisa permanecer ativa por 30 dias</p>
@@ -189,7 +189,7 @@ export default function IndicacoesPage() {
         {/* Card: Total Indicações */}
         <Card>
           <CardContent className="pt-6 text-center">
-            <Users className="h-8 w-8 mx-auto text-blue-600 mb-2" />
+            <Users className="h-8 w-8 mx-auto text-violet-600 mb-2" />
             <p className="text-3xl font-bold">{data?.resumo?.total || 0}</p>
             <p className="text-sm text-muted-foreground">Indicações realizadas</p>
           </CardContent>
@@ -209,7 +209,7 @@ export default function IndicacoesPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Share2 className="h-5 w-5 text-blue-600" />
+            <Share2 className="h-5 w-5 text-violet-600" />
             Seu Link de Indicação
           </CardTitle>
         </CardHeader>

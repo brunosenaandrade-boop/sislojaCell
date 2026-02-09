@@ -284,10 +284,10 @@ export default function CaixaPage() {
   // Badge do tipo de movimentacao
   const getTipoBadge = (tipo: string) => {
     const config: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
-      abertura: { label: 'Abertura', className: 'bg-blue-100 text-blue-700', icon: <Unlock className="h-3 w-3" /> },
+      abertura: { label: 'Abertura', className: 'bg-violet-100 text-violet-700', icon: <Unlock className="h-3 w-3" /> },
       venda: { label: 'Venda', className: 'bg-green-100 text-green-700', icon: <ArrowUpCircle className="h-3 w-3" /> },
       os: { label: 'OS', className: 'bg-purple-100 text-purple-700', icon: <ArrowUpCircle className="h-3 w-3" /> },
-      suprimento: { label: 'Suprimento', className: 'bg-blue-100 text-blue-700', icon: <ArrowUpCircle className="h-3 w-3" /> },
+      suprimento: { label: 'Suprimento', className: 'bg-violet-100 text-violet-700', icon: <ArrowUpCircle className="h-3 w-3" /> },
       sangria: { label: 'Sangria', className: 'bg-red-100 text-red-700', icon: <ArrowDownCircle className="h-3 w-3" /> },
     }
     const c = config[tipo] || { label: tipo, className: '', icon: null }
@@ -363,7 +363,7 @@ export default function CaixaPage() {
                 ) : (
                   <>
                     <Button variant="outline" onClick={() => abrirDialogMovimentacao('suprimento')}>
-                      <ArrowUpCircle className="mr-2 h-4 w-4 text-blue-600" />
+                      <ArrowUpCircle className="mr-2 h-4 w-4 text-violet-600" />
                       Suprimento
                     </Button>
                     <Button variant="outline" onClick={() => abrirDialogMovimentacao('sangria')}>
@@ -393,7 +393,7 @@ export default function CaixaPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">{formatCurrency(saldoAtual)}</div>
+                  <div className="text-2xl font-bold text-violet-600">{formatCurrency(saldoAtual)}</div>
                   <p className="text-xs text-muted-foreground">Abertura: {formatCurrency(valorAbertura)}</p>
                 </CardContent>
               </Card>
@@ -489,7 +489,7 @@ export default function CaixaPage() {
 
                     const formas = [
                       { key: 'dinheiro', label: 'Dinheiro', icon: <Banknote className="h-5 w-5 text-green-600" />, bg: 'bg-green-100' },
-                      { key: 'pix', label: 'PIX', icon: <Smartphone className="h-5 w-5 text-blue-600" />, bg: 'bg-blue-100' },
+                      { key: 'pix', label: 'PIX', icon: <Smartphone className="h-5 w-5 text-violet-600" />, bg: 'bg-violet-100' },
                       { key: 'debito', label: 'Debito', icon: <CreditCard className="h-5 w-5 text-purple-600" />, bg: 'bg-purple-100' },
                       { key: 'credito', label: 'Credito', icon: <CreditCard className="h-5 w-5 text-orange-600" />, bg: 'bg-orange-100' },
                     ]
@@ -691,7 +691,7 @@ export default function CaixaPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 {movTipo === 'suprimento' ? (
-                  <><ArrowUpCircle className="h-5 w-5 text-blue-600" /> Suprimento</>
+                  <><ArrowUpCircle className="h-5 w-5 text-violet-600" /> Suprimento</>
                 ) : (
                   <><ArrowDownCircle className="h-5 w-5 text-red-600" /> Sangria</>
                 )}
@@ -738,7 +738,7 @@ export default function CaixaPage() {
                 onClick={handleRegistrarMovimentacao}
                 disabled={isLoading}
                 variant={movTipo === 'sangria' ? 'destructive' : 'default'}
-                className={movTipo === 'suprimento' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                className={movTipo === 'suprimento' ? 'bg-violet-600 hover:bg-violet-700' : ''}
               >
                 {isLoading ? 'Salvando...' : 'Confirmar'}
               </Button>
@@ -776,7 +776,7 @@ export default function CaixaPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Suprimentos</span>
-                  <span className="text-blue-600">+{formatCurrency(totalSuprimentos)}</span>
+                  <span className="text-violet-600">+{formatCurrency(totalSuprimentos)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Sangrias</span>
@@ -794,7 +794,7 @@ export default function CaixaPage() {
                 <Separator />
                 <div className="flex justify-between font-bold">
                   <span>Saldo Esperado</span>
-                  <span className="text-blue-600">{formatCurrency(saldoAtual)}</span>
+                  <span className="text-violet-600">{formatCurrency(saldoAtual)}</span>
                 </div>
               </div>
 

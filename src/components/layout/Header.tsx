@@ -168,7 +168,7 @@ export function Header({ title }: HeaderProps) {
                     <button
                       key={notif.id}
                       className={`w-full text-left flex gap-3 px-4 py-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 ${
-                        !notif.lida ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''
+                        !notif.lida ? 'bg-violet-50/50 dark:bg-violet-950/20' : ''
                       }`}
                       onClick={() => handleNotificacaoClick(notif.id, notif.link)}
                     >
@@ -181,7 +181,7 @@ export function Header({ title }: HeaderProps) {
                             {notif.titulo}
                           </p>
                           {!notif.lida && (
-                            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+                            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-violet-500" />
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">

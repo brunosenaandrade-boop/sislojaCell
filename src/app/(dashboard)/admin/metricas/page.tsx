@@ -141,8 +141,8 @@ export default function MetricasAdminPage() {
               <CardContent>
                 {(() => {
                   const steps = [
-                    { label: 'Cadastro', value: funil.total_cadastros, color: 'bg-blue-500' },
-                    { label: 'Onboarding Completo', value: funil.onboarding_completo, color: 'bg-blue-400' },
+                    { label: 'Cadastro', value: funil.total_cadastros, color: 'bg-violet-500' },
+                    { label: 'Onboarding Completo', value: funil.onboarding_completo, color: 'bg-violet-400' },
                     { label: 'Primeiro Produto', value: funil.primeiro_produto, color: 'bg-green-500' },
                     { label: 'Primeira Venda', value: funil.primeira_venda, color: 'bg-green-400' },
                     { label: 'Assinatura Ativa', value: funil.assinatura_ativa, color: 'bg-emerald-500' },
@@ -211,8 +211,8 @@ export default function MetricasAdminPage() {
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       Ativas últimos 30 dias
                     </CardTitle>
-                    <div className="rounded-lg p-2 bg-blue-50">
-                      <Activity className="h-4 w-4 text-blue-600" />
+                    <div className="rounded-lg p-2 bg-violet-50">
+                      <Activity className="h-4 w-4 text-violet-600" />
                     </div>
                   </CardHeader>
                   <CardContent>
