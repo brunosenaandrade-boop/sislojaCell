@@ -126,6 +126,7 @@ export default function NovaOSPage() {
   const [itensOS, setItensOS] = useState<ItemOS[]>([])
   const [dialogServicoOpen, setDialogServicoOpen] = useState(false)
   const [dialogProdutoOpen, setDialogProdutoOpen] = useState(false)
+  const [buscaProduto, setBuscaProduto] = useState('')
 
   // Carregar dados do Supabase
   useEffect(() => {
@@ -719,7 +720,7 @@ export default function NovaOSPage() {
                     </DialogContent>
                   </Dialog>
 
-                  <Dialog open={dialogProdutoOpen} onOpenChange={setDialogProdutoOpen}>
+                  <Dialog open={dialogProdutoOpen} onOpenChange={(open) => { setDialogProdutoOpen(open); if (!open) setBuscaProduto('') }}>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
                         <Plus className="mr-2 h-4 w-4" />
@@ -733,8 +734,20 @@ export default function NovaOSPage() {
                           Selecione a peça ou produto utilizado
                         </DialogDescription>
                       </DialogHeader>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Buscar produto pelo nome..."
+                          value={buscaProduto}
+                          onChange={(e) => setBuscaProduto(e.target.value)}
+                          className="pl-9"
+                          autoFocus
+                        />
+                      </div>
                       <div className="max-h-[300px] overflow-y-auto divide-y">
-                        {produtos.map(produto => (
+                        {produtos
+                          .filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase()))
+                          .map(produto => (
                           <div
                             key={produto.id}
                             className="flex items-center justify-between p-3 hover:bg-muted cursor-pointer"
@@ -751,6 +764,9 @@ export default function NovaOSPage() {
                             </span>
                           </div>
                         ))}
+                        {produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase())).length === 0 && (
+                          <p className="text-sm text-muted-foreground text-center py-4">Nenhum produto encontrado</p>
+                        )}
                       </div>
                     </DialogContent>
                   </Dialog>

@@ -133,14 +133,26 @@
     size: auto;
   }
 
-  /* Reset de cores para impressao */
-  *,
-  *::before,
-  *::after {
+  /* Reset de cores para impressao (exceto conteúdo do cupom) */
+  *:not(.print\:block *),
+  *:not(.print\:block *)::before,
+  *:not(.print\:block *)::after {
     background-color: white !important;
     background-image: none !important;
     box-shadow: none !important;
     text-shadow: none !important;
+  }
+
+  /* Permitir inline styles dentro do componente de impressão */
+  .print\:block,
+  .print\:block * {
+    background-color: unset !important;
+    color: unset !important;
+  }
+
+  .print\:block [style] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   body {
@@ -228,8 +240,11 @@
     color: #15803d !important;
   }
 
-  /* Textos devem ser pretos (exceto dentro de elementos com bg escuro) */
-  p, span, div, td, th, li, h1, h2, h3, h4, h5, h6 {
+  /* Textos devem ser pretos (exceto dentro do componente de impressão e elementos com bg escuro) */
+  p:not(.print\:block *), span:not(.print\:block *), div:not(.print\:block *),
+  td:not(.print\:block *), th:not(.print\:block *), li:not(.print\:block *),
+  h1:not(.print\:block *), h2:not(.print\:block *), h3:not(.print\:block *),
+  h4:not(.print\:block *), h5:not(.print\:block *), h6:not(.print\:block *) {
     color: black !important;
   }
 

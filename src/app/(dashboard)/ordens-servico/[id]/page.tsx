@@ -222,11 +222,19 @@ export default function VisualizarOSPage() {
   const handlePrint = (tipo: 'entrada' | 'completa' | 'entrega' = 'entrada') => {
     setTipoPrint(tipo)
     setShowPrint(true)
+    // Espera o React renderizar o componente de impressão antes de abrir o diálogo
     setTimeout(() => {
       window.print()
-      setShowPrint(false)
-    }, 100)
+    }, 500)
   }
+
+  // Esconde o componente de impressão quando o usuário fecha o diálogo de impressão
+  useEffect(() => {
+    if (!showPrint) return
+    const handleAfterPrint = () => setShowPrint(false)
+    window.addEventListener('afterprint', handleAfterPrint)
+    return () => window.removeEventListener('afterprint', handleAfterPrint)
+  }, [showPrint])
 
   if (isLoading) {
     return (
