@@ -30,9 +30,7 @@ export default async function HomePage({
       <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-600 text-sm font-bold text-white">
-              CF
-            </div>
+            <img src="/logo.jpeg" alt="CellFlow" className="h-9 w-9 rounded-lg object-cover" />
             <span className="text-lg font-semibold">CellFlow</span>
           </div>
           <nav className="hidden items-center gap-6 text-sm md:flex">
@@ -292,9 +290,7 @@ export default async function HomePage({
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600 text-xs font-bold text-white">
-                CF
-              </div>
+              <img src="/logo.jpeg" alt="CellFlow" className="h-8 w-8 rounded-lg object-cover" />
               <span className="text-sm font-medium text-white">CellFlow</span>
             </div>
             <nav className="flex gap-6 text-sm">
