@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -218,17 +219,17 @@ export default function VisualizarOSPage() {
     }
   }
 
-  // Imprimir
+  // Imprimir via portal (renderiza fora do layout para evitar overflow:hidden e problemas de CSS)
+  const printRef = useRef<HTMLDivElement>(null)
+
   const handlePrint = (tipo: 'entrada' | 'completa' | 'entrega' = 'entrada') => {
     setTipoPrint(tipo)
     setShowPrint(true)
-    // Espera o React renderizar o componente de impressão antes de abrir o diálogo
     setTimeout(() => {
       window.print()
-    }, 500)
+    }, 300)
   }
 
-  // Esconde o componente de impressão quando o usuário fecha o diálogo de impressão
   useEffect(() => {
     if (!showPrint) return
     const handleAfterPrint = () => setShowPrint(false)
@@ -260,9 +261,19 @@ export default function VisualizarOSPage() {
 
   return (
     <>
-      {/* Conteudo para impressão */}
-      {showPrint && (
-        <div className="print:block hidden">
+      {/* Portal de impressão: renderiza direto no body, fora do layout/overflow */}
+      {showPrint && typeof document !== 'undefined' && createPortal(
+        <div
+          ref={printRef}
+          className="print-overlay"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+            background: 'white',
+            overflow: 'auto',
+          }}
+        >
           <CupomOS
             os={os}
             tipo={tipoPrint}
@@ -276,10 +287,11 @@ export default function VisualizarOSPage() {
               mensagemCupom: printConfig.mensagemCupom,
             }}
           />
-        </div>
+        </div>,
+        document.body
       )}
 
-      <div className="flex flex-col print:hidden">
+      <div className="flex flex-col">
         <div className="flex-1 space-y-6 p-4 lg:p-6">
           {/* Ações */}
           <div className="flex flex-wrap items-center justify-between gap-4">

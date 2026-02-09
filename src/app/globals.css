@@ -133,28 +133,6 @@
     size: auto;
   }
 
-  /* Reset de cores para impressao (exceto conteúdo do cupom) */
-  *:not(.print\:block *),
-  *:not(.print\:block *)::before,
-  *:not(.print\:block *)::after {
-    background-color: white !important;
-    background-image: none !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-
-  /* Permitir inline styles dentro do componente de impressão */
-  .print\:block,
-  .print\:block * {
-    background-color: unset !important;
-    color: unset !important;
-  }
-
-  .print\:block [style] {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
   body {
     background: white !important;
     color: black !important;
@@ -163,23 +141,25 @@
     print-color-adjust: exact;
   }
 
-  /* Esconder tudo que não é o conteúdo de impressão */
-  .print\:hidden,
-  header,
-  nav,
-  aside,
-  footer,
-  .sidebar,
-  .no-print,
-  [data-radix-popper-content-wrapper],
-  [role="menu"],
-  [data-state="open"] {
+  /* Esconder TUDO no body exceto o portal de impressão */
+  body > *:not(.print-overlay) {
     display: none !important;
   }
 
-  /* Mostrar conteúdo de impressão */
-  .print\:block {
-    display: block !important;
+  /* O portal de impressão: resetar posição fixa para fluir normalmente na página */
+  .print-overlay {
+    position: static !important;
+    overflow: visible !important;
+    inset: auto !important;
+    z-index: auto !important;
+    background: white !important;
+  }
+
+  /* Preservar todas as cores dentro do cupom */
+  .print-overlay,
+  .print-overlay * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Evitar quebra de página dentro de elementos */
@@ -187,119 +167,85 @@
     break-inside: avoid;
   }
 
-  /* Garantir que imagens de logo apareçam com cores corretas */
+  /* Imagens */
   img {
     max-width: 100% !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* Preservar cores especificas para badges e elementos visuais importantes */
-  .bg-gray-900 {
+  /* Preservar cores de backgrounds e textos do cupom */
+  .print-overlay .bg-gray-900 {
     background-color: #111827 !important;
     color: white !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
-  .bg-blue-100 {
+  .print-overlay .bg-gray-900 * {
+    color: white !important;
+  }
+
+  .print-overlay .bg-blue-100 {
     background-color: #dbeafe !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
-  .bg-green-100 {
+  .print-overlay .bg-green-100 {
     background-color: #dcfce7 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
-  .bg-orange-100 {
+  .print-overlay .bg-orange-100 {
     background-color: #ffedd5 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
-  .bg-gray-100 {
+  .print-overlay .bg-orange-50 {
+    background-color: #fff7ed !important;
+  }
+
+  .print-overlay .bg-gray-100 {
     background-color: #f3f4f6 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
-  .bg-gray-50 {
+  .print-overlay .bg-gray-50 {
     background-color: #f9fafb !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
-  .text-blue-700 {
+  .print-overlay .text-blue-700 {
     color: #1d4ed8 !important;
   }
 
-  .text-green-700 {
+  .print-overlay .text-green-700 {
     color: #15803d !important;
   }
 
-  /* Textos devem ser pretos (exceto dentro do componente de impressão e elementos com bg escuro) */
-  p:not(.print\:block *), span:not(.print\:block *), div:not(.print\:block *),
-  td:not(.print\:block *), th:not(.print\:block *), li:not(.print\:block *),
-  h1:not(.print\:block *), h2:not(.print\:block *), h3:not(.print\:block *),
-  h4:not(.print\:block *), h5:not(.print\:block *), h6:not(.print\:block *) {
-    color: black !important;
-  }
-
-  /* Texto branco dentro de backgrounds escuros - maior especificidade */
-  .bg-gray-900 p,
-  .bg-gray-900 span,
-  .bg-gray-900 div,
-  .bg-gray-900 *,
-  .text-white {
-    color: white !important;
-  }
-
-  /* Preservar inline styles para cor primária da empresa */
-  .cupom-os-badge,
-  .cupom-os-badge * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .cupom-os-badge {
-    color: white !important;
-  }
-
-  .cupom-os-badge p,
-  .cupom-os-badge span {
-    color: white !important;
-  }
-
-  /* Permitir inline border-color no header */
-  [style*="border-bottom"] {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  /* Preservar cores de desbloqueio */
-  .bg-orange-50 {
-    background-color: #fff7ed !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .border-orange-300 {
-    border-color: #fdba74 !important;
-  }
-
-  .text-orange-700 {
+  .print-overlay .text-orange-700 {
     color: #c2410c !important;
   }
 
-  .text-orange-600 {
+  .print-overlay .text-orange-600 {
     color: #ea580c !important;
   }
 
-  /* Bordas visiveis */
-  table, th, td {
+  .print-overlay .border-orange-300 {
+    border-color: #fdba74 !important;
+  }
+
+  /* Cor primária da empresa no badge da OS */
+  .print-overlay .cupom-os-badge {
+    color: white !important;
+  }
+
+  .print-overlay .cupom-os-badge * {
+    color: white !important;
+  }
+
+  .print-overlay [style*="border-bottom"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Bordas da tabela */
+  .print-overlay table,
+  .print-overlay th,
+  .print-overlay td {
     border-color: #333 !important;
   }
 }
