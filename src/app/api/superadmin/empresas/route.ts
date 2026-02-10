@@ -59,13 +59,35 @@ export async function PATCH(request: NextRequest) {
     if ('error' in auth) return auth.error
 
     const body = await request.json()
-    const { empresa_id, ativo } = body
+    const { empresa_id, ativo, plano, status_assinatura } = body
 
-    if (!empresa_id || typeof ativo !== 'boolean') {
-      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
+    if (!empresa_id) {
+      return NextResponse.json({ error: 'empresa_id é obrigatório' }, { status: 400 })
     }
 
     const db = getServiceClient()
+
+    // Alterar plano e status da assinatura
+    if (plano !== undefined || status_assinatura !== undefined) {
+      const updateData: Record<string, unknown> = {}
+      if (plano !== undefined) updateData.plano = plano
+      if (status_assinatura !== undefined) updateData.status_assinatura = status_assinatura
+      updateData.updated_at = new Date().toISOString()
+
+      const { error } = await db
+        .from('empresas')
+        .update(updateData)
+        .eq('id', empresa_id)
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ success: true })
+    }
+
+    // Toggle ativo/inativo (comportamento original)
+    if (typeof ativo !== 'boolean') {
+      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
+    }
+
     const { error } = await db
       .from('empresas')
       .update({ ativo })

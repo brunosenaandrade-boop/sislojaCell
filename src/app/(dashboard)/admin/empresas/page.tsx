@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { usePermissao } from '@/hooks/usePermissao'
 import { useAuthStore } from '@/store/useStore'
 import { superadminService } from '@/services/superadmin.service'
-import type { EmpresaStats } from '@/types/database'
+import type { EmpresaStats, Plano } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,6 +47,7 @@ import {
   ShoppingCart,
   Clock,
   Gift,
+  CreditCard,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -83,6 +84,14 @@ export default function EmpresasAdminPage() {
   const [bonusMeses, setBonusMeses] = useState('1')
   const [bonusSaving, setBonusSaving] = useState(false)
 
+  // Alterar plano state
+  const [planoDialogOpen, setPlanoDialogOpen] = useState(false)
+  const [planoEmpresa, setPlanoEmpresa] = useState<EmpresaStats | null>(null)
+  const [planosList, setPlanosList] = useState<Plano[]>([])
+  const [novoPlano, setNovoPlano] = useState('')
+  const [novoStatus, setNovoStatus] = useState('')
+  const [planoSaving, setPlanoSaving] = useState(false)
+
   // Toggle ativo state
   const [toggleDialogOpen, setToggleDialogOpen] = useState(false)
   const [toggleEmpresa, setToggleEmpresa] = useState<EmpresaStats | null>(null)
@@ -97,8 +106,14 @@ export default function EmpresasAdminPage() {
     setLoading(false)
   }
 
+  const loadPlanos = async () => {
+    const { data } = await superadminService.getPlanos()
+    if (data) setPlanosList(data.filter(p => p.ativo))
+  }
+
   useEffect(() => {
     loadEmpresas()
+    loadPlanos()
   }, [])
 
   if (!isSuperadmin) {
@@ -175,6 +190,20 @@ export default function EmpresasAdminPage() {
       loadEmpresas()
     }
     setTrialSaving(false)
+  }
+
+  const handleAlterarPlano = async () => {
+    if (!planoEmpresa) return
+    setPlanoSaving(true)
+    const { error } = await superadminService.alterarPlanoEmpresa(planoEmpresa.id, novoPlano, novoStatus)
+    if (error) {
+      toast.error('Erro: ' + error)
+    } else {
+      toast.success(`Plano alterado para ${planoEmpresa.nome}`)
+      setPlanoDialogOpen(false)
+      loadEmpresas()
+    }
+    setPlanoSaving(false)
   }
 
   const handleAdicionarBonus = async () => {
@@ -354,6 +383,19 @@ export default function EmpresasAdminPage() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            title="Alterar plano"
+                            onClick={() => {
+                              setPlanoEmpresa(empresa)
+                              setNovoPlano(empresa.plano || 'free')
+                              setNovoStatus(empresa.status_assinatura || 'trial')
+                              setPlanoDialogOpen(true)
+                            }}
+                          >
+                            <CreditCard className="h-4 w-4 text-purple-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             title="Estender trial"
                             onClick={() => {
                               setTrialEmpresa(empresa)
@@ -459,6 +501,56 @@ export default function EmpresasAdminPage() {
             <Button onClick={handleAdicionarBonus} disabled={bonusSaving}>
               {bonusSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Adicionar {bonusMeses} mês(es)
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Alterar Plano */}
+      <Dialog open={planoDialogOpen} onOpenChange={setPlanoDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterar Plano</DialogTitle>
+            <DialogDescription>
+              Alterar plano e status da assinatura de {planoEmpresa?.nome_fantasia || planoEmpresa?.nome}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Plano</label>
+              <Select value={novoPlano} onValueChange={setNovoPlano}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o plano" />
+                </SelectTrigger>
+                <SelectContent>
+                  {planosList.map(p => (
+                    <SelectItem key={p.id} value={p.slug}>{p.nome} ({p.slug})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Status da Assinatura</label>
+              <Select value={novoStatus} onValueChange={setNovoStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="trial">Trial</SelectItem>
+                  <SelectItem value="active">Ativa</SelectItem>
+                  <SelectItem value="overdue">Inadimplente</SelectItem>
+                  <SelectItem value="suspended">Suspensa</SelectItem>
+                  <SelectItem value="cancelled">Cancelada</SelectItem>
+                  <SelectItem value="expired">Expirada</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPlanoDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleAlterarPlano} disabled={planoSaving}>
+              {planoSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Salvar Alterações
             </Button>
           </DialogFooter>
         </DialogContent>

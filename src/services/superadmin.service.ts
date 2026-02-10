@@ -28,6 +28,21 @@ export const superadminService = {
     }
   },
 
+  async alterarPlanoEmpresa(empresa_id: string, plano: string, status_assinatura: string): Promise<ServiceResult<null>> {
+    try {
+      const res = await fetch('/api/superadmin/empresas', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ empresa_id, plano, status_assinatura }),
+      })
+      const json = await res.json()
+      if (!res.ok) return { data: null, error: json.error }
+      return { data: null, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
+    }
+  },
+
   async getPlataformaStats(): Promise<ServiceResult<PlataformaStats>> {
     try {
       const res = await fetch('/api/superadmin/stats')
