@@ -2,6 +2,17 @@ import { getSupabase, getEmpresaId, getUsuarioId, handleQuery, sanitizeSearch } 
 import type { OrdemServico, ItemOS } from '@/types/database'
 import { planosService } from './planos.service'
 
+function gerarCodigoAcompanhamento(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  const bytes = new Uint8Array(8)
+  crypto.getRandomValues(bytes)
+  let codigo = ''
+  for (let i = 0; i < 8; i++) {
+    codigo += chars[bytes[i] % chars.length]
+  }
+  return codigo
+}
+
 export const ordensServicoService = {
   // ============================================
   // LISTAR ORDENS DE SERVIÇO
@@ -78,6 +89,9 @@ export const ordensServicoService = {
 
       if (numeroError) return { data: null, error: numeroError.message }
 
+      // Gerar código de acompanhamento público (8 chars)
+      const codigoAcompanhamento = gerarCodigoAcompanhamento()
+
       const { data, error } = await supabase
         .from('ordens_servico')
         .insert({
@@ -85,6 +99,7 @@ export const ordensServicoService = {
           empresa_id: empresaId,
           usuario_id: usuarioId,
           numero: numeroData,
+          codigo_acompanhamento: codigoAcompanhamento,
         })
         .select()
         .single()

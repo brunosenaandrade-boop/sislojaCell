@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { QRCodeSVG } from 'qrcode.react'
 import type { Empresa } from '@/types/database'
 
 interface PrintConfig {
@@ -40,6 +41,7 @@ interface CupomOSProps {
     data_previsao?: string
     data_finalizacao?: string
     data_entrega?: string
+    codigo_acompanhamento?: string
     cliente?: {
       nome: string
       telefone?: string
@@ -84,6 +86,9 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
   const nomeEmpresa = empresa?.nome_fantasia || empresa?.nome || 'LOJA DE CELULAR'
   const corPrimaria = empresa?.cor_primaria || '#111827'
   const isA4 = largura === 'A4'
+  const urlAcompanhamento = os.codigo_acompanhamento
+    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://cellflow.com.br'}/acompanhar/${os.codigo_acompanhamento}`
+    : null
 
   const getTitulo = () => {
     switch (tipo) {
@@ -399,6 +404,16 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
             </div>
           </div>
         </div>
+
+        {/* QR Code de acompanhamento */}
+        {urlAcompanhamento && (
+          <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col items-center gap-2">
+            <QRCodeSVG value={urlAcompanhamento} size={100} />
+            <p className="text-xs text-gray-500 text-center">
+              Escaneie para acompanhar sua OS
+            </p>
+          </div>
+        )}
 
         {/* Rodapé */}
         <div className="border-t border-gray-200 mt-6 pt-4 text-center">
@@ -749,6 +764,19 @@ export function CupomOS({ os, tipo = 'entrada', empresa, config, operador }: Cup
           <p className={is58mm ? 'text-[8px]' : 'text-[10px]'}>Assinatura do Cliente</p>
         </div>
       </div>
+
+      {/* QR Code de acompanhamento */}
+      {urlAcompanhamento && (
+        <div className={`text-center ${is58mm ? 'my-2' : 'my-3'}`}>
+          <Separator />
+          <div className="flex justify-center py-2">
+            <QRCodeSVG value={urlAcompanhamento} size={is58mm ? 80 : 100} />
+          </div>
+          <p className={is58mm ? 'text-[7px]' : 'text-[9px]'}>
+            Acompanhe sua OS pelo QR Code
+          </p>
+        </div>
+      )}
 
       {/* Rodapé */}
       <div className={`text-center ${is58mm ? 'mt-2 text-[7px]' : 'mt-4 text-[9px]'}`}>

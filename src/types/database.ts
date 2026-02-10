@@ -178,6 +178,7 @@ export interface OrdemServico {
   data_entrega?: string
   observacoes?: string
   observacoes_internas?: string
+  codigo_acompanhamento?: string
   created_at: string
   updated_at: string
   // Relacionamentos

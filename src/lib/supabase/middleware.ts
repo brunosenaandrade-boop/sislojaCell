@@ -72,7 +72,7 @@ export async function updateSession(request: NextRequest) {
   // ============================================
   // ROTAS PÚBLICAS (sem autenticação)
   // ============================================
-  const publicRoutes = ['/login', '/recuperar-senha', '/cadastro', '/alterar-senha', '/precos', '/termos', '/privacidade']
+  const publicRoutes = ['/login', '/recuperar-senha', '/cadastro', '/alterar-senha', '/precos', '/termos', '/privacidade', '/acompanhar']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
   // Landing page (/) é pública
@@ -85,7 +85,8 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/api/asaas/webhook') ||
     pathname.startsWith('/api/auth/cadastro') ||
     pathname.startsWith('/api/indicacao') ||
-    pathname.startsWith('/api/email/trial-check')
+    pathname.startsWith('/api/email/trial-check') ||
+    pathname.startsWith('/api/acompanhamento')
   ) {
     return supabaseResponse
   }

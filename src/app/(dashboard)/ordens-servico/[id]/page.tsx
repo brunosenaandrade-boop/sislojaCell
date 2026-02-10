@@ -59,6 +59,8 @@ import {
   Wrench,
   Package,
   Loader2,
+  MessageCircle,
+  Share2,
 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -330,6 +332,43 @@ export default function VisualizarOSPage() {
                   Editar
                 </Button>
               </Link>
+
+              {/* Botão enviar link de acompanhamento via WhatsApp */}
+              {os.codigo_acompanhamento && os.cliente?.telefone && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const telefone = (os.cliente?.telefone || '').replace(/\D/g, '')
+                    const aparelho = [os.marca, os.modelo].filter(Boolean).join(' ')
+                    const link = `${window.location.origin}/acompanhar/${os.codigo_acompanhamento}`
+                    const msg = encodeURIComponent(
+                      `Olá${os.cliente?.nome ? `, ${os.cliente.nome}` : ''}! ` +
+                      `Acompanhe sua OS #${String(os.numero).padStart(5, '0')}` +
+                      `${aparelho ? ` (${aparelho})` : ''}: ${link}`
+                    )
+                    window.open(`https://wa.me/55${telefone}?text=${msg}`, '_blank')
+                  }}
+                >
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Enviar Link
+                </Button>
+              )}
+
+              {/* Botão copiar link de acompanhamento */}
+              {os.codigo_acompanhamento && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  title="Copiar link de acompanhamento"
+                  onClick={() => {
+                    const link = `${window.location.origin}/acompanhar/${os.codigo_acompanhamento}`
+                    navigator.clipboard.writeText(link)
+                    toast.success('Link de acompanhamento copiado!')
+                  }}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              )}
 
               {/* Botao de alterar status */}
               {statusDisponiveis.length > 0 && (
