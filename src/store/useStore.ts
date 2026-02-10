@@ -434,6 +434,18 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
         mesesBonus: json.empresa?.meses_bonus || 0,
         isLoaded: true,
       })
+
+      // Sincronizar status atualizado no auth store (corrige banner de trial desatualizado)
+      if (json.empresa?.status_assinatura) {
+        const authState = useAuthStore.getState()
+        if (authState.empresa && authState.empresa.status_assinatura !== json.empresa.status_assinatura) {
+          authState.setEmpresa({
+            ...authState.empresa,
+            status_assinatura: json.empresa.status_assinatura,
+            trial_fim: json.empresa.trial_fim ?? authState.empresa.trial_fim,
+          })
+        }
+      }
     } catch {
       // silently fail - não bloqueia o uso
       set({ isLoaded: true })
