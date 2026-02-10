@@ -338,7 +338,8 @@ export default function VisualizarOSPage() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    const telefone = (os.cliente?.telefone || '').replace(/\D/g, '')
+                    let telefone = (os.cliente?.telefone || '').replace(/\D/g, '')
+                    if (telefone.length <= 11) telefone = `55${telefone}`
                     const aparelho = [os.marca, os.modelo].filter(Boolean).join(' ')
                     const link = `${window.location.origin}/acompanhar/${os.codigo_acompanhamento}`
                     const msg = encodeURIComponent(
@@ -346,7 +347,7 @@ export default function VisualizarOSPage() {
                       `Acompanhe sua OS #${String(os.numero).padStart(5, '0')}` +
                       `${aparelho ? ` (${aparelho})` : ''}: ${link}`
                     )
-                    window.open(`https://wa.me/55${telefone}?text=${msg}`, '_blank')
+                    window.open(`https://wa.me/${telefone}?text=${msg}`, '_blank')
                   }}
                 >
                   <MessageCircle className="mr-2 h-4 w-4" />
@@ -360,10 +361,14 @@ export default function VisualizarOSPage() {
                   variant="outline"
                   size="icon"
                   title="Copiar link de acompanhamento"
-                  onClick={() => {
+                  onClick={async () => {
                     const link = `${window.location.origin}/acompanhar/${os.codigo_acompanhamento}`
-                    navigator.clipboard.writeText(link)
-                    toast.success('Link de acompanhamento copiado!')
+                    try {
+                      await navigator.clipboard.writeText(link)
+                      toast.success('Link de acompanhamento copiado!')
+                    } catch {
+                      toast.error('Não foi possível copiar o link')
+                    }
                   }}
                 >
                   <Share2 className="h-4 w-4" />

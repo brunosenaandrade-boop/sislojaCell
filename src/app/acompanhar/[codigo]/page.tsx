@@ -51,9 +51,8 @@ interface EmpresaData {
 }
 
 async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaData } | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
   const url = `${baseUrl}/api/acompanhamento/${codigo}`
 
   try {
@@ -92,7 +91,7 @@ export default async function AcompanharPage({
   const { codigo } = await params
   const data = await fetchOS(codigo)
 
-  if (!data) {
+  if (!data || !data.empresa) {
     notFound()
   }
 
