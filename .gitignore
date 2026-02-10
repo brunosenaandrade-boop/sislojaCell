@@ -46,3 +46,6 @@ database/
 
 .vercel
 .env*.local
+
+# MCP config (contém tokens sensíveis)
+.mcp.json
