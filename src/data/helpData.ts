@@ -298,18 +298,45 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         pergunta: 'Como imprimir a OS?',
         resposta: 'Na visualização da OS, clique em "Imprimir". O documento inclui dados do cliente, itens, valores e termos de garantia.',
       },
+      {
+        pergunta: 'Como o cliente acompanha o status da OS?',
+        resposta: 'Cada OS gera automaticamente um código de acompanhamento. O cliente pode escanear o QR Code no cupom impresso ou acessar o link enviado por WhatsApp. A página mostra o status em tempo real, sem precisar de login.',
+      },
+      {
+        pergunta: 'Como enviar o link de acompanhamento para o cliente?',
+        resposta: 'Na visualização da OS, clique no botão "Enviar Link" ao lado de Imprimir. Isso abre o WhatsApp com uma mensagem pronta contendo o link de acompanhamento. Você também pode copiar o link clicando no ícone de compartilhamento.',
+      },
+      {
+        pergunta: 'O QR Code aparece no cupom automaticamente?',
+        resposta: 'Sim! Ao imprimir qualquer tipo de comprovante (entrada, completa ou entrega), o QR Code de acompanhamento aparece automaticamente no rodapé. Funciona em impressoras térmicas (58mm e 80mm) e em A4.',
+      },
+      {
+        pergunta: 'O cliente precisa criar conta para acompanhar?',
+        resposta: 'Não. A página de acompanhamento é pública e não exige login. O cliente só precisa do link ou escanear o QR Code.',
+      },
     ],
     guias: [
       {
         titulo: 'Fluxo completo de uma OS',
         passos: [
           'Crie a OS com dados do cliente e descrição',
+          'Imprima o comprovante de entrada (já vem com QR Code)',
           'Mude para "Em Andamento" ao iniciar',
           'Adicione produtos/serviços utilizados',
           'Mude para "Pronta" ao finalizar',
-          'Notifique o cliente',
+          'Clique em "Enviar Link" para notificar o cliente via WhatsApp',
           'Receba o pagamento',
           'Mude para "Entregue" na retirada',
+        ],
+      },
+      {
+        titulo: 'Enviar link de acompanhamento ao cliente',
+        passos: [
+          'Abra a OS desejada',
+          'Clique no botão "Enviar Link" (ícone do WhatsApp)',
+          'O WhatsApp abre com mensagem pronta e link',
+          'Envie a mensagem para o cliente',
+          'O cliente clica no link e vê o status em tempo real',
         ],
       },
     ],
@@ -317,6 +344,10 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       {
         titulo: 'Prazos realistas',
         descricao: 'Defina prazos com margem de segurança. É melhor entregar antes do prazo do que atrasar.',
+      },
+      {
+        titulo: 'Acompanhamento reduz ligações',
+        descricao: 'Envie o link de acompanhamento ao cliente logo na entrada. Isso reduz ligações perguntando "meu celular já ficou pronto?" — o cliente consulta sozinho.',
       },
     ],
   },
