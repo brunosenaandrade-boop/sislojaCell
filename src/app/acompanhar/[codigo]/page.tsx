@@ -115,8 +115,8 @@ export default async function AcompanharPage({
     })
   }
 
-  const whatsappNumber = (empresa.whatsapp || empresa.telefone || '')
-    .replace(/\D/g, '')
+  const whatsappNumber = (empresa.whatsapp || '').replace(/\D/g, '')
+  const telefoneNumber = (empresa.telefone || '').replace(/\D/g, '')
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -337,9 +337,9 @@ export default async function AcompanharPage({
           </a>
         )}
 
-        {whatsappNumber === '' && empresa.telefone && (
+        {!whatsappNumber && telefoneNumber && (
           <a
-            href={`tel:${empresa.telefone}`}
+            href={`tel:${telefoneNumber}`}
             className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition-colors"
           >
             <Phone className="h-5 w-5" />
