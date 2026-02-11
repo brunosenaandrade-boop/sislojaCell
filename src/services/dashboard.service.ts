@@ -172,7 +172,7 @@ export const dashboardService = {
 
     const { data, error } = await supabase
       .from('vendas')
-      .select('*, cliente:clientes(id,nome)')
+      .select('*, cliente:clientes(id,nome), itens:itens_venda(descricao,quantidade)')
       .eq('empresa_id', empresaId)
       .order('created_at', { ascending: false })
       .limit(limite ?? 5)

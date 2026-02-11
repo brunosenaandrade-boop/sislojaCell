@@ -477,12 +477,14 @@ export default function CaixaPage() {
               <CardContent>
                 <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
                   {(() => {
-                    // Calcular totais por forma de pagamento das vendas
+                    // Calcular totais por forma de pagamento das vendas e OS
                     const totais: Record<string, number> = { dinheiro: 0, pix: 0, debito: 0, credito: 0 }
                     movimentacoes
-                      .filter(m => m.tipo === 'venda' && m.valor > 0)
+                      .filter(m => (m.tipo === 'venda' || m.tipo === 'os') && m.valor > 0)
                       .forEach(m => {
-                        const forma = (m as unknown as { venda?: { forma_pagamento?: string } }).venda?.forma_pagamento || 'dinheiro'
+                        const venda = (m as unknown as { venda?: { forma_pagamento?: string } }).venda
+                        const osData = (m as unknown as { os?: { forma_pagamento?: string } }).os
+                        const forma = venda?.forma_pagamento || osData?.forma_pagamento || 'dinheiro'
                         if (forma in totais) totais[forma] += m.valor
                         else totais.dinheiro += m.valor
                       })
@@ -561,7 +563,12 @@ export default function CaixaPage() {
                               {mov.descricao || '-'}
                             </TableCell>
                             <TableCell>
-                              <span className="text-muted-foreground">-</span>
+                              {(() => {
+                                const venda = (mov as unknown as { venda?: { forma_pagamento?: string } }).venda
+                                const osData = (mov as unknown as { os?: { forma_pagamento?: string } }).os
+                                const forma = venda?.forma_pagamento || osData?.forma_pagamento
+                                return forma ? getFormaPagamentoIcon(forma) : <span className="text-muted-foreground">-</span>
+                              })()}
                             </TableCell>
                             <TableCell className="text-sm">{mov.usuario_id || '-'}</TableCell>
                             <TableCell className="text-right font-bold">

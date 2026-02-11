@@ -45,12 +45,13 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useCarrinhoStore, useAuthStore, useCaixaStore, usePrintConfigStore } from '@/store/useStore'
+import { useCarrinhoStore, useAuthStore, usePrintConfigStore } from '@/store/useStore'
 import { CupomVenda } from '@/components/print/CupomVenda'
 import type { Produto, Cliente } from '@/types/database'
 import { produtosService } from '@/services/produtos.service'
 import { clientesService } from '@/services/clientes.service'
 import { vendasService } from '@/services/vendas.service'
+import { caixaService } from '@/services/caixa.service'
 
 type FormaPagamento = 'dinheiro' | 'pix' | 'debito' | 'credito'
 
@@ -77,8 +78,8 @@ export default function VendasPage() {
     getLucroTotal,
   } = useCarrinhoStore()
 
-  const { registrarVenda, isCaixaAberto } = useCaixaStore()
   const printConfig = usePrintConfigStore()
+  const [caixaAbertoId, setCaixaAbertoId] = useState<string | null>(null)
 
   const [busca, setBusca] = useState('')
   const [buscaAberta, setBuscaAberta] = useState(false)
@@ -121,13 +122,15 @@ export default function VendasPage() {
     const carregarDados = async () => {
       setIsLoadingData(true)
       try {
-        const [produtosRes, clientesRes] = await Promise.all([
+        const [produtosRes, clientesRes, caixaRes] = await Promise.all([
           produtosService.listar(),
           clientesService.listar(),
+          caixaService.buscarAberto(),
         ])
 
         if (produtosRes.data) setProdutosCatalogo(produtosRes.data)
         if (clientesRes.data) setClientesLista(clientesRes.data)
+        if (caixaRes.data) setCaixaAbertoId(caixaRes.data.id)
 
         if (produtosRes.error) toast.error('Erro ao carregar produtos: ' + produtosRes.error)
         if (clientesRes.error) toast.error('Erro ao carregar clientes: ' + clientesRes.error)
@@ -262,12 +265,12 @@ export default function VendasPage() {
       toast.error('Adicione produtos ao carrinho')
       return
     }
-    if (!isCaixaAberto()) {
+    if (!caixaAbertoId) {
       toast.warning('O caixa não está aberto. A venda não será registrada no controle de caixa.')
     }
     setValorRecebido('')
     setDialogFinalizarOpen(true)
-  }, [itens.length, isCaixaAberto])
+  }, [itens.length, caixaAbertoId])
 
   // Finalizar venda
   const handleFinalizarVenda = async () => {
@@ -320,14 +323,14 @@ export default function VendasPage() {
         data: new Date().toISOString(),
       }
 
-      // Registrar no caixa se estiver aberto
-      if (isCaixaAberto()) {
-        registrarVenda({
+      // Registrar no caixa se estiver aberto (persiste no banco)
+      if (caixaAbertoId && vendaCriada) {
+        await caixaService.adicionarMovimentacao({
+          caixa_id: caixaAbertoId,
+          tipo: 'venda',
           valor: venda.valor_total,
-          custo: venda.valor_custo,
-          formaPagamento: formaPagamento,
           descricao: `Venda #${venda.numero} - ${itens.map(i => i.nome).join(', ')}`,
-          vendaId: vendaCriada?.id || String(venda.numero),
+          venda_id: vendaCriada.id,
         })
       }
 

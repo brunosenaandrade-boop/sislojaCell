@@ -296,7 +296,8 @@ export default function DashboardPage() {
         {/* Cards principais */}
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4" data-tutorial="dashboard-kpis">
           {/* Vendas do dia */}
-          <Card>
+          <Link href="/vendas/historico">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Faturamento do Dia
@@ -310,6 +311,7 @@ export default function DashboardPage() {
               </p>
             </CardContent>
           </Card>
+          </Link>
 
           {/* Custo */}
           <Card>
@@ -481,6 +483,13 @@ export default function DashboardPage() {
                     >
                       <p className="font-medium">Venda #{venda.numero}</p>
                       <p className="text-sm text-muted-foreground">{(venda.cliente as { id: string; nome: string } | undefined)?.nome || 'Cliente Avulso'}</p>
+                      {(venda as unknown as { itens?: { descricao: string; quantidade: number }[] }).itens?.length ? (
+                        <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                          {(venda as unknown as { itens: { descricao: string; quantidade: number }[] }).itens
+                            .map(i => i.quantidade > 1 ? `${i.quantidade}x ${i.descricao}` : i.descricao)
+                            .join(', ')}
+                        </p>
+                      ) : null}
                     </div>
                     <div className="flex items-center gap-2">
                       {venda.cancelada ? (

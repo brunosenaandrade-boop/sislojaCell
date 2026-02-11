@@ -163,7 +163,7 @@ export const caixaService = {
 
     const { data, error } = await supabase
       .from('movimentacoes_caixa')
-      .select('*, venda:vendas(forma_pagamento)')
+      .select('*, venda:vendas(forma_pagamento), os:ordens_servico(forma_pagamento)')
       .eq('caixa_id', caixaId)
       .order('created_at', { ascending: true })
 

@@ -61,6 +61,9 @@ import {
   Loader2,
   MessageCircle,
   Share2,
+  Banknote,
+  QrCode,
+  CreditCard,
 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -71,6 +74,16 @@ import { CupomOS } from '@/components/print/CupomOS'
 import { useAuthStore, usePrintConfigStore } from '@/store/useStore'
 import { PatternLock } from '@/components/ui/pattern-lock'
 import { ordensServicoService } from '@/services/ordens-servico.service'
+import { caixaService } from '@/services/caixa.service'
+
+type FormaPagamento = 'dinheiro' | 'pix' | 'debito' | 'credito'
+
+const formasPagamento: { value: FormaPagamento; label: string; icon: React.ReactNode }[] = [
+  { value: 'dinheiro', label: 'Dinheiro', icon: <Banknote className="h-5 w-5" /> },
+  { value: 'pix', label: 'PIX', icon: <QrCode className="h-5 w-5" /> },
+  { value: 'debito', label: 'Débito', icon: <CreditCard className="h-5 w-5" /> },
+  { value: 'credito', label: 'Crédito', icon: <CreditCard className="h-5 w-5" /> },
+]
 
 // Configurações de status
 const statusConfig: Record<StatusOS, { label: string; color: string; icon: React.ReactNode }> = {
@@ -110,6 +123,16 @@ export default function VisualizarOSPage() {
   const [diagnostico, setDiagnostico] = useState('')
   const [showPrint, setShowPrint] = useState(false)
   const [tipoPrint, setTipoPrint] = useState<'entrada' | 'completa' | 'entrega'>('entrada')
+  const [dialogPagamentoOpen, setDialogPagamentoOpen] = useState(false)
+  const [formaPagamentoOS, setFormaPagamentoOS] = useState<FormaPagamento | ''>('')
+  const [caixaAbertoId, setCaixaAbertoId] = useState<string | null>(null)
+
+  // Carregar OS e status do caixa
+  useEffect(() => {
+    caixaService.buscarAberto().then(res => {
+      if (res.data) setCaixaAbertoId(res.data.id)
+    })
+  }, [])
 
   // Carregar OS
   useEffect(() => {
@@ -199,20 +222,37 @@ export default function VisualizarOSPage() {
     }
   }
 
-  // Marcar como pago
+  // Marcar como pago (com forma de pagamento)
   const handleMarcarPago = async () => {
-    if (!os) return
+    if (!os || !formaPagamentoOS) return
     setIsSaving(true)
     try {
+      const dataPagamento = new Date().toISOString()
       const { error } = await ordensServicoService.atualizar(os.id, {
         pago: true,
-        data_pagamento: new Date().toISOString(),
+        data_pagamento: dataPagamento,
+        forma_pagamento: formaPagamentoOS,
       })
       if (error) {
         toast.error('Erro ao registrar pagamento: ' + error)
         return
       }
-      setOs(prev => prev ? { ...prev, pago: true, data_pagamento: new Date().toISOString() } : null)
+
+      // Registrar no caixa se estiver aberto
+      if (caixaAbertoId) {
+        const aparelho = [os.marca, os.modelo].filter(Boolean).join(' ')
+        await caixaService.adicionarMovimentacao({
+          caixa_id: caixaAbertoId,
+          tipo: 'os',
+          valor: os.valor_total,
+          descricao: `OS #${os.numero} - ${aparelho || 'Serviço'}`,
+          os_id: os.id,
+        })
+      }
+
+      setOs(prev => prev ? { ...prev, pago: true, data_pagamento: dataPagamento, forma_pagamento: formaPagamentoOS } : null)
+      setDialogPagamentoOpen(false)
+      setFormaPagamentoOS('')
       toast.success('Pagamento registrado')
     } catch {
       toast.error('Erro ao registrar pagamento')
@@ -725,7 +765,7 @@ export default function VisualizarOSPage() {
                   <Separator />
 
                   {!os.pago && os.valor_total > 0 && (
-                    <Button className="w-full" onClick={handleMarcarPago} disabled={isSaving}>
+                    <Button className="w-full" onClick={() => setDialogPagamentoOpen(true)} disabled={isSaving}>
                       <DollarSign className="mr-2 h-4 w-4" />
                       Registrar Pagamento
                     </Button>
@@ -734,7 +774,9 @@ export default function VisualizarOSPage() {
                   {os.pago && (
                     <div className="rounded-lg bg-green-50 p-3 text-center text-green-700">
                       <CheckCircle className="mx-auto h-6 w-6 mb-1" />
-                      <p className="font-medium">Pago</p>
+                      <p className="font-medium">Pago{os.forma_pagamento ? ` - ${
+                        { dinheiro: 'Dinheiro', pix: 'PIX', debito: 'Débito', credito: 'Crédito' }[os.forma_pagamento] || os.forma_pagamento
+                      }` : ''}</p>
                     </div>
                   )}
                 </CardContent>
@@ -780,6 +822,53 @@ export default function VisualizarOSPage() {
           </div>
         </div>
       </div>
+
+      {/* Dialog de Pagamento */}
+      <Dialog open={dialogPagamentoOpen} onOpenChange={setDialogPagamentoOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Registrar Pagamento</DialogTitle>
+            <DialogDescription>
+              Selecione a forma de pagamento para a OS #{os?.numero}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Valor Total</p>
+              <p className="text-2xl font-bold text-green-600">{os ? formatCurrency(os.valor_total) : ''}</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Forma de Pagamento</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {formasPagamento.map(fp => (
+                  <Button
+                    key={fp.value}
+                    variant={formaPagamentoOS === fp.value ? 'default' : 'outline'}
+                    className="justify-start gap-2"
+                    onClick={() => setFormaPagamentoOS(fp.value)}
+                  >
+                    {fp.icon}
+                    {fp.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            {!caixaAbertoId && (
+              <p className="text-xs text-orange-600">
+                O caixa não está aberto. O pagamento será registrado na OS mas não aparecerá no controle de caixa.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogPagamentoOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleMarcarPago} disabled={!formaPagamentoOS || isSaving}>
+              {isSaving ? 'Registrando...' : 'Confirmar Pagamento'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
