@@ -8,6 +8,13 @@ import {
   Settings,
   AlertTriangle,
   CreditCard,
+  LayoutDashboard,
+  Users,
+  Wrench,
+  BarChart3,
+  Gift,
+  ScrollText,
+  User,
   LucideIcon,
 } from 'lucide-react'
 
@@ -47,15 +54,15 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       },
       {
         pergunta: 'Como configurar os dados da minha empresa?',
-        resposta: 'Acesse Configurações > Dados da Empresa. Lá você pode adicionar nome, CNPJ, endereço, telefone e logo. Essas informações aparecerão nos cupons e documentos gerados.',
+        resposta: 'Acesse Configurações > aba Empresa. Lá você pode adicionar nome, CNPJ, endereço, telefone, WhatsApp e logo. Essas informações aparecerão nos cupons e documentos gerados.',
       },
       {
         pergunta: 'Como criar usuários para minha equipe?',
-        resposta: 'Em Configurações > Usuários, clique em "Novo Usuário". Defina nome, email, senha e o perfil (admin, operador ou vendedor). Cada perfil tem permissões diferentes.',
+        resposta: 'Em Configurações > aba Usuários, clique em "Novo Usuário". Defina nome, email, senha e o perfil (Administrador ou Funcionário). Cada perfil tem permissões diferentes.',
       },
       {
         pergunta: 'Qual a diferença entre os perfis de usuário?',
-        resposta: 'Admin: acesso total, pode excluir registros e ver relatórios. Operador: pode cadastrar e editar, mas não excluir. Vendedor: apenas operações de venda e OS.',
+        resposta: 'Administrador: acesso total ao sistema, incluindo configurações, relatórios, logs e exclusão de registros. Funcionário: acesso a vendas, OS, clientes e estoque, mas sem acesso a configurações, relatórios financeiros e logs.',
       },
     ],
     guias: [
@@ -74,6 +81,98 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       {
         titulo: 'Tour Guiado',
         descricao: 'Use o botão "Iniciar Tour Guiado" no topo desta página para conhecer as principais funções do sistema.',
+      },
+    ],
+  },
+  {
+    id: 'dashboard',
+    titulo: 'Dashboard',
+    icon: LayoutDashboard,
+    faqs: [
+      {
+        pergunta: 'O que mostra o Dashboard?',
+        resposta: 'O Dashboard mostra o resumo do dia: faturamento, custos, lucro líquido, OS abertas, alerta de estoque baixo, aniversariantes do dia, gráfico de vendas da semana, últimas vendas e últimas OS.',
+      },
+      {
+        pergunta: 'Posso cancelar uma venda pelo Dashboard?',
+        resposta: 'Sim. Na seção "Últimas Vendas", clique no menu (três pontos) ao lado da venda e selecione "Cancelar venda". Informe o motivo do cancelamento. O estoque dos produtos será restaurado automaticamente.',
+      },
+      {
+        pergunta: 'Posso mudar o status de uma OS pelo Dashboard?',
+        resposta: 'Sim. Na seção "Ordens de Serviço", clique no badge de status da OS. Um menu aparece com os status disponíveis para transição. Isso permite atualizar o status rapidamente sem abrir a OS.',
+      },
+      {
+        pergunta: 'O que significa o alerta de estoque?',
+        resposta: 'O alerta amarelo aparece quando há produtos com estoque abaixo do mínimo configurado. Clique em "Ver produtos" para ir direto à lista de produtos com estoque baixo.',
+      },
+    ],
+    guias: [
+      {
+        titulo: 'Usar o Dashboard no dia a dia',
+        passos: [
+          'Confira o faturamento e lucro do dia nos cards principais',
+          'Verifique se há alertas de estoque baixo',
+          'Veja aniversariantes para enviar mensagens de felicitação',
+          'Use os botões rápidos (Nova Venda, Nova OS, Caixa)',
+          'Acompanhe as últimas vendas e OS na parte inferior',
+          'Analise o gráfico de faturamento semanal para tendências',
+        ],
+      },
+    ],
+    dicas: [
+      {
+        titulo: 'Atalhos rápidos',
+        descricao: 'Use os botões "Nova Venda", "Nova OS" e "Caixa" no topo do Dashboard para acessar as funções mais usadas sem navegar pelo menu.',
+      },
+    ],
+  },
+  {
+    id: 'clientes',
+    titulo: 'Clientes',
+    icon: Users,
+    faqs: [
+      {
+        pergunta: 'Como cadastrar um cliente?',
+        resposta: 'Acesse Clientes e clique em "Novo Cliente". Preencha nome (obrigatório), telefone, email, CPF, data de nascimento, endereço e cidade. Clique em Salvar.',
+      },
+      {
+        pergunta: 'Como buscar um cliente?',
+        resposta: 'Na página de Clientes, use o campo de busca para pesquisar por nome, telefone, CPF ou email. A busca é feita automaticamente conforme você digita.',
+      },
+      {
+        pergunta: 'Como exportar a lista de clientes?',
+        resposta: 'Na página de Clientes, clique no botão "Exportar". Um arquivo CSV será gerado com nome, telefone, email, CPF, data de nascimento, endereço e cidade de todos os clientes.',
+      },
+      {
+        pergunta: 'Como ver os aniversariantes da semana?',
+        resposta: 'Na página de Clientes, um card especial mostra os aniversariantes dos próximos 7 dias. Clientes com aniversário no dia atual ganham um badge "Aniversário!" na tabela.',
+      },
+      {
+        pergunta: 'Por que não consigo excluir um cliente?',
+        resposta: 'A exclusão de clientes é restrita ao perfil Administrador. Além disso, clientes vinculados a vendas ou OS não podem ser excluídos para manter o histórico.',
+      },
+    ],
+    guias: [
+      {
+        titulo: 'Cadastrar e gerenciar clientes',
+        passos: [
+          'Acesse Clientes no menu lateral',
+          'Clique em "Novo Cliente"',
+          'Preencha os dados (nome é obrigatório)',
+          'Informe a data de nascimento para receber alertas de aniversário',
+          'Salve o cadastro',
+          'Use a busca para encontrar clientes rapidamente',
+        ],
+      },
+    ],
+    dicas: [
+      {
+        titulo: 'Cadastre a data de nascimento',
+        descricao: 'Clientes com data de nascimento cadastrada aparecem nos alertas de aniversário do Dashboard e da página de Clientes. Use isso para enviar mensagens de felicitação e fidelizar.',
+      },
+      {
+        titulo: 'Exporte antes de limpar',
+        descricao: 'Antes de qualquer limpeza no cadastro, use o botão "Exportar" para gerar um backup em CSV dos seus clientes.',
       },
     ],
   },
@@ -120,6 +219,53 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       {
         titulo: 'Margem de lucro saudável',
         descricao: 'O sistema indica margem em cores: verde (>50%), azul (30-50%), laranja (<30%). Margens abaixo de 30% podem não cobrir custos operacionais.',
+      },
+      {
+        titulo: 'Use o leitor de código de barras',
+        descricao: 'No PDV, você pode usar um leitor de código de barras. Ao escanear, se o código corresponder a um produto cadastrado, ele é adicionado automaticamente ao carrinho.',
+      },
+    ],
+  },
+  {
+    id: 'servicos',
+    titulo: 'Serviços',
+    icon: Wrench,
+    faqs: [
+      {
+        pergunta: 'Como cadastrar um serviço?',
+        resposta: 'Acesse Serviços e clique em "Novo Serviço". Preencha nome, descrição, tipo (Básico ou Avançado), tempo estimado e preço base. Clique em Salvar.',
+      },
+      {
+        pergunta: 'Qual a diferença entre serviço Básico e Avançado?',
+        resposta: 'É uma classificação organizacional. Serviços Básicos são reparos simples (troca de tela, bateria). Avançados são reparos complexos (reparo de placa, micro soldagem). Use para organizar e filtrar.',
+      },
+      {
+        pergunta: 'Como desativar um serviço?',
+        resposta: 'Na lista de serviços, clique no menu de três pontos e selecione "Desativar". Serviços inativos ficam esmaecidos na lista e não aparecem nas opções ao criar uma OS.',
+      },
+      {
+        pergunta: 'Para que serve o tempo estimado?',
+        resposta: 'O tempo estimado ajuda a calcular previsões de entrega ao criar ordens de serviço. Informe em minutos — o sistema formata automaticamente (ex: 90 min = 1h 30min).',
+      },
+    ],
+    guias: [
+      {
+        titulo: 'Cadastrar serviços da loja',
+        passos: [
+          'Acesse Serviços no menu lateral',
+          'Clique em "Novo Serviço"',
+          'Preencha o nome do serviço (ex: Troca de Tela)',
+          'Selecione o tipo: Básico ou Avançado',
+          'Informe o tempo estimado em minutos',
+          'Defina o preço base',
+          'Salve o serviço',
+        ],
+      },
+    ],
+    dicas: [
+      {
+        titulo: 'Preço base é referência',
+        descricao: 'O preço base do serviço é uma referência. Ao adicionar o serviço em uma OS, você pode ajustar o valor conforme o caso específico.',
       },
     ],
   },
@@ -195,19 +341,31 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       },
       {
         pergunta: 'Como aplicar desconto?',
-        resposta: 'No carrinho, você pode aplicar desconto por item ou no total. Clique no valor e informe o desconto em reais ou percentual.',
+        resposta: 'No painel de resumo (lado direito no desktop, botão "Resumo" no mobile), há um campo "Desconto" em R$. Informe o valor do desconto no total da venda.',
       },
       {
         pergunta: 'Quais são os atalhos do PDV?',
-        resposta: 'F2: Buscar produto. F4: Finalizar venda. F8: Cancelar venda. Esc: Limpar busca. Use os atalhos para agilizar o atendimento.',
+        resposta: 'F2: Focar na busca de produtos. F4: Finalizar venda. Esc: Limpar campo de busca. Use os atalhos para agilizar o atendimento.',
       },
       {
         pergunta: 'Como cancelar uma venda já finalizada?',
-        resposta: 'Na lista de vendas, localize a venda, clique no menu e selecione "Estornar". O estoque será automaticamente devolvido.',
+        resposta: 'No Dashboard, na seção "Últimas Vendas", clique no menu (três pontos) ao lado da venda e selecione "Cancelar venda". Informe o motivo — o estoque é restaurado automaticamente.',
       },
       {
         pergunta: 'Como vincular um cliente à venda?',
-        resposta: 'No PDV, clique em "Selecionar Cliente" antes de finalizar. Isso permite emitir nota com CPF e manter histórico de compras.',
+        resposta: 'No painel de resumo, clique em "Selecionar" na seção Cliente. Busque o cliente por nome ou telefone e selecione. O vínculo é opcional — sem cliente, a venda é registrada como "Cliente Avulso".',
+      },
+      {
+        pergunta: 'Como usar o leitor de código de barras?',
+        resposta: 'Com o cursor no campo de busca (F2), escaneie o código de barras. Se o código corresponder a um produto cadastrado com estoque, ele é adicionado automaticamente ao carrinho.',
+      },
+      {
+        pergunta: 'Preciso abrir o caixa antes de vender?',
+        resposta: 'Não é obrigatório, mas recomendado. Se o caixa não estiver aberto, um aviso aparece ao finalizar. A venda é registrada, porém não será contabilizada no controle de caixa.',
+      },
+      {
+        pergunta: 'O que são as formas de pagamento disponíveis?',
+        resposta: 'Dinheiro (com calculadora de troco), PIX, Débito e Crédito. Ao selecionar Dinheiro, informe o valor recebido para calcular o troco automaticamente.',
       },
     ],
     guias: [
@@ -218,9 +376,10 @@ export const categoriasAjuda: CategoriaAjuda[] = [
           'Busque e adicione os produtos (F2 para buscar)',
           'Ajuste quantidades se necessário',
           'Selecione o cliente (opcional)',
-          'Aplique desconto se necessário',
+          'Aplique desconto em R$ se necessário',
           'Escolha forma de pagamento',
           'Finalize a venda (F4)',
+          'Imprima o cupom ou inicie nova venda',
         ],
       },
     ],
@@ -228,6 +387,10 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       {
         titulo: 'Atalhos economizam tempo',
         descricao: 'Memorize F2 (buscar) e F4 (finalizar). Com prática, você faz uma venda em segundos sem usar o mouse.',
+      },
+      {
+        titulo: 'Estoque é validado em tempo real',
+        descricao: 'O PDV impede adicionar produtos sem estoque e limita a quantidade ao estoque disponível. Se aparecer "Quantidade máxima atingida", verifique o estoque do produto.',
       },
     ],
   },
@@ -284,11 +447,11 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     faqs: [
       {
         pergunta: 'Como criar uma ordem de serviço?',
-        resposta: 'Acesse Ordens de Serviço > Nova OS. Selecione o cliente, descreva o problema/serviço, adicione produtos e serviços, defina prazo e salve.',
+        resposta: 'Acesse Ordens de Serviço > Nova OS. Selecione o cliente, informe os dados do aparelho (marca, modelo, cor, IMEI), descreva o problema, adicione produtos e serviços, defina prazo e salve.',
       },
       {
         pergunta: 'Quais são os status de uma OS?',
-        resposta: 'Aberta (aguardando início), Em Andamento (sendo executada), Aguardando Peças, Aguardando Aprovação, Pronta (finalizada), Entregue (cliente retirou), Cancelada.',
+        resposta: 'Aberta (recebido), Em Análise (técnico analisando), Aguardando Peça, Aguardando Aprovação (orçamento enviado), Em Andamento (reparo em execução), Finalizada (serviço concluído), Entregue (cliente retirou), Cancelada.',
       },
       {
         pergunta: 'Como adicionar produtos a uma OS?',
@@ -296,7 +459,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       },
       {
         pergunta: 'Como imprimir a OS?',
-        resposta: 'Na visualização da OS, clique em "Imprimir". O documento inclui dados do cliente, itens, valores e termos de garantia.',
+        resposta: 'Na visualização da OS, clique em "Imprimir". O documento inclui dados do cliente, itens, valores, termos de garantia e um QR Code para acompanhamento.',
       },
       {
         pergunta: 'Como o cliente acompanha o status da OS?',
@@ -314,6 +477,10 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         pergunta: 'O cliente precisa criar conta para acompanhar?',
         resposta: 'Não. A página de acompanhamento é pública e não exige login. O cliente só precisa do link ou escanear o QR Code.',
       },
+      {
+        pergunta: 'Como filtrar OS por status?',
+        resposta: 'Na lista de OS, use o seletor de status ao lado da busca. Você pode filtrar por qualquer status: Aberta, Em Análise, Aguardando Peça, Aguardando Aprovação, Em Andamento, Finalizada, Entregue ou Cancelada.',
+      },
     ],
     guias: [
       {
@@ -321,9 +488,9 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         passos: [
           'Crie a OS com dados do cliente e descrição',
           'Imprima o comprovante de entrada (já vem com QR Code)',
-          'Mude para "Em Andamento" ao iniciar',
+          'Mude para "Em Análise" ao iniciar diagnóstico',
           'Adicione produtos/serviços utilizados',
-          'Mude para "Pronta" ao finalizar',
+          'Mude para "Finalizada" ao concluir o reparo',
           'Clique em "Enviar Link" para notificar o cliente via WhatsApp',
           'Receba o pagamento',
           'Mude para "Entregue" na retirada',
@@ -352,37 +519,152 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     ],
   },
   {
+    id: 'relatorios',
+    titulo: 'Relatórios',
+    icon: BarChart3,
+    faqs: [
+      {
+        pergunta: 'Quais relatórios estão disponíveis?',
+        resposta: 'O sistema oferece 5 abas de relatórios: Vendas (faturamento, custo e lucro por período), OS (quantidade e valor por status), Produtos (ranking dos mais vendidos), Serviços (ranking dos mais realizados) e Clientes (aniversariantes).',
+      },
+      {
+        pergunta: 'Como ver o lucro por período?',
+        resposta: 'Na aba Vendas, selecione o agrupamento: Diário (últimos 7 dias), Semanal (últimos 30 dias) ou Mensal (últimos 6 meses). A tabela mostra vendas, faturamento bruto, custo, lucro líquido e margem para cada período.',
+      },
+      {
+        pergunta: 'Como exportar um relatório?',
+        resposta: 'Nas abas Vendas, Produtos e Serviços, clique no botão "Exportar CSV" no canto superior direito. Um arquivo CSV será gerado com os dados exibidos na tela.',
+      },
+      {
+        pergunta: 'O que mostra o relatório de OS?',
+        resposta: 'A aba OS mostra a quantidade e o valor total de ordens de serviço agrupadas por status (Aberta, Em Análise, Em Andamento, etc.), além do total geral e quantas estão em aberto.',
+      },
+      {
+        pergunta: 'Quem pode ver os relatórios?',
+        resposta: 'Os relatórios são restritos ao perfil Administrador. Funcionários não têm acesso à página de Relatórios.',
+      },
+    ],
+    guias: [
+      {
+        titulo: 'Analisar desempenho da loja',
+        passos: [
+          'Acesse Relatórios no menu lateral',
+          'Na aba Vendas, selecione o período desejado',
+          'Analise lucro líquido e margem de cada período',
+          'Vá na aba Produtos para ver os mais vendidos',
+          'Vá na aba Serviços para ver os mais realizados',
+          'Exporte os dados em CSV para análises externas',
+        ],
+      },
+    ],
+    dicas: [
+      {
+        titulo: 'Top 3 em destaque',
+        descricao: 'Nas abas Produtos e Serviços, os 3 primeiros do ranking aparecem em cards de destaque com posição numerada. Use para identificar seus campeões de vendas.',
+      },
+      {
+        titulo: 'Exporte regularmente',
+        descricao: 'Exporte os relatórios em CSV mensalmente para acompanhar a evolução do negócio em planilhas externas.',
+      },
+    ],
+  },
+  {
+    id: 'indicacoes',
+    titulo: 'Indicações',
+    icon: Gift,
+    faqs: [
+      {
+        pergunta: 'Como funciona o programa de indicação?',
+        resposta: 'Compartilhe seu link de indicação com outras lojas de celular. Quando uma loja se cadastra pelo seu link, assina um plano e permanece ativa por 30 dias, você ganha 1 mês grátis de acesso ao CellFlow. Sem limite de indicações.',
+      },
+      {
+        pergunta: 'Como gerar meu código de indicação?',
+        resposta: 'Acesse Indicações no menu lateral e clique em "Gerar Meu Código de Indicação". O código é gerado automaticamente e você pode compartilhar o link por WhatsApp ou copiar.',
+      },
+      {
+        pergunta: 'Quando recebo o mês grátis?',
+        resposta: 'Após a loja indicada se cadastrar, assinar um plano e permanecer ativa por 30 dias, a indicação é qualificada e o mês bônus é creditado automaticamente.',
+      },
+      {
+        pergunta: 'O que significam os status da indicação?',
+        resposta: 'Cadastrou: a loja se cadastrou. Pagou: assinou um plano. Qualificada: permaneceu ativa por 30 dias. Recompensada: mês bônus foi creditado. Cancelada: a loja cancelou antes da qualificação.',
+      },
+    ],
+    guias: [
+      {
+        titulo: 'Indicar uma loja',
+        passos: [
+          'Acesse Indicações no menu lateral',
+          'Gere seu código de indicação (primeira vez)',
+          'Copie o link ou compartilhe pelo WhatsApp',
+          'Envie para outras lojas de celular',
+          'Acompanhe o status na tabela de histórico',
+        ],
+      },
+    ],
+    dicas: [
+      {
+        titulo: 'Compartilhe pelo WhatsApp',
+        descricao: 'Use o botão "Compartilhar no WhatsApp" para enviar uma mensagem pronta com o link. É a forma mais rápida de indicar.',
+      },
+    ],
+  },
+  {
     id: 'configuracoes',
     titulo: 'Configurações',
     icon: Settings,
     faqs: [
       {
+        pergunta: 'Quais abas existem em Configurações?',
+        resposta: 'Configurações possui 4 abas: Empresa (dados da empresa e logo), Impressão (tipo de impressora, formato do cupom), Usuários (gerenciar equipe) e Sistema (informações e backup).',
+      },
+      {
         pergunta: 'Como alterar a logo da empresa?',
-        resposta: 'Em Configurações > Dados da Empresa, clique na área da logo para fazer upload. Use uma imagem quadrada para melhor resultado.',
+        resposta: 'Em Configurações > aba Empresa, clique em "Enviar Logo" (ou "Alterar Logo" se já tiver uma). Use imagem quadrada (PNG, JPG ou SVG) de até 2MB para melhor resultado.',
       },
       {
         pergunta: 'Como configurar a impressora?',
-        resposta: 'Em Configurações > Impressão, selecione o modelo de impressora térmica. O sistema suporta impressoras de 58mm e 80mm.',
+        resposta: 'Em Configurações > aba Impressão, selecione o tipo (Térmica ou Padrão A4). Para impressoras térmicas, escolha a largura (58mm ou 80mm). Configure o que mostrar no cupom: logo, endereço, telefone e mensagem personalizada.',
       },
       {
         pergunta: 'Como alterar minha senha?',
-        resposta: 'Clique no seu nome no canto superior direito > Minha Conta > Alterar Senha.',
+        resposta: 'Acesse Perfil no menu lateral. Na seção "Alterar Senha", informe a nova senha (mínimo 6 caracteres), confirme e clique em "Alterar Senha".',
       },
       {
         pergunta: 'Como sair do sistema?',
-        resposta: 'Clique no seu nome no canto superior direito e depois em "Sair". Isso encerra sua sessão com segurança.',
+        resposta: 'Clique no seu nome no canto inferior do menu lateral e depois em "Sair". Isso encerra sua sessão com segurança.',
+      },
+      {
+        pergunta: 'Como resetar a senha de um funcionário?',
+        resposta: 'Em Configurações > aba Usuários, clique no ícone de chave ao lado do usuário. Um e-mail de redefinição será enviado para o e-mail cadastrado do funcionário.',
+      },
+      {
+        pergunta: 'Como exportar backup das configurações?',
+        resposta: 'Em Configurações > aba Sistema, clique em "Exportar JSON". Um arquivo com dados da empresa, impressão e usuários será baixado. Obs: este backup não inclui vendas, OS e estoque — o backup completo deve ser feito pelo Supabase.',
       },
     ],
     guias: [
       {
-        titulo: 'Personalizar o sistema',
+        titulo: 'Configurar impressão do cupom',
         passos: [
-          'Acesse Configurações',
-          'Adicione a logo da sua empresa',
-          'Defina a cor primária da marca',
-          'Configure os dados fiscais (CNPJ)',
-          'Preencha endereço completo',
-          'Salve as alterações',
+          'Acesse Configurações > aba Impressão',
+          'Selecione o tipo de impressora (Térmica ou A4)',
+          'Para térmica, escolha a largura do papel (58mm ou 80mm)',
+          'Defina o que mostrar: logo, endereço, telefone',
+          'Personalize a mensagem do rodapé do cupom',
+          'Veja a pré-visualização à direita',
+          'Clique em Salvar',
+        ],
+      },
+      {
+        titulo: 'Gerenciar usuários da equipe',
+        passos: [
+          'Acesse Configurações > aba Usuários',
+          'Clique em "Novo Usuário"',
+          'Preencha nome, email e senha',
+          'Selecione o perfil: Administrador ou Funcionário',
+          'Clique em Salvar',
+          'Para desativar, clique no ícone de olho do usuário',
         ],
       },
     ],
@@ -390,6 +672,66 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       {
         titulo: 'Backup dos dados',
         descricao: 'Seus dados são armazenados na nuvem com backup automático. Você não precisa se preocupar com perda de dados.',
+      },
+      {
+        titulo: 'Pré-visualize o cupom',
+        descricao: 'Na aba Impressão, a pré-visualização mostra como ficará o cupom antes de imprimir. Alterne entre "Venda", "OS Entrada" e "OS Entrega" para ver todos os formatos.',
+      },
+    ],
+  },
+  {
+    id: 'perfil',
+    titulo: 'Perfil',
+    icon: User,
+    faqs: [
+      {
+        pergunta: 'Como alterar meu nome no sistema?',
+        resposta: 'Acesse Perfil no menu lateral. Edite o campo "Nome" e clique no botão de salvar ao lado. O nome será atualizado em todo o sistema.',
+      },
+      {
+        pergunta: 'Posso alterar meu e-mail?',
+        resposta: 'Não. O e-mail de login não pode ser alterado, pois é usado como identificador da conta. Se precisar mudar, entre em contato com o suporte.',
+      },
+      {
+        pergunta: 'Como alterar minha senha?',
+        resposta: 'Acesse Perfil no menu lateral. Na seção "Alterar Senha", informe a nova senha (mínimo 6 caracteres), confirme e clique em "Alterar Senha".',
+      },
+    ],
+    guias: [],
+    dicas: [
+      {
+        titulo: 'Senha forte',
+        descricao: 'Use uma senha com pelo menos 6 caracteres, combinando letras e números. Evite senhas óbvias como "123456".',
+      },
+    ],
+  },
+  {
+    id: 'logs',
+    titulo: 'Logs do Sistema',
+    icon: ScrollText,
+    faqs: [
+      {
+        pergunta: 'O que são os Logs do Sistema?',
+        resposta: 'Logs são registros automáticos de eventos do sistema: erros, ações importantes, avisos e auditoria. Eles ajudam a diagnosticar problemas e rastrear atividades.',
+      },
+      {
+        pergunta: 'Quem pode ver os logs?',
+        resposta: 'Apenas usuários com perfil Administrador têm acesso à página de Logs. Funcionários veem uma mensagem de "Acesso Restrito".',
+      },
+      {
+        pergunta: 'Quais tipos de logs existem?',
+        resposta: 'Erro (vermelho): problemas no sistema. Info (azul): eventos informativos. Aviso (amarelo): situações que merecem atenção. Auditoria (roxo): ações sensíveis como login, exclusões, etc.',
+      },
+      {
+        pergunta: 'Como filtrar os logs?',
+        resposta: 'Use os filtros na parte superior: busque por mensagem ou página, filtre por tipo (Erro, Info, Aviso, Auditoria) e por categoria (Autenticação, Vendas, OS, Estoque, Sistema).',
+      },
+    ],
+    guias: [],
+    dicas: [
+      {
+        titulo: 'Clique para ver detalhes',
+        descricao: 'Clique em qualquer linha da tabela de logs para abrir os detalhes completos, incluindo data/hora, usuário, página e dados técnicos em JSON.',
       },
     ],
   },
@@ -400,11 +742,11 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     faqs: [
       {
         pergunta: 'Erro "O telefone informado é inválido" no pagamento',
-        resposta: 'O gateway de pagamento exige um telefone real com DDD. Acesse Configurações > Dados da Empresa e atualize o campo Telefone com um número válido de 10 ou 11 dígitos (ex: 11987654321). Números fictícios como 99999-9999 são rejeitados.',
+        resposta: 'O gateway de pagamento exige um telefone real com DDD. Acesse Configurações > aba Empresa e atualize o campo Telefone com um número válido de 10 ou 11 dígitos (ex: 11987654321). Números fictícios como 99999-9999 são rejeitados.',
       },
       {
         pergunta: 'Erro "CPF ou CNPJ inválido" no pagamento',
-        resposta: 'O documento informado não passou na validação. Acesse Configurações > Dados da Empresa e verifique se o CPF (11 dígitos) ou CNPJ (14 dígitos) está correto. Certifique-se de que não há números a mais ou a menos.',
+        resposta: 'O documento informado não passou na validação. Acesse Configurações > aba Empresa e verifique se o CPF (11 dígitos) ou CNPJ (14 dígitos) está correto. Certifique-se de que não há números a mais ou a menos.',
       },
       {
         pergunta: 'Erro "Você já possui uma assinatura ativa"',
@@ -452,7 +794,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         titulo: 'Corrigir dados para pagamento',
         passos: [
           'Acesse Configurações no menu lateral',
-          'Verifique se o Telefone tem 10-11 dígitos com DDD',
+          'Na aba Empresa, verifique o Telefone (10-11 dígitos com DDD)',
           'Verifique se o CPF tem 11 dígitos ou CNPJ tem 14',
           'Verifique se o E-mail está correto',
           'Salve as alterações',
