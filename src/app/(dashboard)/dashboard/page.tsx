@@ -464,7 +464,7 @@ export default function DashboardPage() {
                 <CardTitle>Últimas Vendas</CardTitle>
                 <CardDescription>Vendas realizadas hoje</CardDescription>
               </div>
-              <Link href="/vendas">
+              <Link href="/vendas/historico">
                 <Button variant="outline" size="sm">
                   Ver todas
                 </Button>
