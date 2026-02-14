@@ -144,7 +144,7 @@ export default function NovaOSPage() {
         if (produtosRes.data) setProdutos(produtosRes.data)
 
         if (clientesRes.error) toast.error('Erro ao carregar clientes: ' + clientesRes.error)
-        if (servicosRes.error) toast.error('Erro ao carregar servicos: ' + servicosRes.error)
+        if (servicosRes.error) toast.error('Erro ao carregar serviços: ' + servicosRes.error)
         if (produtosRes.error) toast.error('Erro ao carregar produtos: ' + produtosRes.error)
       } catch {
         toast.error('Erro ao carregar dados')
@@ -314,7 +314,12 @@ export default function NovaOSPage() {
       }
 
       toast.success('Ordem de Serviço criada com sucesso!')
-      router.push('/ordens-servico')
+      if (osCriada) {
+        toast.info('Adicione fotos do aparelho na página de detalhes')
+        router.push(`/ordens-servico/${osCriada.id}`)
+      } else {
+        router.push('/ordens-servico')
+      }
     } catch {
       toast.error('Erro ao criar OS')
     } finally {
@@ -619,10 +624,10 @@ export default function NovaOSPage() {
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="condicao">Condicao de Entrada</Label>
+                  <Label htmlFor="condicao">Condição de Entrada</Label>
                   <Textarea
                     id="condicao"
-                    placeholder="Descreva o estado fisico do aparelho (arranhoes, amassados, etc.)"
+                    placeholder="Descreva o estado físico do aparelho (arranhões, amassados, etc.)"
                     value={condicaoEntrada}
                     onChange={(e) => setCondicaoEntrada(e.target.value)}
                     rows={2}

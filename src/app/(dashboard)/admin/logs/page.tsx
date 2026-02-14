@@ -365,8 +365,8 @@ export default function SuperadminLogsPage() {
                   <SelectItem value="os">OS</SelectItem>
                   <SelectItem value="estoque">Estoque</SelectItem>
                   <SelectItem value="sistema">Sistema</SelectItem>
-                  <SelectItem value="impersonacao">Impersonacao</SelectItem>
-                  <SelectItem value="manutencao">Manutencao</SelectItem>
+                  <SelectItem value="impersonacao">Impersonação</SelectItem>
+                  <SelectItem value="manutencao">Manutenção</SelectItem>
                 </SelectContent>
               </Select>
             </div>

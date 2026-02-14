@@ -186,6 +186,7 @@ export interface OrdemServico {
   usuario?: Usuario
   tecnico?: Usuario
   itens?: ItemOS[]
+  fotos?: FotoOS[]
 }
 
 export interface ItemOS {
@@ -203,6 +204,20 @@ export interface ItemOS {
   // Relacionamentos
   servico?: Servico
   produto?: Produto
+}
+
+export interface FotoOS {
+  id: string
+  os_id: string
+  empresa_id: string
+  url: string
+  storage_path: string
+  nome_original: string
+  tamanho_bytes: number
+  tipo_mime?: string
+  largura?: number
+  altura?: number
+  created_at: string
 }
 
 export interface Venda {

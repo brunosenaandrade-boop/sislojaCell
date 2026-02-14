@@ -156,7 +156,7 @@ export const vendasService = {
         .single()
 
       if (vendaError || !venda) {
-        return { data: null, error: vendaError?.message || 'Venda nao encontrada' }
+        return { data: null, error: vendaError?.message || 'Venda não encontrada' }
       }
 
       // Verificar se ja esta cancelada

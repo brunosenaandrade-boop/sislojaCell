@@ -69,12 +69,13 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
-import type { OrdemServico, StatusOS } from '@/types/database'
+import type { OrdemServico, StatusOS, FotoOS } from '@/types/database'
 import { CupomOS } from '@/components/print/CupomOS'
 import { useAuthStore, usePrintConfigStore } from '@/store/useStore'
 import { PatternLock } from '@/components/ui/pattern-lock'
 import { ordensServicoService } from '@/services/ordens-servico.service'
 import { caixaService } from '@/services/caixa.service'
+import { FotosOS } from '@/components/os/FotosOS'
 
 type FormaPagamento = 'dinheiro' | 'pix' | 'debito' | 'credito'
 
@@ -126,6 +127,7 @@ export default function VisualizarOSPage() {
   const [dialogPagamentoOpen, setDialogPagamentoOpen] = useState(false)
   const [formaPagamentoOS, setFormaPagamentoOS] = useState<FormaPagamento | ''>('')
   const [caixaAbertoId, setCaixaAbertoId] = useState<string | null>(null)
+  const [fotos, setFotos] = useState<FotoOS[]>([])
 
   // Carregar OS e status do caixa
   useEffect(() => {
@@ -146,12 +148,15 @@ export default function VisualizarOSPage() {
           return
         }
         if (!data) {
-          toast.error('Ordem de servico nao encontrada')
+          toast.error('Ordem de serviço não encontrada')
           router.push('/ordens-servico')
           return
         }
         setOs(data)
         setDiagnostico(data.diagnostico || '')
+        // Carregar fotos
+        const { data: fotosData } = await ordensServicoService.listarFotos(params.id as string)
+        if (fotosData) setFotos(fotosData)
       } catch {
         toast.error('Erro ao carregar OS')
       } finally {
@@ -293,7 +298,7 @@ export default function VisualizarOSPage() {
     return (
       <div className="flex flex-col">
         <div className="flex-1 flex items-center justify-center p-8">
-          <p className="text-muted-foreground">Ordem de servico nao encontrada.</p>
+          <p className="text-muted-foreground">Ordem de serviço não encontrada.</p>
         </div>
       </div>
     )
@@ -660,6 +665,14 @@ export default function VisualizarOSPage() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Fotos do Aparelho */}
+              <FotosOS
+                osId={os.id}
+                fotos={fotos}
+                onFotosChange={setFotos}
+                readonly
+              />
 
               {/* Problema e Diagnóstico */}
               <Card>

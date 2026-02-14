@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { createClient } from '@supabase/supabase-js'
 import {
   Smartphone,
   Phone,
@@ -9,7 +10,9 @@ import {
   Circle,
   ArrowLeft,
   MessageCircle,
+  Camera,
 } from 'lucide-react'
+import { FotosPublicas } from '@/components/os/FotosPublicas'
 
 // Status config para exibição pública
 const statusConfig: Record<string, { label: string; descricao: string }> = {
@@ -40,6 +43,7 @@ interface OSData {
   data_finalizacao?: string
   data_entrega?: string
   itens: { id: string; tipo: string; descricao: string; quantidade: number }[]
+  fotos: { id: string; url: string }[]
 }
 
 interface EmpresaData {
@@ -50,15 +54,84 @@ interface EmpresaData {
   cor_primaria?: string
 }
 
-async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaData } | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL
-    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
-  const url = `${baseUrl}/api/acompanhamento/${codigo}`
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
+async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaData } | null> {
   try {
-    const res = await fetch(url, { cache: 'no-store' })
-    if (!res.ok) return null
-    return res.json()
+    if (!codigo || codigo.length < 6) return null
+
+    const db = getServiceClient()
+
+    const { data: os, error } = await db
+      .from('ordens_servico')
+      .select(`
+        numero,
+        status,
+        tipo_aparelho,
+        marca,
+        modelo,
+        cor,
+        problema_relatado,
+        valor_total,
+        data_entrada,
+        data_previsao,
+        data_finalizacao,
+        data_entrega,
+        empresa_id,
+        itens:itens_os(id, tipo, descricao, quantidade),
+        fotos:fotos_os(id, url)
+      `)
+      .eq('codigo_acompanhamento', codigo.toUpperCase())
+      .single()
+
+    if (error || !os) return null
+
+    const { data: empresa } = await db
+      .from('empresas')
+      .select('nome, nome_fantasia, logo_url, telefone, whatsapp, cor_primaria')
+      .eq('id', os.empresa_id)
+      .single()
+
+    return {
+      os: {
+        numero: os.numero,
+        status: os.status,
+        tipo_aparelho: os.tipo_aparelho,
+        marca: os.marca,
+        modelo: os.modelo,
+        cor: os.cor,
+        problema_relatado: os.problema_relatado,
+        valor_total: os.valor_total,
+        data_entrada: os.data_entrada,
+        data_previsao: os.data_previsao,
+        data_finalizacao: os.data_finalizacao,
+        data_entrega: os.data_entrega,
+        itens: (os.itens || []).map((item: { id: string; tipo: string; descricao: string; quantidade: number }) => ({
+          id: item.id,
+          tipo: item.tipo,
+          descricao: item.descricao,
+          quantidade: item.quantidade,
+        })),
+        fotos: (os.fotos || []).map((foto: { id: string; url: string }) => ({
+          id: foto.id,
+          url: foto.url,
+        })),
+      },
+      empresa: empresa
+        ? {
+            nome: empresa.nome_fantasia || empresa.nome,
+            logo_url: empresa.logo_url,
+            telefone: empresa.telefone,
+            whatsapp: empresa.whatsapp,
+            cor_primaria: empresa.cor_primaria,
+          }
+        : null as unknown as EmpresaData,
+    }
   } catch {
     return null
   }
@@ -168,6 +241,11 @@ export default async function AcompanharPage({
             <p className="text-sm text-gray-500">{os.problema_relatado}</p>
           </div>
         </div>
+
+        {/* Fotos do Aparelho */}
+        {os.fotos && os.fotos.length > 0 && (
+          <FotosPublicas fotos={os.fotos} />
+        )}
 
         {/* Status atual com destaque */}
         <div

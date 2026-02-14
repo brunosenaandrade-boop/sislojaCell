@@ -50,7 +50,7 @@ export default function AjudaPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar por duvida, funcao ou palavra-chave..."
+            placeholder="Buscar por dúvida, função ou palavra-chave..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             className="pl-9"

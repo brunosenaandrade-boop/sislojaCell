@@ -56,11 +56,12 @@ import {
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { PatternLock } from '@/components/ui/pattern-lock'
-import type { Cliente, Servico, Produto, OrdemServico, ItemOS } from '@/types/database'
+import type { Cliente, Servico, Produto, OrdemServico, ItemOS, FotoOS } from '@/types/database'
 import { clientesService } from '@/services/clientes.service'
 import { servicosService } from '@/services/servicos.service'
 import { produtosService } from '@/services/produtos.service'
 import { ordensServicoService } from '@/services/ordens-servico.service'
+import { FotosOS } from '@/components/os/FotosOS'
 
 // Tipos de aparelho
 const tiposAparelho = [
@@ -120,6 +121,9 @@ export default function EditarOSPage() {
   const [condicaoEntrada, setCondicaoEntrada] = useState('')
   const [acessorios, setAcessorios] = useState('')
 
+  // Fotos
+  const [fotos, setFotos] = useState<FotoOS[]>([])
+
   // Problema
   const [problemaRelatado, setProblemaRelatado] = useState('')
   const [observacoes, setObservacoes] = useState('')
@@ -143,7 +147,7 @@ export default function EditarOSPage() {
         // Carregar OS existente
         const osRes = await ordensServicoService.buscarPorId(osId)
         if (osRes.error || !osRes.data) {
-          toast.error('Erro ao carregar OS: ' + (osRes.error || 'Nao encontrada'))
+          toast.error('Erro ao carregar OS: ' + (osRes.error || 'Não encontrada'))
           router.push('/ordens-servico')
           return
         }
@@ -202,6 +206,10 @@ export default function EditarOSPage() {
           }))
           setItensOS(itensCarregados)
         }
+
+        // Carregar fotos
+        const { data: fotosData } = await ordensServicoService.listarFotos(osId)
+        if (fotosData) setFotos(fotosData)
       } catch {
         toast.error('Erro ao carregar dados')
         router.push('/ordens-servico')
@@ -695,10 +703,10 @@ export default function EditarOSPage() {
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="condicao">Condicao de Entrada</Label>
+                  <Label htmlFor="condicao">Condição de Entrada</Label>
                   <Textarea
                     id="condicao"
-                    placeholder="Descreva o estado fisico do aparelho (arranhoes, amassados, etc.)"
+                    placeholder="Descreva o estado físico do aparelho (arranhões, amassados, etc.)"
                     value={condicaoEntrada}
                     onChange={(e) => setCondicaoEntrada(e.target.value)}
                     rows={2}
@@ -717,6 +725,13 @@ export default function EditarOSPage() {
               </CardContent>
             </Card>
 
+            {/* Fotos do Aparelho */}
+            <FotosOS
+              osId={osId}
+              fotos={fotos}
+              onFotosChange={setFotos}
+            />
+
             {/* Problema */}
             <Card>
               <CardHeader>
@@ -727,7 +742,7 @@ export default function EditarOSPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="problema">Descricao do Problema *</Label>
+                  <Label htmlFor="problema">Descrição do Problema *</Label>
                   <Textarea
                     id="problema"
                     placeholder="O que o cliente relatou? Qual o defeito apresentado?"
@@ -738,7 +753,7 @@ export default function EditarOSPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="diagnostico">Diagnostico Tecnico</Label>
+                  <Label htmlFor="diagnostico">Diagnóstico Técnico</Label>
                   <Textarea
                     id="diagnostico"
                     placeholder="Diagnostico feito pelo tecnico"
@@ -749,10 +764,10 @@ export default function EditarOSPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="observacoes">Observacoes Internas</Label>
+                  <Label htmlFor="observacoes">Observações Internas</Label>
                   <Textarea
                     id="observacoes"
-                    placeholder="Anotacoes internas (nao aparece para o cliente)"
+                    placeholder="Anotações internas (não aparece para o cliente)"
                     value={observacoes}
                     onChange={(e) => setObservacoes(e.target.value)}
                     rows={2}
@@ -765,9 +780,9 @@ export default function EditarOSPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Servicos e Pecas</CardTitle>
+                  <CardTitle>Serviços e Peças</CardTitle>
                   <CardDescription>
-                    Adicione os servicos e pecas utilizados
+                    Adicione os serviços e peças utilizados
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -863,7 +878,7 @@ export default function EditarOSPage() {
                 {itensOS.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                     <p>Nenhum item adicionado</p>
-                    <p className="text-sm">Adicione servicos e pecas usando os botoes acima</p>
+                    <p className="text-sm">Adicione serviços e peças usando os botões acima</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">

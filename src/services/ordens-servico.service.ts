@@ -1,5 +1,5 @@
 import { getSupabase, getEmpresaId, getUsuarioId, handleQuery, sanitizeSearch } from './base'
-import type { OrdemServico, ItemOS } from '@/types/database'
+import type { OrdemServico, ItemOS, FotoOS } from '@/types/database'
 import { planosService } from './planos.service'
 
 function gerarCodigoAcompanhamento(): string {
@@ -232,5 +232,113 @@ export const ordensServicoService = {
         .select()
         .single()
     )
+  },
+
+  // ============================================
+  // FOTOS DA OS
+  // ============================================
+
+  async uploadFoto(
+    osId: string,
+    file: File,
+    metadata: { nomeOriginal: string; tamanhoBytes: number; largura?: number; altura?: number; tipoMime?: string }
+  ): Promise<{ data: FotoOS | null; error: string | null }> {
+    try {
+      const supabase = getSupabase()
+      const empresaId = getEmpresaId()
+
+      const { data: os } = await supabase
+        .from('ordens_servico')
+        .select('id')
+        .eq('id', osId)
+        .eq('empresa_id', empresaId)
+        .single()
+
+      if (!os) return { data: null, error: 'Ordem de serviço não encontrada' }
+
+      const { count } = await supabase
+        .from('fotos_os')
+        .select('id', { count: 'exact', head: true })
+        .eq('os_id', osId)
+
+      if ((count ?? 0) >= 10) return { data: null, error: 'Limite de 10 fotos por OS atingido' }
+
+      const ext = file.name.split('.').pop() || 'webp'
+      const uniqueName = `${crypto.randomUUID()}.${ext}`
+      const storagePath = `${empresaId}/${osId}/${uniqueName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('os-fotos')
+        .upload(storagePath, file, { upsert: false })
+
+      if (uploadError) return { data: null, error: uploadError.message }
+
+      const { data: urlData } = supabase.storage
+        .from('os-fotos')
+        .getPublicUrl(storagePath)
+
+      const { data: foto, error: insertError } = await supabase
+        .from('fotos_os')
+        .insert({
+          os_id: osId,
+          empresa_id: empresaId,
+          url: urlData.publicUrl,
+          storage_path: storagePath,
+          nome_original: metadata.nomeOriginal,
+          tamanho_bytes: metadata.tamanhoBytes,
+          tipo_mime: metadata.tipoMime || file.type,
+          largura: metadata.largura,
+          altura: metadata.altura,
+        })
+        .select()
+        .single()
+
+      if (insertError) return { data: null, error: insertError.message }
+
+      return { data: foto, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro ao fazer upload' }
+    }
+  },
+
+  async listarFotos(osId: string): Promise<{ data: FotoOS[]; error: string | null }> {
+    const supabase = getSupabase()
+    const empresaId = getEmpresaId()
+
+    const { data, error } = await supabase
+      .from('fotos_os')
+      .select('*')
+      .eq('os_id', osId)
+      .eq('empresa_id', empresaId)
+      .order('created_at', { ascending: true })
+
+    return { data: data ?? [], error: error?.message ?? null }
+  },
+
+  async removerFoto(fotoId: string): Promise<{ data: null; error: string | null }> {
+    try {
+      const supabase = getSupabase()
+      const empresaId = getEmpresaId()
+
+      const { data: foto } = await supabase
+        .from('fotos_os')
+        .select('id, storage_path')
+        .eq('id', fotoId)
+        .eq('empresa_id', empresaId)
+        .single()
+
+      if (!foto) return { data: null, error: 'Foto não encontrada' }
+
+      await supabase.storage.from('os-fotos').remove([foto.storage_path])
+
+      const { error } = await supabase
+        .from('fotos_os')
+        .delete()
+        .eq('id', fotoId)
+
+      return { data: null, error: error?.message ?? null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro ao remover foto' }
+    }
   },
 }
