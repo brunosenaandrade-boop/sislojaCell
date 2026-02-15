@@ -69,6 +69,7 @@ export const caixaService = {
       total_entradas: number
       total_saidas: number
       total_esperado: number
+      total_custo: number
       diferenca: number
     }
   ): Promise<{ data: Caixa | null; error: string | null }> {

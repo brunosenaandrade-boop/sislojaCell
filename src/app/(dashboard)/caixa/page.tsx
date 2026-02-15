@@ -92,9 +92,13 @@ export default function CaixaPage() {
   const qtdVendas = movimentacoes.filter(m => m.tipo === 'venda').length
   const qtdOS = movimentacoes.filter(m => m.tipo === 'os').length
 
-  // Lucro de ontem para comparacao
-  const lucroOntem = historicoCaixas.length > 0 ? (historicoCaixas[0].total_vendas + historicoCaixas[0].total_os) : 0
-  const diferencaLucro = lucroLiquido - lucroOntem
+  // Lucro do último caixa fechado para comparação
+  const ultimoCaixa = historicoCaixas.length > 0 ? historicoCaixas[0] : null
+  const lucroAnterior = ultimoCaixa ? (ultimoCaixa.total_vendas + ultimoCaixa.total_os - (ultimoCaixa.total_custo || 0)) : 0
+  const diferencaLucro = lucroLiquido - lucroAnterior
+  const labelAnterior = ultimoCaixa?.data_fechamento
+    ? `vs ${new Date(ultimoCaixa.data_fechamento).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`
+    : 'vs anterior'
 
   // Fetch data
   const fetchCaixa = useCallback(async () => {
@@ -248,6 +252,7 @@ export default function CaixaPage() {
         total_entradas: totalEntradas,
         total_saidas: totalSaidas,
         total_esperado: totalEsperado,
+        total_custo: totalCusto,
         diferenca,
       })
 
@@ -455,12 +460,12 @@ export default function CaixaPage() {
                       {diferencaLucro >= 0 ? (
                         <>
                           <TrendingUp className="h-3 w-3 text-green-600" />
-                          <span className="text-green-600">+{formatCurrency(diferencaLucro)} vs ontem</span>
+                          <span className="text-green-600">+{formatCurrency(diferencaLucro)} {labelAnterior}</span>
                         </>
                       ) : (
                         <>
                           <TrendingDown className="h-3 w-3 text-red-600" />
-                          <span className="text-red-600">{formatCurrency(diferencaLucro)} vs ontem</span>
+                          <span className="text-red-600">{formatCurrency(diferencaLucro)} {labelAnterior}</span>
                         </>
                       )}
                     </div>

@@ -305,6 +305,7 @@ export interface Caixa {
   total_entradas: number
   total_saidas: number
   total_esperado: number
+  total_custo: number
   diferenca: number
   status: 'aberto' | 'fechado'
   observacoes?: string
