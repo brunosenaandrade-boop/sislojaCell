@@ -416,6 +416,21 @@ export const superadminService = {
     }
   },
 
+  async redefinirSenha(authId: string, novaSenha: string): Promise<ServiceResult<boolean>> {
+    try {
+      const res = await fetch('/api/superadmin/usuarios', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ auth_id: authId, nova_senha: novaSenha }),
+      })
+      const json = await res.json()
+      if (!res.ok) return { data: null, error: json.error }
+      return { data: true, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
+    }
+  },
+
   // ====== LOGS ======
   async getLogs(params?: { tipo?: string; categoria?: string; search?: string; limit?: number }): Promise<ServiceResult<LogEntry[]>> {
     try {

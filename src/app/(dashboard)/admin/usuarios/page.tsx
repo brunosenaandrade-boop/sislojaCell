@@ -17,6 +17,15 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import {
   Table,
   TableBody,
   TableCell,
@@ -24,7 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Users, Search, Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
+import { Users, Search, Loader2, AlertCircle, ArrowLeft, KeyRound, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 
 function formatDate(d: string | null | undefined) {
@@ -48,6 +57,37 @@ export default function SuperadminUsuariosPage() {
   const [perfilFilter, setPerfilFilter] = useState('todos')
   const [ativoFilter, setAtivoFilter] = useState('todos')
   const [empresaFilter, setEmpresaFilter] = useState('todos')
+
+  // Reset senha
+  const [dialogSenhaOpen, setDialogSenhaOpen] = useState(false)
+  const [usuarioSelecionado, setUsuarioSelecionado] = useState<UsuarioGlobal | null>(null)
+  const [novaSenha, setNovaSenha] = useState('')
+  const [mostrarSenha, setMostrarSenha] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
+
+  const handleAbrirResetSenha = (u: UsuarioGlobal) => {
+    setUsuarioSelecionado(u)
+    setNovaSenha('')
+    setMostrarSenha(false)
+    setDialogSenhaOpen(true)
+  }
+
+  const handleRedefinirSenha = async () => {
+    if (!usuarioSelecionado || !novaSenha) return
+    if (novaSenha.length < 6) {
+      toast.error('A senha deve ter no mínimo 6 caracteres')
+      return
+    }
+    setResetLoading(true)
+    const { error } = await superadminService.redefinirSenha(usuarioSelecionado.auth_id, novaSenha)
+    if (error) {
+      toast.error('Erro ao redefinir senha: ' + error)
+    } else {
+      toast.success(`Senha de ${usuarioSelecionado.nome} redefinida com sucesso!`)
+      setDialogSenhaOpen(false)
+    }
+    setResetLoading(false)
+  }
 
   const fetchUsuarios = async () => {
     setLoading(true)
@@ -195,6 +235,7 @@ export default function SuperadminUsuariosPage() {
                   <TableHead>Status</TableHead>
                   <TableHead>Ultimo Acesso</TableHead>
                   <TableHead>Criado em</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -221,6 +262,16 @@ export default function SuperadminUsuariosPage() {
                     <TableCell className="text-sm text-muted-foreground">
                       {formatDate(u.created_at)}
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAbrirResetSenha(u)}
+                      >
+                        <KeyRound className="mr-1 h-3 w-3" />
+                        Redefinir Senha
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -228,6 +279,51 @@ export default function SuperadminUsuariosPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialog Redefinir Senha */}
+      <Dialog open={dialogSenhaOpen} onOpenChange={setDialogSenhaOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Redefinir Senha</DialogTitle>
+            <DialogDescription>
+              Definir nova senha para <strong>{usuarioSelecionado?.nome}</strong> ({usuarioSelecionado?.email})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="nova-senha">Nova Senha</Label>
+              <div className="relative">
+                <Input
+                  id="nova-senha"
+                  type={mostrarSenha ? 'text' : 'password'}
+                  placeholder="Mínimo 6 caracteres"
+                  value={novaSenha}
+                  onChange={(e) => setNovaSenha(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleRedefinirSenha()}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={() => setMostrarSenha(!mostrarSenha)}
+                >
+                  {mostrarSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogSenhaOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleRedefinirSenha} disabled={resetLoading || novaSenha.length < 6}>
+              {resetLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
+              Redefinir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

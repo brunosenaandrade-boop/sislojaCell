@@ -2,6 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifySuperadmin, getServiceClient } from '../route-utils'
 import { sanitizeSearch } from '@/lib/sanitize'
 
+export async function PATCH(request: NextRequest) {
+  const auth = await verifySuperadmin()
+  if ('error' in auth) return auth.error
+
+  const body = await request.json()
+  const { auth_id, nova_senha } = body
+
+  if (!auth_id || !nova_senha) {
+    return NextResponse.json({ error: 'auth_id e nova_senha são obrigatórios' }, { status: 400 })
+  }
+
+  if (nova_senha.length < 6) {
+    return NextResponse.json({ error: 'A senha deve ter no mínimo 6 caracteres' }, { status: 400 })
+  }
+
+  const db = getServiceClient()
+
+  const { error } = await db.auth.admin.updateUserById(auth_id, {
+    password: nova_senha,
+  })
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true })
+}
+
 export async function GET(request: NextRequest) {
   const auth = await verifySuperadmin()
   if ('error' in auth) return auth.error
