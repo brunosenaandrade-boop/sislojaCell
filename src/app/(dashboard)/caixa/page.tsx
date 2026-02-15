@@ -570,7 +570,7 @@ export default function CaixaPage() {
                                 return forma ? getFormaPagamentoIcon(forma) : <span className="text-muted-foreground">-</span>
                               })()}
                             </TableCell>
-                            <TableCell className="text-sm">{mov.usuario_id || '-'}</TableCell>
+                            <TableCell className="text-sm">{(mov as unknown as { usuario?: { nome: string } }).usuario?.nome || '-'}</TableCell>
                             <TableCell className="text-right font-bold">
                               <span className={mov.valor >= 0 ? 'text-green-600' : 'text-red-600'}>
                                 {mov.valor >= 0 ? '+' : ''}{formatCurrency(mov.valor)}
@@ -639,7 +639,7 @@ export default function CaixaPage() {
                           <TableCell className="text-right font-bold">
                             {formatCurrency(caixa.valor_fechamento ?? 0)}
                           </TableCell>
-                          <TableCell className="text-sm">{caixa.usuario_fechamento_id || '-'}</TableCell>
+                          <TableCell className="text-sm">{(caixa as unknown as { usuario_fechamento?: { nome: string } }).usuario_fechamento?.nome || '-'}</TableCell>
                         </TableRow>
                       ))
                     )}

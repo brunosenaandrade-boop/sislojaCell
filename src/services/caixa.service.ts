@@ -163,7 +163,7 @@ export const caixaService = {
 
     const { data, error } = await supabase
       .from('movimentacoes_caixa')
-      .select('*, venda:vendas(forma_pagamento), os:ordens_servico(forma_pagamento)')
+      .select('*, venda:vendas(forma_pagamento), os:ordens_servico(forma_pagamento), usuario:usuarios!movimentacoes_caixa_usuario_id_fkey(nome)')
       .eq('caixa_id', caixaId)
       .order('created_at', { ascending: true })
 
@@ -180,7 +180,7 @@ export const caixaService = {
 
     let query = supabase
       .from('caixa')
-      .select('*')
+      .select('*, usuario_fechamento:usuarios!caixa_usuario_fechamento_id_fkey(nome)')
       .eq('empresa_id', empresaId)
       .eq('status', 'fechado')
       .order('data_abertura', { ascending: false })
