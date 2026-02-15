@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json(data?.valor || { ativo: false, mensagem: '' })
+    return NextResponse.json({ data: data?.valor || { ativo: false, mensagem: '' } })
   } catch (err) {
     console.error('Erro ao buscar status de manutenção:', err)
     await logApiError('/api/superadmin/manutencao', 'GET', err)
