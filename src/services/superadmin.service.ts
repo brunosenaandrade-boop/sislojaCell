@@ -248,6 +248,21 @@ export const superadminService = {
     }
   },
 
+  async excluirAviso(id: string): Promise<ServiceResult<null>> {
+    try {
+      const res = await fetch('/api/superadmin/avisos', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      const json = await res.json()
+      if (!res.ok) return { data: null, error: json.error }
+      return { data: null, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
+    }
+  },
+
   // ====== TICKETS ======
   async getTickets(params?: { status?: string; prioridade?: string; search?: string }): Promise<ServiceResult<TicketSuporte[]>> {
     try {

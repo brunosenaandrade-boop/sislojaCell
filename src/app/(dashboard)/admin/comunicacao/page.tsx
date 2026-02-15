@@ -40,6 +40,7 @@ import {
   ArrowLeft,
   Power,
   PowerOff,
+  Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -104,6 +105,8 @@ export default function ComunicacaoAdminPage() {
   const [avisos, setAvisos] = useState<AvisoComLidos[]>([])
   const [loading, setLoading] = useState(true)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -157,6 +160,19 @@ export default function ComunicacaoAdminPage() {
       )
     }
     setTogglingId(null)
+  }
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id)
+    const { error } = await superadminService.excluirAviso(id)
+    if (error) {
+      toast.error('Erro ao excluir: ' + error)
+    } else {
+      toast.success('Aviso excluído com sucesso')
+      setAvisos((prev) => prev.filter((a) => a.id !== id))
+    }
+    setDeletingId(null)
+    setConfirmDeleteId(null)
   }
 
   const resetForm = () => {
@@ -278,21 +294,36 @@ export default function ComunicacaoAdminPage() {
                       {formatDate(aviso.created_at)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title={aviso.ativo ? 'Desativar' : 'Ativar'}
-                        onClick={() => handleToggle(aviso)}
-                        disabled={togglingId === aviso.id}
-                      >
-                        {togglingId === aviso.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : aviso.ativo ? (
-                          <PowerOff className="h-4 w-4 text-destructive" />
-                        ) : (
-                          <Power className="h-4 w-4 text-green-600" />
-                        )}
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title={aviso.ativo ? 'Desativar' : 'Ativar'}
+                          onClick={() => handleToggle(aviso)}
+                          disabled={togglingId === aviso.id}
+                        >
+                          {togglingId === aviso.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : aviso.ativo ? (
+                            <PowerOff className="h-4 w-4 text-destructive" />
+                          ) : (
+                            <Power className="h-4 w-4 text-green-600" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Excluir aviso"
+                          onClick={() => setConfirmDeleteId(aviso.id)}
+                          disabled={deletingId === aviso.id}
+                        >
+                          {deletingId === aviso.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          )}
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -302,6 +333,34 @@ export default function ComunicacaoAdminPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Dialog: Confirmar Exclusão */}
+      <Dialog open={!!confirmDeleteId} onOpenChange={() => setConfirmDeleteId(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Excluir Aviso</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+              disabled={!!deletingId}
+            >
+              {deletingId ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Excluindo...</>
+              ) : (
+                'Excluir'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog: Novo Aviso */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

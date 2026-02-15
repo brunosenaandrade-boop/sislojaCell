@@ -89,6 +89,41 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function DELETE(request: NextRequest) {
+  try {
+    const auth = await verifySuperadmin()
+    if ('error' in auth) return auth.error
+
+    const ip = getClientIp(request)
+    const rl = rateLimit(ip, { id: 'superadmin-avisos-delete', limit: 15, windowSeconds: 60 })
+    if (!rl.success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+
+    const { id } = await request.json()
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID do aviso é obrigatório' }, { status: 400 })
+    }
+
+    const db = getServiceClient()
+
+    // Remover leituras associadas primeiro
+    await db.from('avisos_lidos').delete().eq('aviso_id', id)
+
+    const { error } = await db
+      .from('avisos_plataforma')
+      .delete()
+      .eq('id', id)
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('Erro ao excluir aviso:', err)
+    await logApiError('/api/superadmin/avisos', 'DELETE', err)
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
+  }
+}
+
 export async function PATCH(request: NextRequest) {
   try {
     const auth = await verifySuperadmin()
