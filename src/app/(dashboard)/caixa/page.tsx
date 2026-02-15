@@ -482,9 +482,9 @@ export default function CaixaPage() {
                     movimentacoes
                       .filter(m => (m.tipo === 'venda' || m.tipo === 'os') && m.valor > 0)
                       .forEach(m => {
-                        const venda = (m as unknown as { venda?: { forma_pagamento?: string } }).venda
-                        const osData = (m as unknown as { os?: { forma_pagamento?: string } }).os
-                        const forma = venda?.forma_pagamento || osData?.forma_pagamento || 'dinheiro'
+                        const vendaJoin = (m as unknown as { venda?: { forma_pagamento?: string } }).venda
+                        const osJoin = (m as unknown as { os?: { forma_pagamento?: string } }).os
+                        const forma = m.forma_pagamento || vendaJoin?.forma_pagamento || osJoin?.forma_pagamento || 'dinheiro'
                         if (forma in totais) totais[forma] += m.valor
                         else totais.dinheiro += m.valor
                       })
@@ -564,9 +564,9 @@ export default function CaixaPage() {
                             </TableCell>
                             <TableCell>
                               {(() => {
-                                const venda = (mov as unknown as { venda?: { forma_pagamento?: string } }).venda
-                                const osData = (mov as unknown as { os?: { forma_pagamento?: string } }).os
-                                const forma = venda?.forma_pagamento || osData?.forma_pagamento
+                                const vendaJoin = (mov as unknown as { venda?: { forma_pagamento?: string } }).venda
+                                const osJoin = (mov as unknown as { os?: { forma_pagamento?: string } }).os
+                                const forma = mov.forma_pagamento || vendaJoin?.forma_pagamento || osJoin?.forma_pagamento
                                 return forma ? getFormaPagamentoIcon(forma) : <span className="text-muted-foreground">-</span>
                               })()}
                             </TableCell>

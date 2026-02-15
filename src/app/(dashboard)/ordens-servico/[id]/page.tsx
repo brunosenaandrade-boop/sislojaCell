@@ -300,6 +300,7 @@ export default function VisualizarOSPage() {
           valor: os.valor_total,
           descricao: `OS #${os.numero} - ${aparelho || 'Serviço'}`,
           os_id: os.id,
+          forma_pagamento: formaPagamentoOS || undefined,
         })
       }
 

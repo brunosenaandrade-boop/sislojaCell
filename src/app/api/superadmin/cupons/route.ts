@@ -44,9 +44,9 @@ export async function POST(request: NextRequest) {
       descricao,
       tipo_desconto,
       valor,
-      plano_slug,
+      plano_restrito,
       max_usos,
-      validade,
+      data_expiracao,
       ativo,
     } = body
 
@@ -77,10 +77,10 @@ export async function POST(request: NextRequest) {
         descricao: descricao || null,
         tipo_desconto,
         valor,
-        plano_slug: plano_slug || null,
+        plano_restrito: plano_restrito || null,
         max_usos: max_usos || null,
-        usos: 0,
-        validade: validade || null,
+        usos_atuais: 0,
+        data_expiracao: data_expiracao || null,
         ativo: ativo !== undefined ? ativo : true,
       })
       .select()
@@ -113,7 +113,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Whitelist of allowed fields to prevent mass assignment
-    const ALLOWED_FIELDS = ['codigo', 'descricao', 'tipo_desconto', 'valor', 'plano_slug', 'max_usos', 'validade', 'ativo'] as const
+    const ALLOWED_FIELDS = ['codigo', 'descricao', 'tipo_desconto', 'valor', 'plano_restrito', 'max_usos', 'data_expiracao', 'ativo'] as const
     const updateFields: Record<string, unknown> = {}
     for (const field of ALLOWED_FIELDS) {
       if (body[field] !== undefined) {

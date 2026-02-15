@@ -103,6 +103,7 @@ export const caixaService = {
     descricao?: string
     venda_id?: string
     os_id?: string
+    forma_pagamento?: string
   }): Promise<{ data: MovimentacaoCaixa | null; error: string | null }> {
     const empresaId = getEmpresaId()
     const usuarioId = getUsuarioId()

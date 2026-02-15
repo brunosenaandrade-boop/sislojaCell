@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       ...v,
     }))
 
-    return NextResponse.json({ meses: months, por_plano: porPlano })
+    return NextResponse.json({ data: { meses: months, por_plano: porPlano } })
   } catch (err) {
     console.error('Erro ao buscar receita:', err)
     await logApiError('/api/superadmin/receita', 'GET', err)

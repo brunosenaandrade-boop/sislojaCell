@@ -325,6 +325,7 @@ export interface MovimentacaoCaixa {
   valor: number
   venda_id?: string
   os_id?: string
+  forma_pagamento?: FormaPagamento
   descricao?: string
   created_at: string
 }

@@ -332,6 +332,7 @@ export default function VendasPage() {
           valor: venda.valor_total,
           descricao: `Venda #${venda.numero} - ${itens.map(i => i.nome).join(', ')}`,
           venda_id: vendaCriada.id,
+          forma_pagamento: formaPagamento || undefined,
         })
       }
 

@@ -75,8 +75,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check expiration
-    if (cupom.validade) {
-      const validade = new Date(cupom.validade)
+    if (cupom.data_expiracao) {
+      const validade = new Date(cupom.data_expiracao)
       if (validade < new Date()) {
         const response: CupomInvalidoResponse = { valido: false, motivo: 'Cupom expirado' }
         return NextResponse.json(response)
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check max uses
-    if (cupom.max_usos !== null && cupom.usos >= cupom.max_usos) {
+    if (cupom.max_usos !== null && cupom.usos_atuais >= cupom.max_usos) {
       const response: CupomInvalidoResponse = {
         valido: false,
         motivo: 'Cupom atingiu o limite máximo de usos',
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check plan restriction
-    if (cupom.plano_slug && plano_slug && cupom.plano_slug !== plano_slug) {
+    if (cupom.plano_restrito && plano_slug && cupom.plano_restrito !== plano_slug) {
       const response: CupomInvalidoResponse = {
         valido: false,
         motivo: 'Cupom não é válido para este plano',

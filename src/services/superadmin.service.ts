@@ -101,7 +101,7 @@ export const superadminService = {
       const res = await fetch('/api/superadmin/receita')
       const json = await res.json()
       if (!res.ok) return { data: null, error: json.error }
-      return { data: json, error: null }
+      return { data: json.data, error: null }
     } catch (err) {
       return { data: null, error: err instanceof Error ? err.message : 'Erro desconhecido' }
     }
