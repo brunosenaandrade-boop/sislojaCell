@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -352,14 +353,20 @@ export default function VendasPage() {
     }
   }
 
-  // Imprimir cupom
+  // Imprimir cupom via portal (mesmo padrão do CupomOS)
   const handlePrint = () => {
     setShowPrint(true)
     setTimeout(() => {
       window.print()
-      setShowPrint(false)
-    }, 100)
+    }, 300)
   }
+
+  useEffect(() => {
+    if (!showPrint) return
+    const handleAfterPrint = () => setShowPrint(false)
+    window.addEventListener('afterprint', handleAfterPrint)
+    return () => window.removeEventListener('afterprint', handleAfterPrint)
+  }, [showPrint])
 
   // Nova venda
   const handleNovaVenda = () => {
@@ -514,9 +521,18 @@ export default function VendasPage() {
 
   return (
     <>
-      {/* Cupom para impressão */}
-      {showPrint && vendaFinalizada && (
-        <div className="print:block hidden">
+      {/* Portal de impressão: renderiza direto no body, fora do layout/overflow */}
+      {showPrint && vendaFinalizada && typeof document !== 'undefined' && createPortal(
+        <div
+          className="print-overlay"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+            background: 'white',
+            overflow: 'auto',
+          }}
+        >
           <CupomVenda
             venda={vendaFinalizada}
             empresa={empresa}
@@ -529,7 +545,8 @@ export default function VendasPage() {
               mensagemCupom: printConfig.mensagemCupom,
             }}
           />
-        </div>
+        </div>,
+        document.body
       )}
 
       <div className="flex flex-col h-screen print:hidden">
