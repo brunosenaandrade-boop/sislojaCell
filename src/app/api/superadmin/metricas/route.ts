@@ -42,8 +42,28 @@ export async function GET(request: NextRequest) {
       .select('id, nome, nome_fantasia')
       .eq('ativo', true)
 
-    const empresasInativas = (todasEmpresas || [])
+    const empresasInativasIds = (todasEmpresas || [])
       .filter((e) => !empresaIdsAtivas30d.has(e.id))
+
+    // Buscar último acesso de cada empresa inativa via usuarios
+    const empresasInativas = await Promise.all(
+      empresasInativasIds.map(async (emp) => {
+        const { data: usuario } = await db
+          .from('usuarios')
+          .select('ultimo_acesso')
+          .eq('empresa_id', emp.id)
+          .order('ultimo_acesso', { ascending: false, nullsFirst: false })
+          .limit(1)
+          .maybeSingle()
+
+        return {
+          id: emp.id,
+          nome: emp.nome,
+          nome_fantasia: emp.nome_fantasia,
+          ultimo_acesso: usuario?.ultimo_acesso || null,
+        }
+      })
+    )
 
     // Features most used (logs_sistema by categoria)
     const { data: logs } = await db
