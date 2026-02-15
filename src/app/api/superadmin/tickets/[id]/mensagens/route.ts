@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-    return NextResponse.json({ ticket, mensagens: mensagens || [] })
+    return NextResponse.json({ data: mensagens || [] })
   } catch (err) {
     console.error('Erro ao buscar mensagens do ticket:', err)
     await logApiError('/api/superadmin/tickets/[id]/mensagens', 'GET', err)
