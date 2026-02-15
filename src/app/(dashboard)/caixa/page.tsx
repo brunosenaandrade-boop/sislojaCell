@@ -45,11 +45,14 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { caixaService } from '@/services/caixa.service'
+import { useCaixaStore } from '@/store/useStore'
 import type { Caixa, MovimentacaoCaixa } from '@/types/database'
 
 type TipoMovimentacao = 'suprimento' | 'sangria'
 
 export default function CaixaPage() {
+  const { syncCaixaStatus } = useCaixaStore()
+
   // State for real data
   const [caixaAberto, setCaixaAberto] = useState<Caixa | null>(null)
   const [movimentacoes, setMovimentacoes] = useState<MovimentacaoCaixa[]>([])
@@ -179,6 +182,7 @@ export default function CaixaPage() {
       }
       setCaixaAberto(data)
       setMovimentacoes([])
+      syncCaixaStatus()
       toast.success('Caixa aberto com sucesso!')
       setDialogAbrirOpen(false)
       setFormValorAbertura('')
@@ -268,6 +272,7 @@ export default function CaixaPage() {
       }
       setCaixaAberto(null)
       setMovimentacoes([])
+      syncCaixaStatus()
       setDialogFecharOpen(false)
       setValorContado('')
       await fetchHistorico()

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Usuario, Empresa, Plano, StatusAssinatura, UsageInfo } from '@/types/database'
+import { caixaService } from '@/services/caixa.service'
 
 // ============================================
 // STORE DE AUTENTICAÇÃO/USUÁRIO
@@ -113,6 +114,7 @@ interface CaixaState {
   getLucroLiquido: () => number
   getSaldoAtual: () => number
   isCaixaAberto: () => boolean
+  syncCaixaStatus: () => Promise<void>
   getTotalPorFormaPagamento: () => Record<string, number>
   getQtdVendas: () => number
   getQtdOS: () => number
@@ -218,6 +220,14 @@ export const useCaixaStore = create<CaixaState>((set, get) => ({
     return state.valorAbertura + state.getTotalVendas() + state.getTotalOS() + state.getTotalSuprimentos() - state.getTotalSangrias()
   },
   isCaixaAberto: () => get().statusCaixa === 'aberto',
+  syncCaixaStatus: async () => {
+    try {
+      const { data } = await caixaService.buscarAberto()
+      set({ statusCaixa: data ? 'aberto' : 'fechado' })
+    } catch {
+      // silently fail
+    }
+  },
   getTotalPorFormaPagamento: () => {
     const movs = get().movimentacoes.filter(m => m.forma_pagamento)
     const totais: Record<string, number> = { dinheiro: 0, pix: 0, debito: 0, credito: 0 }

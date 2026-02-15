@@ -38,6 +38,7 @@ import {
 import { format, formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 interface HeaderProps {
   title?: string
@@ -53,7 +54,7 @@ const iconesPorTipo: Record<TipoNotificacao, { icon: typeof Bell; cor: string }>
 export function Header({ title }: HeaderProps) {
   const router = useRouter()
   const { usuario, logout } = useAuthStore()
-  const { isCaixaAberto } = useCaixaStore()
+  const { isCaixaAberto, syncCaixaStatus } = useCaixaStore()
   const { toggleSidebar } = useUIStore()
   const { isAdmin } = usePermissao()
   const {
@@ -63,6 +64,11 @@ export function Header({ title }: HeaderProps) {
     marcarTodasComoLidas,
     limparNotificacoes,
   } = useNotificacoesStore()
+
+  // Sincronizar status do caixa com o banco
+  useEffect(() => {
+    syncCaixaStatus()
+  }, [syncCaixaStatus])
 
   // Gerar alertas automaticamente
   useNotificacoes()
