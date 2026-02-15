@@ -3,12 +3,6 @@ import { verifySuperadmin, getServiceClient } from '../route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { logApiError } from '@/lib/server-logger'
 
-interface FunilEtapa {
-  etapa: string
-  quantidade: number
-  percentual: number
-}
-
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySuperadmin()
@@ -61,35 +55,15 @@ export async function GET(request: NextRequest) {
       (empresasAtivas || []).map((a) => a.empresa_id)
     ).size
 
-    const funil: FunilEtapa[] = [
-      {
-        etapa: 'Cadastro',
-        quantidade: total,
-        percentual: 100,
+    return NextResponse.json({
+      data: {
+        total_cadastros: total,
+        onboarding_completo: onboardingCompleto || 0,
+        primeiro_produto: empresasProdutosDistinct,
+        primeira_venda: empresasVendasDistinct,
+        assinatura_ativa: empresasAtivasDistinct,
       },
-      {
-        etapa: 'Onboarding Completo',
-        quantidade: onboardingCompleto || 0,
-        percentual: total > 0 ? Math.round(((onboardingCompleto || 0) / total) * 100) : 0,
-      },
-      {
-        etapa: 'Cadastrou Produtos',
-        quantidade: empresasProdutosDistinct,
-        percentual: total > 0 ? Math.round((empresasProdutosDistinct / total) * 100) : 0,
-      },
-      {
-        etapa: 'Realizou Vendas',
-        quantidade: empresasVendasDistinct,
-        percentual: total > 0 ? Math.round((empresasVendasDistinct / total) * 100) : 0,
-      },
-      {
-        etapa: 'Assinatura Ativa',
-        quantidade: empresasAtivasDistinct,
-        percentual: total > 0 ? Math.round((empresasAtivasDistinct / total) * 100) : 0,
-      },
-    ]
-
-    return NextResponse.json({ data: funil, total_empresas: total })
+    })
   } catch (err) {
     console.error('Erro ao buscar funil:', err)
     await logApiError('/api/superadmin/funil', 'GET', err)

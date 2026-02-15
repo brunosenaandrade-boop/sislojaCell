@@ -3,19 +3,6 @@ import { verifySuperadmin, getServiceClient } from '../route-utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { logApiError } from '@/lib/server-logger'
 
-interface EmpresaUsage {
-  empresa_id: string
-  empresa_nome: string
-  produtos: number
-  vendas: number
-  ordens_servico: number
-}
-
-interface FeatureUsage {
-  categoria: string
-  total: number
-}
-
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySuperadmin()
@@ -47,13 +34,16 @@ export async function GET(request: NextRequest) {
 
     const ativas30d = new Set((ativos30d || []).map((u) => u.empresa_id)).size
 
-    // Total empresas
-    const { count: totalEmpresas } = await db
-      .from('empresas')
-      .select('id', { count: 'exact', head: true })
+    // Empresas inativas há 30 dias (sem nenhum usuario com acesso recente)
+    const empresaIdsAtivas30d = new Set((ativos30d || []).map((u) => u.empresa_id))
 
-    // Inactive 30 days (total minus active 30d)
-    const inativas30d = (totalEmpresas || 0) - ativas30d
+    const { data: todasEmpresas } = await db
+      .from('empresas')
+      .select('id, nome, nome_fantasia')
+      .eq('ativo', true)
+
+    const empresasInativas = (todasEmpresas || [])
+      .filter((e) => !empresaIdsAtivas30d.has(e.id))
 
     // Features most used (logs_sistema by categoria)
     const { data: logs } = await db
@@ -73,14 +63,8 @@ export async function GET(request: NextRequest) {
       .slice(0, 20)
 
     // Usage per empresa (top 20 by activity)
-    const { data: empresas } = await db
-      .from('empresas')
-      .select('id, nome, nome_fantasia')
-      .eq('ativo', true)
-      .limit(50)
-
-    const usagePerEmpresa: EmpresaUsage[] = await Promise.all(
-      (empresas || []).slice(0, 20).map(async (emp) => {
+    const usagePerEmpresa = await Promise.all(
+      (todasEmpresas || []).slice(0, 20).map(async (emp) => {
         const [produtos, vendas, os] = await Promise.all([
           db
             .from('produtos')
@@ -99,9 +83,9 @@ export async function GET(request: NextRequest) {
         return {
           empresa_id: emp.id,
           empresa_nome: emp.nome_fantasia || emp.nome,
-          produtos: produtos.count || 0,
-          vendas: vendas.count || 0,
-          ordens_servico: os.count || 0,
+          produtos_count: produtos.count || 0,
+          vendas_count: vendas.count || 0,
+          os_count: os.count || 0,
         }
       })
     )
@@ -109,19 +93,18 @@ export async function GET(request: NextRequest) {
     // Sort by total activity
     usagePerEmpresa.sort(
       (a, b) =>
-        b.produtos + b.vendas + b.ordens_servico -
-        (a.produtos + a.vendas + a.ordens_servico)
+        b.produtos_count + b.vendas_count + b.os_count -
+        (a.produtos_count + a.vendas_count + a.os_count)
     )
 
     return NextResponse.json({
-      atividade: {
-        ativas_7d: ativas7d,
-        ativas_30d: ativas30d,
-        inativas_30d: inativas30d,
-        total: totalEmpresas || 0,
+      data: {
+        empresas_ativas_7d: ativas7d,
+        empresas_ativas_30d: ativas30d,
+        empresas_inativas_30d: empresasInativas,
+        features_mais_usadas: featuresUsage,
+        uso_por_empresa: usagePerEmpresa,
       },
-      features: featuresUsage,
-      uso_por_empresa: usagePerEmpresa,
     })
   } catch (err) {
     console.error('Erro ao buscar metricas:', err)
