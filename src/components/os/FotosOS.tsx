@@ -8,10 +8,11 @@ import {
   Dialog,
   DialogContent,
 } from '@/components/ui/dialog'
-import { Camera, Trash2, Loader2, ImagePlus, ZoomIn } from 'lucide-react'
+import { Camera, Trash2, Loader2, ImagePlus, ZoomIn, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import type { FotoOS } from '@/types/database'
-import { compressImage, isValidImageType, isValidImageSize } from '@/lib/compress-image'
+import { compressImage, addWatermark, generateFileHash, isValidImageType, isValidImageSize } from '@/lib/compress-image'
+import type { WatermarkOptions } from '@/lib/compress-image'
 import { ordensServicoService } from '@/services/ordens-servico.service'
 
 interface FotosOSProps {
@@ -20,9 +21,11 @@ interface FotosOSProps {
   onFotosChange: (fotos: FotoOS[]) => void
   readonly?: boolean
   maxFotos?: number
+  osNumero?: number
+  osImei?: string
 }
 
-export function FotosOS({ osId, fotos, onFotosChange, readonly = false, maxFotos = 10 }: FotosOSProps) {
+export function FotosOS({ osId, fotos, onFotosChange, readonly = false, maxFotos = 10, osNumero, osImei }: FotosOSProps) {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadingCount, setUploadingCount] = useState(0)
@@ -67,14 +70,26 @@ export function FotosOS({ osId, fotos, onFotosChange, readonly = false, maxFotos
       try {
         setUploadProgress(Math.round((i / valid.length) * 100))
 
+        // 1. Comprimir
         const compressed = await compressImage(valid[i])
 
-        const { data, error } = await ordensServicoService.uploadFoto(osId, compressed.file, {
+        // 2. Aplicar marca d'água (se tiver dados da OS)
+        let finalFile = compressed.file
+        if (osNumero) {
+          const wmOptions: WatermarkOptions = { osNumero, imei: osImei }
+          finalFile = await addWatermark(compressed.file, wmOptions)
+        }
+
+        // 3. Gerar hash SHA-256 do arquivo final
+        const fileHash = await generateFileHash(finalFile)
+
+        const { data, error } = await ordensServicoService.uploadFoto(osId, finalFile, {
           nomeOriginal: valid[i].name,
-          tamanhoBytes: compressed.compressedSize,
+          tamanhoBytes: finalFile.size,
           largura: compressed.width,
           altura: compressed.height,
-          tipoMime: compressed.file.type,
+          tipoMime: finalFile.type,
+          fileHash,
         })
 
         if (error) {
@@ -91,7 +106,7 @@ export function FotosOS({ osId, fotos, onFotosChange, readonly = false, maxFotos
 
     if (newFotos.length > 0) {
       onFotosChange([...fotos, ...newFotos])
-      toast.success(`${newFotos.length} foto(s) enviada(s)`)
+      toast.success(`${newFotos.length} foto(s) enviada(s) com marca d'água e proteção SHA-256`)
     }
 
     setUploading(false)
@@ -99,7 +114,7 @@ export function FotosOS({ osId, fotos, onFotosChange, readonly = false, maxFotos
     setUploadProgress(0)
 
     if (inputRef.current) inputRef.current.value = ''
-  }, [osId, fotos, maxFotos, onFotosChange])
+  }, [osId, fotos, maxFotos, onFotosChange, osNumero, osImei])
 
   const handleDelete = async (fotoId: string) => {
     setDeleting(fotoId)
@@ -157,7 +172,7 @@ export function FotosOS({ osId, fotos, onFotosChange, readonly = false, maxFotos
               Clique ou arraste fotos aqui
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              JPG, PNG ou WebP &middot; Max 20MB por foto
+              JPG, PNG ou WebP &middot; Max 20MB por foto &middot; Marca d&apos;água automática
             </p>
           </div>
         )}
@@ -168,7 +183,7 @@ export function FotosOS({ osId, fotos, onFotosChange, readonly = false, maxFotos
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-sm">
-                Comprimindo e enviando {uploadingCount} foto(s)...
+                Comprimindo e protegendo {uploadingCount} foto(s)...
               </span>
             </div>
             <Progress value={uploadProgress} />
@@ -187,6 +202,13 @@ export function FotosOS({ osId, fotos, onFotosChange, readonly = false, maxFotos
                   onClick={() => setSelectedFoto(foto)}
                   loading="lazy"
                 />
+                {/* Selo de proteção */}
+                {foto.file_hash && (
+                  <div className="absolute top-1 left-1 bg-green-600/80 rounded px-1.5 py-0.5 flex items-center gap-1">
+                    <ShieldCheck className="h-3 w-3 text-white" />
+                    <span className="text-[10px] text-white font-medium">Protegido</span>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                   <Button
                     variant="secondary"
@@ -240,9 +262,20 @@ export function FotosOS({ osId, fotos, onFotosChange, readonly = false, maxFotos
                   alt={selectedFoto.nome_original}
                   className="w-full h-auto max-h-[80vh] object-contain rounded"
                 />
-                <p className="text-xs text-muted-foreground text-center mt-2">
-                  {selectedFoto.nome_original}
-                </p>
+                <div className="flex items-center justify-between mt-2 px-1">
+                  <p className="text-xs text-muted-foreground">
+                    {selectedFoto.nome_original}
+                  </p>
+                  {selectedFoto.file_hash && (
+                    <div className="flex items-center gap-1 text-green-600">
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      <span className="text-xs font-medium">Arquivo protegido</span>
+                      <span className="text-[10px] text-muted-foreground ml-1">
+                        SHA-256: {selectedFoto.file_hash.substring(0, 12)}...
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </DialogContent>

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
 import {
   Smartphone,
@@ -8,9 +9,7 @@ import {
   Clock,
   CheckCircle2,
   Circle,
-  ArrowLeft,
   MessageCircle,
-  Camera,
 } from 'lucide-react'
 import { FotosPublicas } from '@/components/os/FotosPublicas'
 
@@ -43,7 +42,7 @@ interface OSData {
   data_finalizacao?: string
   data_entrega?: string
   itens: { id: string; tipo: string; descricao: string; quantidade: number }[]
-  fotos: { id: string; url: string }[]
+  fotos: { id: string; url: string; file_hash?: string }[]
 }
 
 interface EmpresaData {
@@ -61,7 +60,26 @@ function getServiceClient() {
   )
 }
 
-async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaData } | null> {
+async function registrarVisualizacao(osId: string, empresaId: string, codigo: string) {
+  try {
+    const headersList = await headers()
+    const userAgent = headersList.get('user-agent') || ''
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || ''
+
+    const db = getServiceClient()
+    await db.from('logs_acompanhamento').insert({
+      os_id: osId,
+      empresa_id: empresaId,
+      codigo_acompanhamento: codigo,
+      user_agent: userAgent,
+      ip,
+    })
+  } catch {
+    // Não bloquear a renderização se o log falhar
+  }
+}
+
+async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaData; osId: string; empresaId: string } | null> {
   try {
     if (!codigo || codigo.length < 6) return null
 
@@ -70,6 +88,7 @@ async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaDa
     const { data: os, error } = await db
       .from('ordens_servico')
       .select(`
+        id,
         numero,
         status,
         tipo_aparelho,
@@ -84,7 +103,7 @@ async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaDa
         data_entrega,
         empresa_id,
         itens:itens_os(id, tipo, descricao, quantidade),
-        fotos:fotos_os(id, url)
+        fotos:fotos_os(id, url, file_hash)
       `)
       .eq('codigo_acompanhamento', codigo.toUpperCase())
       .single()
@@ -98,6 +117,8 @@ async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaDa
       .single()
 
     return {
+      osId: os.id,
+      empresaId: os.empresa_id,
       os: {
         numero: os.numero,
         status: os.status,
@@ -117,9 +138,10 @@ async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaDa
           descricao: item.descricao,
           quantidade: item.quantidade,
         })),
-        fotos: (os.fotos || []).map((foto: { id: string; url: string }) => ({
+        fotos: (os.fotos || []).map((foto: { id: string; url: string; file_hash?: string }) => ({
           id: foto.id,
           url: foto.url,
+          file_hash: foto.file_hash,
         })),
       },
       empresa: empresa
@@ -167,6 +189,9 @@ export default async function AcompanharPage({
   if (!data || !data.empresa) {
     notFound()
   }
+
+  // Registrar visualização
+  await registrarVisualizacao(data.osId, data.empresaId, codigo)
 
   const { os, empresa } = data
   const corPrimaria = empresa.cor_primaria || '#3b82f6'

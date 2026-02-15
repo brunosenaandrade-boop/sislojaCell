@@ -672,6 +672,8 @@ export default function VisualizarOSPage() {
                 fotos={fotos}
                 onFotosChange={setFotos}
                 readonly
+                osNumero={os.numero}
+                osImei={os.imei}
               />
 
               {/* Problema e Diagnóstico */}

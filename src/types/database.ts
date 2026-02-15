@@ -217,6 +217,7 @@ export interface FotoOS {
   tipo_mime?: string
   largura?: number
   altura?: number
+  file_hash?: string
   created_at: string
 }
 

@@ -730,6 +730,8 @@ export default function EditarOSPage() {
               osId={osId}
               fotos={fotos}
               onFotosChange={setFotos}
+              osNumero={osOriginal?.numero}
+              osImei={imei || osOriginal?.imei}
             />
 
             {/* Problema */}

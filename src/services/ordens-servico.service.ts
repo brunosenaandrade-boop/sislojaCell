@@ -241,7 +241,7 @@ export const ordensServicoService = {
   async uploadFoto(
     osId: string,
     file: File,
-    metadata: { nomeOriginal: string; tamanhoBytes: number; largura?: number; altura?: number; tipoMime?: string }
+    metadata: { nomeOriginal: string; tamanhoBytes: number; largura?: number; altura?: number; tipoMime?: string; fileHash?: string }
   ): Promise<{ data: FotoOS | null; error: string | null }> {
     try {
       const supabase = getSupabase()
@@ -289,6 +289,7 @@ export const ordensServicoService = {
           tipo_mime: metadata.tipoMime || file.type,
           largura: metadata.largura,
           altura: metadata.altura,
+          file_hash: metadata.fileHash,
         })
         .select()
         .single()
