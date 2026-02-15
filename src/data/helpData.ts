@@ -15,6 +15,7 @@ import {
   Gift,
   ScrollText,
   User,
+  Store,
   LucideIcon,
 } from 'lucide-react'
 
@@ -201,6 +202,18 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         pergunta: 'Como desativar um produto sem excluir?',
         resposta: 'Na edição do produto, clique no botão "Ativo" para mudar para "Inativo". Produtos inativos não aparecem no PDV mas continuam no histórico.',
       },
+      {
+        pergunta: 'Como adicionar uma foto ao produto?',
+        resposta: 'Ao criar ou editar um produto, há a seção "Imagem do Produto". Clique na área tracejada para selecionar uma foto (JPEG, PNG ou WebP, até 20MB). A imagem é comprimida automaticamente para otimizar o carregamento.',
+      },
+      {
+        pergunta: 'O que é o toggle "Exibir no Catálogo"?',
+        resposta: 'É a opção que controla se o produto aparece na vitrine digital pública da sua loja. Ative-o para que o produto fique visível no catálogo online que seus clientes podem acessar.',
+      },
+      {
+        pergunta: 'O que significa o badge roxo "Catálogo" na lista de produtos?',
+        resposta: 'Indica que o produto está habilitado para aparecer no catálogo digital público. Produtos com esse badge são visíveis para qualquer pessoa que acesse o link do seu catálogo.',
+      },
     ],
     guias: [
       {
@@ -208,6 +221,8 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         passos: [
           'Acesse Produtos > Novo Produto',
           'Preencha o nome e selecione a categoria',
+          'Adicione uma foto do produto (opcional, mas recomendado para o catálogo)',
+          'Ative "Exibir no Catálogo" se quiser que o produto apareça na vitrine digital',
           'Informe o Custo usando ponto decimal (ex: 50.00)',
           'Informe o Preço de Venda (ex: 89.90)',
           'Defina o estoque inicial e mínimo',
@@ -223,6 +238,10 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       {
         titulo: 'Use o leitor de código de barras',
         descricao: 'No PDV, você pode usar um leitor de código de barras. Ao escanear, se o código corresponder a um produto cadastrado, ele é adicionado automaticamente ao carrinho.',
+      },
+      {
+        titulo: 'Fotos vendem mais',
+        descricao: 'Produtos com foto no catálogo digital chamam muito mais atenção. Tire fotos de qualidade com fundo limpo para melhorar as vendas pela vitrine.',
       },
     ],
   },
@@ -515,6 +534,94 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       {
         titulo: 'Acompanhamento reduz ligações',
         descricao: 'Envie o link de acompanhamento ao cliente logo na entrada. Isso reduz ligações perguntando "meu celular já ficou pronto?" — o cliente consulta sozinho.',
+      },
+    ],
+  },
+  {
+    id: 'catalogo',
+    titulo: 'Catálogo Digital',
+    icon: Store,
+    faqs: [
+      {
+        pergunta: 'O que é o Catálogo Digital?',
+        resposta: 'É uma vitrine online pública da sua loja. Seus clientes podem ver os produtos disponíveis, preços e entrar em contato pelo WhatsApp demonstrando interesse — tudo sem precisar de login.',
+      },
+      {
+        pergunta: 'Como ativar o catálogo da minha loja?',
+        resposta: 'Basta habilitar produtos para o catálogo! Ao criar ou editar um produto, ative o toggle "Exibir no Catálogo" e adicione uma foto. Produtos ativos, com estoque e com o catálogo habilitado aparecem automaticamente na vitrine.',
+      },
+      {
+        pergunta: 'Qual é o link do meu catálogo?',
+        resposta: 'O link do catálogo segue o padrão: cellflow.com.br/catalogo/[id-da-sua-empresa]. Esse link é público e pode ser compartilhado por WhatsApp, redes sociais, cartão de visita ou QR Code.',
+      },
+      {
+        pergunta: 'O cliente precisa ter conta para ver o catálogo?',
+        resposta: 'Não. O catálogo é totalmente público. Qualquer pessoa com o link pode visualizar os produtos sem precisar de cadastro ou login.',
+      },
+      {
+        pergunta: 'Como funciona o botão "Tenho Interesse"?',
+        resposta: 'Ao clicar em "Tenho Interesse" em um produto, o WhatsApp da loja é aberto com uma mensagem pronta: "Olá, vi o [produto] (R$ XX,XX) no catálogo e tenho interesse!". Isso facilita o contato e a conversão.',
+      },
+      {
+        pergunta: 'O preço de custo aparece no catálogo?',
+        resposta: 'Não! O catálogo mostra apenas o nome, descrição, foto e preço de venda. O custo e a margem de lucro ficam visíveis apenas para você no painel administrativo.',
+      },
+      {
+        pergunta: 'Produtos sem estoque aparecem no catálogo?',
+        resposta: 'Não. Apenas produtos ativos, com estoque maior que zero e com "Exibir no Catálogo" habilitado aparecem na vitrine. Se o estoque zerar, o produto some automaticamente.',
+      },
+      {
+        pergunta: 'O catálogo aparece na página de acompanhamento da OS?',
+        resposta: 'Sim! Quando o cliente acessa o link de acompanhamento da OS, uma seção "Confira nossos produtos" mostra até 4 produtos do seu catálogo com um link para ver o catálogo completo.',
+      },
+      {
+        pergunta: 'O catálogo usa as cores da minha loja?',
+        resposta: 'Sim. O catálogo usa a cor primária configurada na sua empresa para botões de categoria e destaques de preço, mantendo a identidade visual da sua marca.',
+      },
+      {
+        pergunta: 'Como configurar o WhatsApp para o catálogo?',
+        resposta: 'O número do WhatsApp usado no catálogo é o mesmo cadastrado em Configurações > Empresa > WhatsApp. Certifique-se de que está preenchido corretamente com DDD para que o botão "Tenho Interesse" funcione.',
+      },
+    ],
+    guias: [
+      {
+        titulo: 'Montar seu catálogo digital',
+        passos: [
+          'Acesse Produtos e edite os itens que deseja exibir',
+          'Adicione uma foto de qualidade para cada produto',
+          'Ative o toggle "Exibir no Catálogo"',
+          'Verifique se o WhatsApp da empresa está configurado (Configurações > Empresa)',
+          'Acesse o link do catálogo para conferir como ficou',
+          'Compartilhe o link com seus clientes',
+        ],
+      },
+      {
+        titulo: 'Divulgar o catálogo',
+        passos: [
+          'Copie o link do catálogo (cellflow.com.br/catalogo/seu-id)',
+          'Envie por WhatsApp para seus contatos e grupos',
+          'Adicione o link na bio do Instagram da loja',
+          'Gere um QR Code do link e coloque no balcão',
+          'Imprima o QR Code em cartões de visita ou panfletos',
+        ],
+      },
+    ],
+    dicas: [
+      {
+        titulo: 'Clientes da OS veem seu catálogo',
+        descricao: 'Toda vez que um cliente acompanha a OS pelo link, ele vê uma seção de produtos da sua loja. É uma oportunidade gratuita de venda adicional.',
+      },
+      {
+        titulo: 'Fotos fazem a diferença',
+        descricao: 'Produtos com fotos de qualidade vendem muito mais. Use fundo branco ou neutro, boa iluminação e mostre o produto de frente.',
+      },
+      {
+        titulo: 'Mantenha o estoque atualizado',
+        descricao: 'Produtos sem estoque somem automaticamente do catálogo. Mantenha o estoque em dia para não perder oportunidades de venda.',
+      },
+      {
+        titulo: 'WhatsApp é obrigatório',
+        descricao: 'Sem o número de WhatsApp configurado, o botão "Tenho Interesse" não aparece. Configure em Configurações > Empresa.',
       },
     ],
   },
