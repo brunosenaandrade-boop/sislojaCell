@@ -16,6 +16,8 @@ interface LogOptions {
 
 class Logger {
   private _supabase: ReturnType<typeof getClient> | null = null
+  private _ip: string | null = null
+  private _ipPromise: Promise<string> | null = null
 
   private get supabase() {
     if (!this._supabase) {
@@ -24,12 +26,33 @@ class Logger {
     return this._supabase
   }
 
+  private async getIp(): Promise<string | undefined> {
+    if (typeof window === 'undefined') return undefined
+    if (this._ip) return this._ip
+
+    if (!this._ipPromise) {
+      this._ipPromise = fetch('/api/ip')
+        .then(res => res.json())
+        .then(data => {
+          this._ip = data.ip || null
+          return this._ip || 'unknown'
+        })
+        .catch(() => {
+          this._ipPromise = null
+          return 'unknown'
+        })
+    }
+
+    return this._ipPromise
+  }
+
   private async getContext() {
     // Pega informações do contexto atual
     const pagina = typeof window !== 'undefined' ? window.location.pathname : undefined
     const user_agent = typeof window !== 'undefined' ? navigator.userAgent : undefined
+    const ip = await this.getIp()
 
-    return { pagina, user_agent }
+    return { pagina, user_agent, ip }
   }
 
   async log(options: LogOptions) {
@@ -46,6 +69,7 @@ class Logger {
         detalhes: options.detalhes,
         pagina: options.pagina || context.pagina,
         acao: options.acao,
+        ip: context.ip,
         user_agent: context.user_agent,
       })
 
