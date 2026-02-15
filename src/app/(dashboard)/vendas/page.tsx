@@ -511,7 +511,7 @@ export default function VendasPage() {
 
   if (isLoadingData) {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -549,7 +549,7 @@ export default function VendasPage() {
         document.body
       )}
 
-      <div className="flex flex-col h-screen print:hidden">
+      <div className="flex flex-col h-full print:hidden">
         {/* Tela de venda finalizada */}
         {vendaFinalizada ? (
           <div className="flex-1 flex items-center justify-center p-4">
