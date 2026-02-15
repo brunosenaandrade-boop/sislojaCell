@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     let query = db
       .from('logs_sistema')
-      .select('*, empresas:empresa_id(nome, nome_fantasia)')
+      .select('*, empresas:empresa_id(nome, nome_fantasia), usuarios:usuario_id(nome, email, perfil)')
       .order('created_at', { ascending: false })
       .limit(limit)
 

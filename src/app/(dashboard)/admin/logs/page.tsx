@@ -205,13 +205,25 @@ function LogDetailPanel({ log }: { log: LogEntry }) {
             {log.ip}
           </div>
         )}
-        {log.usuario_id && (
+        {log.usuarios && (
+          <div>
+            <span className="font-medium">Usuário: </span>
+            {log.usuarios.nome} ({log.usuarios.email}) — <span className="capitalize">{log.usuarios.perfil}</span>
+          </div>
+        )}
+        {!log.usuarios && log.usuario_id && (
           <div>
             <span className="font-medium">Usuario ID: </span>
             <code className="text-[10px]">{log.usuario_id}</code>
           </div>
         )}
-        {log.empresa_id && (
+        {log.empresas && (
+          <div>
+            <span className="font-medium">Empresa: </span>
+            {log.empresas.nome_fantasia || log.empresas.nome}
+          </div>
+        )}
+        {!log.empresas && log.empresa_id && (
           <div>
             <span className="font-medium">Empresa ID: </span>
             <code className="text-[10px]">{log.empresa_id}</code>
@@ -423,6 +435,7 @@ export default function SuperadminLogsPage() {
                   <TableHead className="w-[90px]">Tipo</TableHead>
                   <TableHead className="w-[110px]">Categoria</TableHead>
                   <TableHead className="w-[160px]">Empresa</TableHead>
+                  <TableHead className="w-[180px]">Usuário</TableHead>
                   <TableHead>Mensagem</TableHead>
                 </TableRow>
               </TableHeader>
@@ -455,13 +468,21 @@ export default function SuperadminLogsPage() {
                         <TableCell className="text-sm">
                           {log.empresas?.nome_fantasia || log.empresas?.nome || (log.empresa_id ? log.empresa_id.slice(0, 8) + '...' : '-')}
                         </TableCell>
+                        <TableCell className="text-sm">
+                          {log.usuarios ? (
+                            <div>
+                              <p className="font-medium truncate">{log.usuarios.nome}</p>
+                              <p className="text-xs text-muted-foreground truncate">{log.usuarios.email}</p>
+                            </div>
+                          ) : '-'}
+                        </TableCell>
                         <TableCell className="text-sm max-w-[400px] truncate" title={log.mensagem}>
                           {log.mensagem}
                         </TableCell>
                       </TableRow>
                       {isExpanded && (
                         <tr>
-                          <td colSpan={6} className="p-0">
+                          <td colSpan={7} className="p-0">
                             <LogDetailPanel log={log} />
                           </td>
                         </tr>

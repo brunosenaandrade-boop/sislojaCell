@@ -730,4 +730,5 @@ export interface LogEntry {
   usuario_id: string | null
   created_at: string
   empresas: { nome: string; nome_fantasia: string | null } | null
+  usuarios: { nome: string; email: string; perfil: string } | null
 }
