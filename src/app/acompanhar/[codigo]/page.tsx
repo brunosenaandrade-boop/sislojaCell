@@ -239,7 +239,7 @@ export default async function AcompanharPage({
   const telefoneNumber = (empresa.telefone || '').replace(/\D/g, '')
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 acompanhamento-page">
       {/* Header minimalista */}
       <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">

@@ -50,14 +50,21 @@ import {
   Archive,
   ArrowUpDown,
   Loader2,
+  Share2,
+  Copy,
+  MessageCircle,
+  ExternalLink,
+  Check,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { usePermissao } from '@/hooks/usePermissao'
+import { useAuthStore } from '@/store/useStore'
 import { produtosService } from '@/services/produtos.service'
 import type { Produto, CategoriaProduto } from '@/types/database'
 
 export default function ProdutosPage() {
   const { podeExcluirRegistros } = usePermissao()
+  const empresa = useAuthStore((s) => s.empresa)
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [categorias, setCategorias] = useState<CategoriaProduto[]>([])
   const [loading, setLoading] = useState(true)
@@ -66,6 +73,29 @@ export default function ProdutosPage() {
   const [estoqueFiltro, setEstoqueFiltro] = useState('todos')
   const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false)
   const [produtoParaDeletar, setProdutoParaDeletar] = useState<string | null>(null)
+  const [copiado, setCopiado] = useState(false)
+
+  const catalogoUrl = empresa?.id
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/catalogo/${empresa.id}`
+    : ''
+
+  const copiarLinkCatalogo = async () => {
+    try {
+      await navigator.clipboard.writeText(catalogoUrl)
+      setCopiado(true)
+      toast.success('Link do catálogo copiado!')
+      setTimeout(() => setCopiado(false), 2000)
+    } catch {
+      toast.error('Erro ao copiar link')
+    }
+  }
+
+  const compartilharWhatsApp = () => {
+    const texto = encodeURIComponent(
+      `Confira nossos produtos! 📱\n${catalogoUrl}`
+    )
+    window.open(`https://wa.me/?text=${texto}`, '_blank')
+  }
 
   const carregarDados = useCallback(async () => {
     setLoading(true)
@@ -274,6 +304,33 @@ export default function ProdutosPage() {
             </Select>
           </div>
           <div className="flex gap-2">
+            {empresa?.id && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Catálogo Digital
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={copiarLinkCatalogo}>
+                    {copiado ? <Check className="mr-2 h-4 w-4 text-green-600" /> : <Copy className="mr-2 h-4 w-4" />}
+                    {copiado ? 'Link copiado!' : 'Copiar link do catálogo'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={compartilharWhatsApp}>
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Enviar via WhatsApp
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <a href={catalogoUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Visualizar catálogo
+                    </a>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <Link href="/produtos/categorias">
               <Button variant="outline">
                 Categorias
