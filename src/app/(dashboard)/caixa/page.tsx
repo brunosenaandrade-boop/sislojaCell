@@ -87,7 +87,7 @@ export default function CaixaPage() {
   const totalEntradas = totalVendas + totalOS + totalSuprimentos
   const totalSaidas = totalSangrias
   const saldoAtual = valorAbertura + totalEntradas - totalSaidas
-  const totalCusto = 0 // Not tracked per-movement
+  const totalCusto = movimentacoes.filter(m => m.tipo === 'venda').reduce((acc, m) => acc + (m.custo || 0), 0)
   const lucroLiquido = totalVendas + totalOS - totalCusto
   const qtdVendas = movimentacoes.filter(m => m.tipo === 'venda').length
   const qtdOS = movimentacoes.filter(m => m.tipo === 'os').length
