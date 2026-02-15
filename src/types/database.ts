@@ -96,6 +96,8 @@ export interface Produto {
   estoque_atual: number
   estoque_minimo: number
   unidade: string
+  imagem_url?: string
+  exibir_catalogo: boolean
   ativo: boolean
   created_at: string
   updated_at: string

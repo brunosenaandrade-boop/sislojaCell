@@ -326,10 +326,25 @@ export default function ProdutosPage() {
                         <TableCell>
                           <Link href={`/produtos/${produto.id}/editar`} className="hover:underline">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
-                                <Package className="h-4 w-4 text-muted-foreground" />
+                              {produto.imagem_url ? (
+                                <img
+                                  src={produto.imagem_url}
+                                  alt={produto.nome}
+                                  className="w-8 h-8 rounded object-cover"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
+                                  <Package className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-medium">{produto.nome}</span>
+                                {produto.exibir_catalogo && (
+                                  <Badge className="bg-purple-100 text-purple-700 text-[10px] px-1">
+                                    Catálogo
+                                  </Badge>
+                                )}
                               </div>
-                              <span className="font-medium">{produto.nome}</span>
                             </div>
                           </Link>
                         </TableCell>

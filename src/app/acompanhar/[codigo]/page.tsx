@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Circle,
   MessageCircle,
+  Package,
 } from 'lucide-react'
 import { FotosPublicas } from '@/components/os/FotosPublicas'
 
@@ -79,7 +80,14 @@ async function registrarVisualizacao(osId: string, empresaId: string, codigo: st
   }
 }
 
-async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaData; osId: string; empresaId: string } | null> {
+interface CatalogoProduto {
+  id: string
+  nome: string
+  preco_venda: number
+  imagem_url?: string
+}
+
+async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaData; osId: string; empresaId: string; catalogoProdutos: CatalogoProduto[] } | null> {
   try {
     if (!codigo || codigo.length < 6) return null
 
@@ -116,9 +124,23 @@ async function fetchOS(codigo: string): Promise<{ os: OSData; empresa: EmpresaDa
       .eq('id', os.empresa_id)
       .single()
 
+    // Buscar produtos do catálogo da empresa
+    const { data: catalogoProdutos } = await db
+      .from('produtos')
+      .select('id, nome, preco_venda, imagem_url')
+      .eq('empresa_id', os.empresa_id)
+      .eq('exibir_catalogo', true)
+      .eq('ativo', true)
+      .gt('estoque_atual', 0)
+      .order('nome')
+      .limit(6)
+
     return {
       osId: os.id,
       empresaId: os.empresa_id,
+      catalogoProdutos: (catalogoProdutos || []).map((p: { id: string; nome: string; preco_venda: number; imagem_url?: string }) => ({
+        id: p.id, nome: p.nome, preco_venda: p.preco_venda, imagem_url: p.imagem_url,
+      })),
       os: {
         numero: os.numero,
         status: os.status,
@@ -193,7 +215,7 @@ export default async function AcompanharPage({
   // Registrar visualização
   await registrarVisualizacao(data.osId, data.empresaId, codigo)
 
-  const { os, empresa } = data
+  const { os, empresa, catalogoProdutos } = data
   const corPrimaria = empresa.cor_primaria || '#3b82f6'
   const aparelho = [os.marca, os.modelo].filter(Boolean).join(' ') || 'Aparelho'
   const isCancelada = os.status === 'cancelada'
@@ -448,6 +470,40 @@ export default async function AcompanharPage({
             <Phone className="h-5 w-5" />
             Ligar para a loja
           </a>
+        )}
+
+        {/* Vitrine Digital */}
+        {catalogoProdutos.length > 0 && (
+          <div className="space-y-3">
+            <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100">
+              <p className="text-sm font-medium text-gray-700 mb-3">Confira nossos produtos</p>
+              <div className="grid grid-cols-2 gap-3">
+                {catalogoProdutos.slice(0, 4).map((produto) => (
+                  <div key={produto.id} className="rounded-lg border border-gray-100 overflow-hidden">
+                    <div className="aspect-square bg-gray-50 flex items-center justify-center">
+                      {produto.imagem_url ? (
+                        <img src={produto.imagem_url} alt={produto.nome} className="w-full h-full object-cover" loading="lazy" />
+                      ) : (
+                        <Package className="h-8 w-8 text-gray-300" />
+                      )}
+                    </div>
+                    <div className="p-2">
+                      <p className="text-xs font-medium text-gray-900 line-clamp-1">{produto.nome}</p>
+                      <p className="text-sm font-bold" style={{ color: corPrimaria }}>
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(produto.preco_venda)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <Link
+              href={`/catalogo/${data.empresaId}`}
+              className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
+            >
+              Ver catalogo completo
+            </Link>
+          </div>
         )}
 
         {/* Footer */}

@@ -24,9 +24,13 @@ import {
   DollarSign,
   TrendingUp,
   AlertTriangle,
+  ImagePlus,
+  X,
+  Eye,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { produtosService } from '@/services/produtos.service'
+import { compressImage, isValidImageType, isValidImageSize } from '@/lib/compress-image'
 import type { CategoriaProduto } from '@/types/database'
 
 export default function NovoProdutoPage() {
@@ -44,6 +48,9 @@ export default function NovoProdutoPage() {
   const [estoqueAtual, setEstoqueAtual] = useState('')
   const [estoqueMinimo, setEstoqueMinimo] = useState('5')
   const [unidade, setUnidade] = useState('UN')
+  const [imagemFile, setImagemFile] = useState<File | null>(null)
+  const [imagemPreview, setImagemPreview] = useState<string | null>(null)
+  const [exibirCatalogo, setExibirCatalogo] = useState(false)
 
   useEffect(() => {
     const carregarCategorias = async () => {
@@ -77,6 +84,33 @@ export default function NovoProdutoPage() {
     setCodigo(novoCodigo)
   }
 
+  // Handlers de imagem
+  const handleImagemChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!isValidImageType(file)) {
+      toast.error('Formato inválido. Use JPEG, PNG ou WebP.')
+      return
+    }
+    if (!isValidImageSize(file)) {
+      toast.error('Imagem muito grande. Máximo 20MB.')
+      return
+    }
+    try {
+      const { file: compressed } = await compressImage(file)
+      setImagemFile(compressed)
+      setImagemPreview(URL.createObjectURL(compressed))
+    } catch {
+      toast.error('Erro ao processar imagem')
+    }
+  }
+
+  const removerImagem = () => {
+    setImagemFile(null)
+    if (imagemPreview) URL.revokeObjectURL(imagemPreview)
+    setImagemPreview(null)
+  }
+
   // Salvar produto
   const handleSalvar = async () => {
     // Validações
@@ -104,7 +138,7 @@ export default function NovoProdutoPage() {
     setIsLoading(true)
 
     try {
-      const { error } = await produtosService.criar({
+      const { data: novoProduto, error } = await produtosService.criar({
         codigo: codigo || String(Date.now()).slice(-6),
         nome,
         descricao,
@@ -114,11 +148,16 @@ export default function NovoProdutoPage() {
         estoque_atual: parseInt(estoqueAtual) || 0,
         estoque_minimo: parseInt(estoqueMinimo) || 5,
         unidade,
+        exibir_catalogo: exibirCatalogo,
       })
 
       if (error) {
         toast.error('Erro ao cadastrar produto: ' + error)
       } else {
+        if (imagemFile && novoProduto) {
+          const { error: imgError } = await produtosService.uploadImagem(novoProduto.id, imagemFile)
+          if (imgError) toast.error('Produto criado, mas erro ao enviar imagem: ' + imgError)
+        }
         toast.success('Produto cadastrado com sucesso!')
         router.push('/produtos')
       }
@@ -215,6 +254,67 @@ export default function NovoProdutoPage() {
                     rows={3}
                   />
                 </div>
+
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      Exibir no Catálogo
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Mostra o produto na vitrine digital pública
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant={exibirCatalogo ? 'default' : 'outline'}
+                    onClick={() => setExibirCatalogo(!exibirCatalogo)}
+                  >
+                    {exibirCatalogo ? 'Sim' : 'Não'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Imagem do Produto */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImagePlus className="h-5 w-5" />
+                  Imagem do Produto
+                </CardTitle>
+                <CardDescription>
+                  Foto exibida no catálogo digital (JPEG, PNG ou WebP)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {imagemPreview ? (
+                  <div className="relative inline-block">
+                    <img
+                      src={imagemPreview}
+                      alt="Preview"
+                      className="h-48 w-48 rounded-lg object-cover border"
+                    />
+                    <button
+                      type="button"
+                      onClick={removerImagem}
+                      className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex h-48 w-48 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors">
+                    <ImagePlus className="h-8 w-8 text-gray-400" />
+                    <span className="mt-2 text-sm text-gray-500">Adicionar foto</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImagemChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </CardContent>
             </Card>
 

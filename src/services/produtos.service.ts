@@ -130,6 +130,75 @@ export const produtosService = {
     })
   },
 
+  async uploadImagem(produtoId: string, file: File): Promise<ServiceResult<string>> {
+    try {
+      const supabase = getSupabase()
+      const empresaId = getEmpresaId()
+
+      const { data: produto } = await supabase
+        .from('produtos')
+        .select('id')
+        .eq('id', produtoId)
+        .eq('empresa_id', empresaId)
+        .single()
+
+      if (!produto) return { data: null, error: 'Produto não encontrado' }
+
+      const ext = file.name.split('.').pop() || 'webp'
+      const uniqueName = `${crypto.randomUUID()}.${ext}`
+      const storagePath = `${empresaId}/${produtoId}/${uniqueName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('produto-fotos')
+        .upload(storagePath, file, { upsert: false })
+
+      if (uploadError) return { data: null, error: uploadError.message }
+
+      const { data: urlData } = supabase.storage
+        .from('produto-fotos')
+        .getPublicUrl(storagePath)
+
+      const { error: updateError } = await supabase
+        .from('produtos')
+        .update({ imagem_url: urlData.publicUrl })
+        .eq('id', produtoId)
+        .eq('empresa_id', empresaId)
+
+      if (updateError) return { data: null, error: updateError.message }
+
+      return { data: urlData.publicUrl, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro ao fazer upload' }
+    }
+  },
+
+  async removeImagem(produtoId: string): Promise<ServiceResult<null>> {
+    try {
+      const supabase = getSupabase()
+      const empresaId = getEmpresaId()
+
+      const { data: files } = await supabase.storage
+        .from('produto-fotos')
+        .list(`${empresaId}/${produtoId}`)
+
+      if (files && files.length > 0) {
+        const filePaths = files.map((f: { name: string }) => `${empresaId}/${produtoId}/${f.name}`)
+        await supabase.storage.from('produto-fotos').remove(filePaths)
+      }
+
+      const { error } = await supabase
+        .from('produtos')
+        .update({ imagem_url: null })
+        .eq('id', produtoId)
+        .eq('empresa_id', empresaId)
+
+      if (error) return { data: null, error: error.message }
+      return { data: null, error: null }
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err.message : 'Erro ao remover imagem' }
+    }
+  },
+
   async excluirCategoria(id: string): Promise<ServiceResult<CategoriaProduto>> {
     return handleQuery(async () => {
       const supabase = getSupabase()

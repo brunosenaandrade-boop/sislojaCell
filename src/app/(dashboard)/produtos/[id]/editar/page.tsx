@@ -26,9 +26,13 @@ import {
   AlertTriangle,
   History,
   Loader2,
+  ImagePlus,
+  X,
+  Eye,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { produtosService } from '@/services/produtos.service'
+import { compressImage, isValidImageType, isValidImageSize } from '@/lib/compress-image'
 import type { CategoriaProduto } from '@/types/database'
 
 export default function EditarProdutoPage() {
@@ -49,6 +53,11 @@ export default function EditarProdutoPage() {
   const [estoqueMinimo, setEstoqueMinimo] = useState('')
   const [unidade, setUnidade] = useState('UN')
   const [ativo, setAtivo] = useState(true)
+  const [exibirCatalogo, setExibirCatalogo] = useState(false)
+  const [imagemUrl, setImagemUrl] = useState<string | null>(null)
+  const [imagemFile, setImagemFile] = useState<File | null>(null)
+  const [imagemPreview, setImagemPreview] = useState<string | null>(null)
+  const [removendoImagem, setRemovendoImagem] = useState(false)
 
   // Carregar dados do produto
   useEffect(() => {
@@ -84,6 +93,8 @@ export default function EditarProdutoPage() {
           setEstoqueMinimo(produto.estoque_minimo.toString())
           setUnidade(produto.unidade)
           setAtivo(produto.ativo)
+          setExibirCatalogo(produto.exibir_catalogo ?? false)
+          setImagemUrl(produto.imagem_url || null)
         }
       } catch {
         toast.error('Erro ao carregar dados')
@@ -106,6 +117,45 @@ export default function EditarProdutoPage() {
       style: 'currency',
       currency: 'BRL',
     }).format(value)
+  }
+
+  // Handlers de imagem
+  const handleImagemChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!isValidImageType(file)) {
+      toast.error('Formato inválido. Use JPEG, PNG ou WebP.')
+      return
+    }
+    if (!isValidImageSize(file)) {
+      toast.error('Imagem muito grande. Máximo 20MB.')
+      return
+    }
+    try {
+      const { file: compressed } = await compressImage(file)
+      setImagemFile(compressed)
+      setImagemPreview(URL.createObjectURL(compressed))
+    } catch {
+      toast.error('Erro ao processar imagem')
+    }
+  }
+
+  const removerImagemExistente = async () => {
+    setRemovendoImagem(true)
+    const { error } = await produtosService.removeImagem(params.id as string)
+    if (error) {
+      toast.error('Erro ao remover imagem: ' + error)
+    } else {
+      setImagemUrl(null)
+      toast.success('Imagem removida')
+    }
+    setRemovendoImagem(false)
+  }
+
+  const removerNovaImagem = () => {
+    setImagemFile(null)
+    if (imagemPreview) URL.revokeObjectURL(imagemPreview)
+    setImagemPreview(null)
   }
 
   // Salvar produto
@@ -140,11 +190,16 @@ export default function EditarProdutoPage() {
         estoque_minimo: parseInt(estoqueMinimo) || 5,
         unidade,
         ativo,
+        exibir_catalogo: exibirCatalogo,
       })
 
       if (error) {
         toast.error('Erro ao atualizar produto: ' + error)
       } else {
+        if (imagemFile) {
+          const { error: imgError } = await produtosService.uploadImagem(params.id as string, imagemFile)
+          if (imgError) toast.error('Produto salvo, mas erro ao enviar imagem: ' + imgError)
+        }
         toast.success('Produto atualizado com sucesso!')
         router.push('/produtos')
       }
@@ -262,6 +317,91 @@ export default function EditarProdutoPage() {
                     {ativo ? 'Ativo' : 'Inativo'}
                   </Button>
                 </div>
+
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      Exibir no Catálogo
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Mostra o produto na vitrine digital pública
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant={exibirCatalogo ? 'default' : 'outline'}
+                    onClick={() => setExibirCatalogo(!exibirCatalogo)}
+                  >
+                    {exibirCatalogo ? 'Sim' : 'Não'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Imagem do Produto */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImagePlus className="h-5 w-5" />
+                  Imagem do Produto
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {imagemPreview ? (
+                  <div className="relative inline-block">
+                    <img
+                      src={imagemPreview}
+                      alt="Preview"
+                      className="h-48 w-48 rounded-lg object-cover border"
+                    />
+                    <button
+                      type="button"
+                      onClick={removerNovaImagem}
+                      className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : imagemUrl ? (
+                  <div className="relative inline-block">
+                    <img
+                      src={imagemUrl}
+                      alt="Imagem do produto"
+                      className="h-48 w-48 rounded-lg object-cover border"
+                    />
+                    <button
+                      type="button"
+                      onClick={removerImagemExistente}
+                      disabled={removendoImagem}
+                      className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600 disabled:opacity-50"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                    <label className="mt-2 block">
+                      <span className="text-sm text-blue-600 cursor-pointer hover:underline">
+                        Trocar imagem
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleImagemChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <label className="flex h-48 w-48 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors">
+                    <ImagePlus className="h-8 w-8 text-gray-400" />
+                    <span className="mt-2 text-sm text-gray-500">Adicionar foto</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImagemChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </CardContent>
             </Card>
 
