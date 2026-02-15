@@ -80,7 +80,7 @@ export default function PrivacidadePage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-gray-900">4. Isolamento de Dados</h2>
             <p>
-              Cada empresa possui seus dados completamente isolados. Utilizamos Row Level Security (RLS)
+              Cada empresa possui seus dados completamente isolados. Utilizamos políticas de segurança
               no banco de dados para garantir que cada empresa acesse apenas seus próprios dados.
               Nenhuma empresa pode visualizar, editar ou acessar dados de outra empresa.
             </p>
@@ -89,16 +89,16 @@ export default function PrivacidadePage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-gray-900">5. Armazenamento e Segurança</h2>
             <p>
-              Os dados são armazenados em servidores da Supabase (infraestrutura baseada em PostgreSQL)
+              Os dados são armazenados em infraestrutura de nuvem segura
               com as seguintes medidas de segurança:
             </p>
             <ul className="mt-2 list-disc space-y-1 pl-6">
               <li>Criptografia em trânsito (TLS/SSL)</li>
               <li>Criptografia em repouso</li>
               <li>Backups automáticos diários</li>
-              <li>Isolamento de dados por empresa (RLS)</li>
-              <li>Autenticação segura com tokens JWT</li>
-              <li>Senhas armazenadas com hash bcrypt</li>
+              <li>Isolamento de dados por empresa</li>
+              <li>Autenticação segura</li>
+              <li>Senhas armazenadas com hash criptográfico</li>
             </ul>
           </section>
 
@@ -106,9 +106,9 @@ export default function PrivacidadePage() {
             <h2 className="mb-3 text-xl font-semibold text-gray-900">6. Compartilhamento de Dados</h2>
             <p>Seus dados podem ser compartilhados apenas com:</p>
             <ul className="mt-2 list-disc space-y-1 pl-6">
-              <li><strong>Asaas:</strong> para processamento de pagamentos (nome, email, CPF/CNPJ)</li>
-              <li><strong>Supabase:</strong> infraestrutura de hospedagem do banco de dados</li>
-              <li><strong>Vercel:</strong> hospedagem da aplicação web</li>
+              <li><strong>Processador de pagamentos:</strong> para cobrança e gestão financeira (nome, email, CPF/CNPJ)</li>
+              <li><strong>Provedor de banco de dados:</strong> infraestrutura de armazenamento em nuvem</li>
+              <li><strong>Provedor de hospedagem:</strong> infraestrutura de entrega da aplicação web</li>
             </ul>
             <p className="mt-2">
               Não vendemos, alugamos ou compartilhamos seus dados com terceiros para fins de marketing.

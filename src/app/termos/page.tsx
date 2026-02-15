@@ -86,7 +86,7 @@ export default function TermosPage() {
             <h2 className="mb-3 text-xl font-semibold text-gray-900">5. Plano e Pagamento</h2>
             <p>
               O plano anual tem valor de R$ 1.800,00 (mil e oitocentos reais), cobrado anualmente.
-              O pagamento pode ser realizado à vista via PIX ou boleto bancário, ou parcelado em
+              O pagamento pode ser realizado à vista via PIX ou parcelado em
               até 12x de R$ 150,00 no cartão de crédito. Processado pela plataforma Asaas.
             </p>
             <p className="mt-2">
