@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       categoriaMap[cat] = (categoriaMap[cat] || 0) + 1
     })
 
-    const featuresUsage: FeatureUsage[] = Object.entries(categoriaMap)
+    const featuresUsage = Object.entries(categoriaMap)
       .map(([categoria, total]) => ({ categoria, total }))
       .sort((a, b) => b.total - a.total)
       .slice(0, 20)
