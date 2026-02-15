@@ -1,5 +1,5 @@
 import { getSupabase, getEmpresaId, getUsuarioId, handleQuery, sanitizeSearch } from './base'
-import type { OrdemServico, ItemOS, FotoOS } from '@/types/database'
+import type { OrdemServico, ItemOS, FotoOS, LogAcompanhamento } from '@/types/database'
 import { planosService } from './planos.service'
 
 function gerarCodigoAcompanhamento(): string {
@@ -341,5 +341,24 @@ export const ordensServicoService = {
     } catch (err) {
       return { data: null, error: err instanceof Error ? err.message : 'Erro ao remover foto' }
     }
+  },
+
+  // ============================================
+  // LOGS DE ACOMPANHAMENTO
+  // ============================================
+
+  async listarLogsAcompanhamento(osId: string): Promise<{ data: LogAcompanhamento[]; error: string | null }> {
+    const supabase = getSupabase()
+    const empresaId = getEmpresaId()
+
+    const { data, error } = await supabase
+      .from('logs_acompanhamento')
+      .select('*')
+      .eq('os_id', osId)
+      .eq('empresa_id', empresaId)
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    return { data: data ?? [], error: error?.message ?? null }
   },
 }

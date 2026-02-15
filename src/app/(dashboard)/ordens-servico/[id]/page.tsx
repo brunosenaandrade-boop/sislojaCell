@@ -64,12 +64,14 @@ import {
   Banknote,
   QrCode,
   CreditCard,
+  Monitor,
+  Globe,
 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
-import type { OrdemServico, StatusOS, FotoOS } from '@/types/database'
+import type { OrdemServico, StatusOS, FotoOS, LogAcompanhamento } from '@/types/database'
 import { CupomOS } from '@/components/print/CupomOS'
 import { useAuthStore, usePrintConfigStore } from '@/store/useStore'
 import { PatternLock } from '@/components/ui/pattern-lock'
@@ -128,6 +130,7 @@ export default function VisualizarOSPage() {
   const [formaPagamentoOS, setFormaPagamentoOS] = useState<FormaPagamento | ''>('')
   const [caixaAbertoId, setCaixaAbertoId] = useState<string | null>(null)
   const [fotos, setFotos] = useState<FotoOS[]>([])
+  const [logsAcompanhamento, setLogsAcompanhamento] = useState<LogAcompanhamento[]>([])
 
   // Carregar OS e status do caixa
   useEffect(() => {
@@ -154,9 +157,13 @@ export default function VisualizarOSPage() {
         }
         setOs(data)
         setDiagnostico(data.diagnostico || '')
-        // Carregar fotos
-        const { data: fotosData } = await ordensServicoService.listarFotos(params.id as string)
-        if (fotosData) setFotos(fotosData)
+        // Carregar fotos e logs
+        const [fotosRes, logsRes] = await Promise.all([
+          ordensServicoService.listarFotos(params.id as string),
+          ordensServicoService.listarLogsAcompanhamento(params.id as string),
+        ])
+        if (fotosRes.data) setFotos(fotosRes.data)
+        if (logsRes.data) setLogsAcompanhamento(logsRes.data)
       } catch {
         toast.error('Erro ao carregar OS')
       } finally {
@@ -165,6 +172,47 @@ export default function VisualizarOSPage() {
     }
     carregar()
   }, [params.id, router])
+
+  const parseUserAgent = (ua?: string) => {
+    if (!ua) return { dispositivo: 'Desconhecido', sistema: '', navegador: '' }
+
+    let dispositivo = 'Desktop'
+    let sistema = ''
+    let navegador = ''
+    let modelo = ''
+
+    // Sistema operacional
+    if (/Android/i.test(ua)) {
+      sistema = 'Android'
+      dispositivo = 'Celular'
+      const match = ua.match(/Android[^;]*;\s*([^)]+)\)/)
+      if (match) {
+        const parts = match[1].split(' Build')
+        modelo = parts[0]?.trim() || ''
+      }
+    } else if (/iPhone/i.test(ua)) {
+      sistema = 'iOS'
+      dispositivo = 'iPhone'
+    } else if (/iPad/i.test(ua)) {
+      sistema = 'iOS'
+      dispositivo = 'iPad'
+    } else if (/Windows/i.test(ua)) {
+      sistema = 'Windows'
+    } else if (/Mac/i.test(ua)) {
+      sistema = 'macOS'
+    } else if (/Linux/i.test(ua)) {
+      sistema = 'Linux'
+    }
+
+    // Navegador
+    if (/Chrome\/\d/i.test(ua) && !/Edg/i.test(ua)) navegador = 'Chrome'
+    else if (/Safari\/\d/i.test(ua) && !/Chrome/i.test(ua)) navegador = 'Safari'
+    else if (/Firefox\/\d/i.test(ua)) navegador = 'Firefox'
+    else if (/Edg\/\d/i.test(ua)) navegador = 'Edge'
+
+    const descricao = [modelo || dispositivo, sistema, navegador].filter(Boolean).join(' · ')
+    return { dispositivo, sistema, navegador, modelo, descricao }
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -833,6 +881,57 @@ export default function VisualizarOSPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Logs de Acompanhamento */}
+              {os.codigo_acompanhamento && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Globe className="h-4 w-4" />
+                      Visualizações do Link
+                      {logsAcompanhamento.length > 0 && (
+                        <Badge variant="secondary" className="ml-auto">
+                          {logsAcompanhamento.length}
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <CardDescription>
+                      Acessos à página de acompanhamento
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {logsAcompanhamento.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-3">
+                        Nenhuma visualização registrada
+                      </p>
+                    ) : (
+                      <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {logsAcompanhamento.map((log) => {
+                          const info = parseUserAgent(log.user_agent)
+                          return (
+                            <div key={log.id} className="flex items-start gap-3 text-sm">
+                              <div className="mt-0.5">
+                                {info.dispositivo === 'Desktop' ? (
+                                  <Monitor className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <Smartphone className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{info.descricao}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {format(new Date(log.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                  {log.ip && <span className="ml-2">IP: {log.ip}</span>}
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>

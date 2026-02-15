@@ -221,6 +221,16 @@ export interface FotoOS {
   created_at: string
 }
 
+export interface LogAcompanhamento {
+  id: string
+  os_id: string
+  empresa_id: string
+  codigo_acompanhamento: string
+  user_agent?: string
+  ip?: string
+  created_at: string
+}
+
 export interface Venda {
   id: string
   empresa_id: string
