@@ -156,7 +156,7 @@ export async function compressImage(file: File): Promise<CompressedImageResult> 
 }
 
 export function isValidImageType(file: File): boolean {
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+  const allowed = ['image/jpeg', 'image/png', 'image/webp']
   return allowed.includes(file.type)
 }
 

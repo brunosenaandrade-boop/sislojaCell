@@ -330,14 +330,21 @@ export const ordensServicoService = {
 
       if (!foto) return { data: null, error: 'Foto não encontrada' }
 
-      await supabase.storage.from('os-fotos').remove([foto.storage_path])
-
+      // Deletar banco primeiro (protegido por RLS), depois storage
       const { error } = await supabase
         .from('fotos_os')
         .delete()
         .eq('id', fotoId)
 
-      return { data: null, error: error?.message ?? null }
+      if (error) return { data: null, error: error.message }
+
+      // Deletar arquivo do storage (se falhar, fica órfão mas não afeta o usuário)
+      const { error: storageError } = await supabase.storage.from('os-fotos').remove([foto.storage_path])
+      if (storageError) {
+        console.warn('Falha ao remover arquivo do storage:', storageError.message)
+      }
+
+      return { data: null, error: null }
     } catch (err) {
       return { data: null, error: err instanceof Error ? err.message : 'Erro ao remover foto' }
     }

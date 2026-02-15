@@ -162,7 +162,7 @@ export function FotosOS({ osId, fotos, onFotosChange, readonly = false, maxFotos
             <input
               ref={inputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              accept="image/jpeg,image/png,image/webp"
               multiple
               className="hidden"
               onChange={(e) => e.target.files && handleFiles(e.target.files)}
