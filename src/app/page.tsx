@@ -97,6 +97,25 @@ export default async function HomePage({
       </section>
 
       {/* ============================================ */}
+      {/* VIDEO AD */}
+      {/* ============================================ */}
+      <section className="bg-white pb-20">
+        <div className="mx-auto max-w-4xl px-4">
+          <div className="overflow-hidden rounded-2xl shadow-2xl">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full"
+            >
+              <source src="/cellflow-ad.mp4" type="video/mp4" />
+            </video>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================ */}
       {/* FEATURES */}
       {/* ============================================ */}
       <section id="features" className="border-t bg-gray-50 py-20">
