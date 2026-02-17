@@ -285,7 +285,7 @@ export default function DashboardPage() {
               <Button size="sm"><ShoppingCart className="mr-2 h-4 w-4" />Nova Venda</Button>
             </Link>
             <Link href="/ordens-servico">
-              <Button size="sm" variant="outline"><FileText className="mr-2 h-4 w-4" />Nova OS</Button>
+              <Button size="sm" variant="outline"><FileText className="mr-2 h-4 w-4" />Nova Ordem de Serviço</Button>
             </Link>
             <Link href="/caixa">
               <Button size="sm" variant="outline"><DollarSign className="mr-2 h-4 w-4" />Caixa</Button>

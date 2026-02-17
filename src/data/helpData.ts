@@ -63,7 +63,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       },
       {
         pergunta: 'Qual a diferença entre os perfis de usuário?',
-        resposta: 'Administrador: acesso total ao sistema, incluindo configurações, relatórios, logs e exclusão de registros. Funcionário: acesso a vendas, OS, clientes e estoque, mas sem acesso a configurações, relatórios financeiros e logs.',
+        resposta: 'Administrador: acesso total ao sistema, incluindo configurações, relatórios, logs e exclusão de registros. Funcionário: acesso a vendas, ordens de serviço, clientes e estoque, mas sem acesso a configurações, relatórios financeiros e logs.',
       },
     ],
     guias: [
@@ -87,20 +87,20 @@ export const categoriasAjuda: CategoriaAjuda[] = [
   },
   {
     id: 'dashboard',
-    titulo: 'Dashboard',
+    titulo: 'Painel',
     icon: LayoutDashboard,
     faqs: [
       {
-        pergunta: 'O que mostra o Dashboard?',
-        resposta: 'O Dashboard mostra o resumo do dia: faturamento, custos, lucro líquido, OS abertas, alerta de estoque baixo, aniversariantes do dia, gráfico de vendas da semana, últimas vendas e últimas OS.',
+        pergunta: 'O que mostra o Painel?',
+        resposta: 'O Painel mostra o resumo do dia: faturamento, custos, lucro líquido, ordens de serviço abertas, alerta de estoque baixo, aniversariantes do dia, gráfico de vendas da semana, últimas vendas e últimas ordens de serviço.',
       },
       {
-        pergunta: 'Posso cancelar uma venda pelo Dashboard?',
+        pergunta: 'Posso cancelar uma venda pelo Painel?',
         resposta: 'Sim. Na seção "Últimas Vendas", clique no menu (três pontos) ao lado da venda e selecione "Cancelar venda". Informe o motivo do cancelamento. O estoque dos produtos será restaurado automaticamente.',
       },
       {
-        pergunta: 'Posso mudar o status de uma OS pelo Dashboard?',
-        resposta: 'Sim. Na seção "Ordens de Serviço", clique no badge de status da OS. Um menu aparece com os status disponíveis para transição. Isso permite atualizar o status rapidamente sem abrir a OS.',
+        pergunta: 'Posso mudar o status de uma ordem de serviço pelo Painel?',
+        resposta: 'Sim. Na seção "Ordens de Serviço", clique no badge de status da ordem de serviço. Um menu aparece com os status disponíveis para transição. Isso permite atualizar o status rapidamente sem abrir a ordem de serviço.',
       },
       {
         pergunta: 'O que significa o alerta de estoque?',
@@ -109,13 +109,13 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     ],
     guias: [
       {
-        titulo: 'Usar o Dashboard no dia a dia',
+        titulo: 'Usar o Painel no dia a dia',
         passos: [
           'Confira o faturamento e lucro do dia nos cards principais',
           'Verifique se há alertas de estoque baixo',
           'Veja aniversariantes para enviar mensagens de felicitação',
-          'Use os botões rápidos (Nova Venda, Nova OS, Caixa)',
-          'Acompanhe as últimas vendas e OS na parte inferior',
+          'Use os botões rápidos (Nova Venda, Nova Ordem de Serviço, Caixa)',
+          'Acompanhe as últimas vendas e ordens de serviço na parte inferior',
           'Analise o gráfico de faturamento semanal para tendências',
         ],
       },
@@ -123,7 +123,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     dicas: [
       {
         titulo: 'Atalhos rápidos',
-        descricao: 'Use os botões "Nova Venda", "Nova OS" e "Caixa" no topo do Dashboard para acessar as funções mais usadas sem navegar pelo menu.',
+        descricao: 'Use os botões "Nova Venda", "Nova Ordem de Serviço" e "Caixa" no topo do Painel para acessar as funções mais usadas sem navegar pelo menu.',
       },
     ],
   },
@@ -150,7 +150,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       },
       {
         pergunta: 'Por que não consigo excluir um cliente?',
-        resposta: 'A exclusão de clientes é restrita ao perfil Administrador. Além disso, clientes vinculados a vendas ou OS não podem ser excluídos para manter o histórico.',
+        resposta: 'A exclusão de clientes é restrita ao perfil Administrador. Além disso, clientes vinculados a vendas ou ordens de serviço não podem ser excluídos para manter o histórico.',
       },
     ],
     guias: [
@@ -169,7 +169,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     dicas: [
       {
         titulo: 'Cadastre a data de nascimento',
-        descricao: 'Clientes com data de nascimento cadastrada aparecem nos alertas de aniversário do Dashboard e da página de Clientes. Use isso para enviar mensagens de felicitação e fidelizar.',
+        descricao: 'Clientes com data de nascimento cadastrada aparecem nos alertas de aniversário do Painel e da página de Clientes. Use isso para enviar mensagens de felicitação e fidelizar.',
       },
       {
         titulo: 'Exporte antes de limpar',
@@ -260,7 +260,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       },
       {
         pergunta: 'Como desativar um serviço?',
-        resposta: 'Na lista de serviços, clique no menu de três pontos e selecione "Desativar". Serviços inativos ficam esmaecidos na lista e não aparecem nas opções ao criar uma OS.',
+        resposta: 'Na lista de serviços, clique no menu de três pontos e selecione "Desativar". Serviços inativos ficam esmaecidos na lista e não aparecem nas opções ao criar uma ordem de serviço.',
       },
       {
         pergunta: 'Para que serve o tempo estimado?',
@@ -284,7 +284,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     dicas: [
       {
         titulo: 'Preço base é referência',
-        descricao: 'O preço base do serviço é uma referência. Ao adicionar o serviço em uma OS, você pode ajustar o valor conforme o caso específico.',
+        descricao: 'O preço base do serviço é uma referência. Ao adicionar o serviço em uma ordem de serviço, você pode ajustar o valor conforme o caso específico.',
       },
     ],
   },
@@ -314,8 +314,8 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         resposta: 'Sim! Ao finalizar uma venda no PDV, o estoque dos produtos vendidos é automaticamente decrementado.',
       },
       {
-        pergunta: 'O estoque baixa automaticamente nas OS?',
-        resposta: 'Sim, ao adicionar produtos em uma Ordem de Serviço, o estoque é automaticamente decrementado.',
+        pergunta: 'O estoque baixa automaticamente nas ordens de serviço?',
+        resposta: 'Sim, ao adicionar produtos em uma ordem de serviço, o estoque é automaticamente decrementado.',
       },
     ],
     guias: [
@@ -368,7 +368,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       },
       {
         pergunta: 'Como cancelar uma venda já finalizada?',
-        resposta: 'No Dashboard, na seção "Últimas Vendas", clique no menu (três pontos) ao lado da venda e selecione "Cancelar venda". Informe o motivo — o estoque é restaurado automaticamente.',
+        resposta: 'No Painel, na seção "Últimas Vendas", clique no menu (três pontos) ao lado da venda e selecione "Cancelar venda". Informe o motivo — o estoque é restaurado automaticamente.',
       },
       {
         pergunta: 'Como vincular um cliente à venda?',
@@ -466,27 +466,27 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     faqs: [
       {
         pergunta: 'Como criar uma ordem de serviço?',
-        resposta: 'Acesse Ordens de Serviço > Nova OS. Selecione o cliente, informe os dados do aparelho (marca, modelo, cor, IMEI), descreva o problema, adicione produtos e serviços, defina prazo e salve.',
+        resposta: 'Acesse Ordens de Serviço > Nova Ordem de Serviço. Selecione o cliente, informe os dados do aparelho (marca, modelo, cor, IMEI), descreva o problema, adicione produtos e serviços, defina prazo e salve.',
       },
       {
-        pergunta: 'Quais são os status de uma OS?',
+        pergunta: 'Quais são os status de uma ordem de serviço?',
         resposta: 'Aberta (recebido), Em Análise (técnico analisando), Aguardando Peça, Aguardando Aprovação (orçamento enviado), Em Andamento (reparo em execução), Finalizada (serviço concluído), Entregue (cliente retirou), Cancelada.',
       },
       {
-        pergunta: 'Como adicionar produtos a uma OS?',
-        resposta: 'Na edição da OS, vá na aba "Produtos/Serviços", busque o produto e adicione. O estoque será decrementado automaticamente.',
+        pergunta: 'Como adicionar produtos a uma ordem de serviço?',
+        resposta: 'Na edição da ordem de serviço, vá na aba "Produtos/Serviços", busque o produto e adicione. O estoque será decrementado automaticamente.',
       },
       {
-        pergunta: 'Como imprimir a OS?',
-        resposta: 'Na visualização da OS, clique em "Imprimir". O documento inclui dados do cliente, itens, valores, termos de garantia e um QR Code para acompanhamento.',
+        pergunta: 'Como imprimir a ordem de serviço?',
+        resposta: 'Na visualização da ordem de serviço, clique em "Imprimir". O documento inclui dados do cliente, itens, valores, termos de garantia e um QR Code para acompanhamento.',
       },
       {
-        pergunta: 'Como o cliente acompanha o status da OS?',
-        resposta: 'Cada OS gera automaticamente um código de acompanhamento. O cliente pode escanear o QR Code no cupom impresso ou acessar o link enviado por WhatsApp. A página mostra o status em tempo real, sem precisar de login.',
+        pergunta: 'Como o cliente acompanha o status da ordem de serviço?',
+        resposta: 'Cada ordem de serviço gera automaticamente um código de acompanhamento. O cliente pode escanear o QR Code no cupom impresso ou acessar o link enviado por WhatsApp. A página mostra o status em tempo real, sem precisar de login.',
       },
       {
         pergunta: 'Como enviar o link de acompanhamento para o cliente?',
-        resposta: 'Na visualização da OS, clique no botão "Enviar Link" ao lado de Imprimir. Isso abre o WhatsApp com uma mensagem pronta contendo o link de acompanhamento. Você também pode copiar o link clicando no ícone de compartilhamento.',
+        resposta: 'Na visualização da ordem de serviço, clique no botão "Enviar Link" ao lado de Imprimir. Isso abre o WhatsApp com uma mensagem pronta contendo o link de acompanhamento. Você também pode copiar o link clicando no ícone de compartilhamento.',
       },
       {
         pergunta: 'O QR Code aparece no cupom automaticamente?',
@@ -497,15 +497,15 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         resposta: 'Não. A página de acompanhamento é pública e não exige login. O cliente só precisa do link ou escanear o QR Code.',
       },
       {
-        pergunta: 'Como filtrar OS por status?',
-        resposta: 'Na lista de OS, use o seletor de status ao lado da busca. Você pode filtrar por qualquer status: Aberta, Em Análise, Aguardando Peça, Aguardando Aprovação, Em Andamento, Finalizada, Entregue ou Cancelada.',
+        pergunta: 'Como filtrar ordens de serviço por status?',
+        resposta: 'Na lista de ordens de serviço, use o seletor de status ao lado da busca. Você pode filtrar por qualquer status: Aberta, Em Análise, Aguardando Peça, Aguardando Aprovação, Em Andamento, Finalizada, Entregue ou Cancelada.',
       },
     ],
     guias: [
       {
-        titulo: 'Fluxo completo de uma OS',
+        titulo: 'Fluxo completo de uma ordem de serviço',
         passos: [
-          'Crie a OS com dados do cliente e descrição',
+          'Crie a ordem de serviço com dados do cliente e descrição',
           'Imprima o comprovante de entrada (já vem com QR Code)',
           'Mude para "Em Análise" ao iniciar diagnóstico',
           'Adicione produtos/serviços utilizados',
@@ -518,7 +518,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       {
         titulo: 'Enviar link de acompanhamento ao cliente',
         passos: [
-          'Abra a OS desejada',
+          'Abra a ordem de serviço desejada',
           'Clique no botão "Enviar Link" (ícone do WhatsApp)',
           'O WhatsApp abre com mensagem pronta e link',
           'Envie a mensagem para o cliente',
@@ -571,8 +571,8 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         resposta: 'Não. Apenas produtos ativos, com estoque maior que zero e com "Exibir no Catálogo" habilitado aparecem na vitrine. Se o estoque zerar, o produto some automaticamente.',
       },
       {
-        pergunta: 'O catálogo aparece na página de acompanhamento da OS?',
-        resposta: 'Sim! Quando o cliente acessa o link de acompanhamento da OS, uma seção "Confira nossos produtos" mostra até 4 produtos do seu catálogo com um link para ver o catálogo completo.',
+        pergunta: 'O catálogo aparece na página de acompanhamento da ordem de serviço?',
+        resposta: 'Sim! Quando o cliente acessa o link de acompanhamento da ordem de serviço, uma seção "Confira nossos produtos" mostra até 4 produtos do seu catálogo com um link para ver o catálogo completo.',
       },
       {
         pergunta: 'O catálogo usa as cores da minha loja?',
@@ -608,8 +608,8 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     ],
     dicas: [
       {
-        titulo: 'Clientes da OS veem seu catálogo',
-        descricao: 'Toda vez que um cliente acompanha a OS pelo link, ele vê uma seção de produtos da sua loja. É uma oportunidade gratuita de venda adicional.',
+        titulo: 'Clientes da ordem de serviço veem seu catálogo',
+        descricao: 'Toda vez que um cliente acompanha a ordem de serviço pelo link, ele vê uma seção de produtos da sua loja. É uma oportunidade gratuita de venda adicional.',
       },
       {
         titulo: 'Fotos fazem a diferença',
@@ -632,7 +632,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
     faqs: [
       {
         pergunta: 'Quais relatórios estão disponíveis?',
-        resposta: 'O sistema oferece 5 abas de relatórios: Vendas (faturamento, custo e lucro por período), OS (quantidade e valor por status), Produtos (ranking dos mais vendidos), Serviços (ranking dos mais realizados) e Clientes (aniversariantes).',
+        resposta: 'O sistema oferece 5 abas de relatórios: Vendas (faturamento, custo e lucro por período), Ordens de Serviço (quantidade e valor por status), Produtos (ranking dos mais vendidos), Serviços (ranking dos mais realizados) e Clientes (aniversariantes).',
       },
       {
         pergunta: 'Como ver o lucro por período?',
@@ -643,8 +643,8 @@ export const categoriasAjuda: CategoriaAjuda[] = [
         resposta: 'Nas abas Vendas, Produtos e Serviços, clique no botão "Exportar CSV" no canto superior direito. Um arquivo CSV será gerado com os dados exibidos na tela.',
       },
       {
-        pergunta: 'O que mostra o relatório de OS?',
-        resposta: 'A aba OS mostra a quantidade e o valor total de ordens de serviço agrupadas por status (Aberta, Em Análise, Em Andamento, etc.), além do total geral e quantas estão em aberto.',
+        pergunta: 'O que mostra o relatório de ordens de serviço?',
+        resposta: 'A aba Ordens de Serviço mostra a quantidade e o valor total agrupadas por status (Aberta, Em Análise, Em Andamento, etc.), além do total geral e quantas estão em aberto.',
       },
       {
         pergunta: 'Quem pode ver os relatórios?',
@@ -747,7 +747,7 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       },
       {
         pergunta: 'Como exportar backup das configurações?',
-        resposta: 'Em Configurações > aba Sistema, clique em "Exportar JSON". Um arquivo com dados da empresa, impressão e usuários será baixado. Obs: este backup não inclui vendas, OS e estoque — o backup completo deve ser feito pelo Supabase.',
+        resposta: 'Em Configurações > aba Sistema, clique em "Exportar JSON". Um arquivo com dados da empresa, impressão e usuários será baixado. Obs: este backup não inclui vendas, ordens de serviço e estoque — o backup completo deve ser feito pelo Supabase.',
       },
     ],
     guias: [
@@ -889,11 +889,11 @@ export const categoriasAjuda: CategoriaAjuda[] = [
       },
       {
         pergunta: 'Erro "Limite do plano atingido"',
-        resposta: 'Você atingiu o limite do seu plano atual (produtos, vendas ou OS). Faça upgrade para um plano superior em Meu Plano para continuar usando o sistema sem restrições.',
+        resposta: 'Você atingiu o limite do seu plano atual (produtos, vendas ou ordens de serviço). Faça upgrade para um plano superior em Meu Plano para continuar usando o sistema sem restrições.',
       },
       {
         pergunta: 'Não consigo excluir um produto/cliente',
-        resposta: 'Itens vinculados a vendas ou OS não podem ser excluídos para manter o histórico. Use a opção "Inativar" em vez de excluir. Itens inativos não aparecem nas buscas mas ficam no histórico.',
+        resposta: 'Itens vinculados a vendas ou ordens de serviço não podem ser excluídos para manter o histórico. Use a opção "Inativar" em vez de excluir. Itens inativos não aparecem nas buscas mas ficam no histórico.',
       },
     ],
     guias: [

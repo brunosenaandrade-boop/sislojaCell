@@ -129,7 +129,7 @@ export default function OrdensServicoPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total de OS
+                Total de Ordens de Serviço
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -200,7 +200,7 @@ export default function OrdensServicoPage() {
           <Link href="/ordens-servico/nova">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Nova OS
+              Nova Ordem de Serviço
             </Button>
           </Link>
         </div>
@@ -217,7 +217,7 @@ export default function OrdensServicoPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">OS</TableHead>
+                    <TableHead className="w-[100px]">Nº</TableHead>
                     <TableHead>Cliente</TableHead>
                     <TableHead>Aparelho</TableHead>
                     <TableHead>Problema</TableHead>

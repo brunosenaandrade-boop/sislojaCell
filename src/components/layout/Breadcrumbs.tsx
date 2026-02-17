@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { ChevronRight, Home } from 'lucide-react'
 
 const routeNames: Record<string, string> = {
-  'dashboard': 'Dashboard',
+  'dashboard': 'Painel',
   'clientes': 'Clientes',
   'produtos': 'Produtos',
   'servicos': 'Serviços',

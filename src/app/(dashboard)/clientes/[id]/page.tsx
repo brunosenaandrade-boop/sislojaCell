@@ -294,7 +294,7 @@ export default function ClienteDetalhePage() {
               <Link href="/ordens-servico/nova" className="flex-1">
                 <Button variant="outline" className="w-full">
                   <Wrench className="mr-2 h-4 w-4" />
-                  Nova OS
+                  Nova Ordem de Serviço
                 </Button>
               </Link>
             </div>

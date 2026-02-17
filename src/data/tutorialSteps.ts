@@ -20,7 +20,7 @@ export const tutorialSteps: TutorialStep[] = [
     id: 'sidebar-nav',
     title: 'Menu de Navegação',
     description:
-      'Use o menu lateral para acessar todas as seções do sistema: Dashboard, Clientes, Produtos, Serviços, Vendas, Caixa, Estoque, Ordens de Serviço, Relatórios e Configurações.',
+      'Use o menu lateral para acessar todas as seções do sistema: Painel, Clientes, Produtos, Serviços, Vendas, Caixa, Estoque, Ordens de Serviço, Relatórios e Configurações.',
     targetSelector: '[data-tutorial="sidebar-nav"]',
     page: '/dashboard',
     position: 'right',
@@ -304,7 +304,7 @@ export const tutorialSteps: TutorialStep[] = [
     id: 'estoque-saida',
     title: 'Saída de Estoque',
     description:
-      'Use para registrar perdas, avarias ou uso interno. A quantidade é SUBTRAÍDA do estoque. Vendas e OS baixam automaticamente.',
+      'Use para registrar perdas, avarias ou uso interno. A quantidade é SUBTRAÍDA do estoque. Vendas e ordens de serviço baixam automaticamente.',
     targetSelector: '[data-tutorial="estoque-saida"]',
     page: '/estoque',
     position: 'left',
@@ -328,7 +328,7 @@ export const tutorialSteps: TutorialStep[] = [
     id: 'os-list',
     title: 'Lista de Ordens de Serviço',
     description:
-      'Gerencie todas as OS: filtre por status (Aberta, Em Andamento, Pronta, etc.), busque por cliente ou aparelho e acompanhe cada reparo.',
+      'Gerencie todas as ordens de serviço: filtre por status (Aberta, Em Andamento, Pronta, etc.), busque por cliente ou aparelho e acompanhe cada reparo.',
     targetSelector: '[data-tutorial="os-list"]',
     page: '/ordens-servico',
     position: 'top',
@@ -338,7 +338,7 @@ export const tutorialSteps: TutorialStep[] = [
     id: 'os-nova',
     title: 'Nova Ordem de Serviço',
     description:
-      'Clique para criar uma nova OS. Selecione o cliente, descreva o problema, informe o aparelho e defina prazo de entrega.',
+      'Clique para criar uma nova ordem de serviço. Selecione o cliente, descreva o problema, informe o aparelho e defina prazo de entrega.',
     targetSelector: '[data-tutorial="os-nova"]',
     page: '/ordens-servico',
     position: 'bottom',
@@ -346,7 +346,7 @@ export const tutorialSteps: TutorialStep[] = [
   },
   {
     id: 'os-status',
-    title: 'Status da OS',
+    title: 'Status da Ordem de Serviço',
     description:
       'Atualize o status conforme o progresso: Aberta → Em Andamento → Aguardando Peças → Pronta → Entregue. O cliente pode ser notificado.',
     targetSelector: '[data-tutorial="os-status"]',
@@ -356,7 +356,7 @@ export const tutorialSteps: TutorialStep[] = [
   },
   {
     id: 'os-itens',
-    title: 'Produtos e Serviços na OS',
+    title: 'Produtos e Serviços na Ordem de Serviço',
     description:
       'Adicione os produtos utilizados (peças) e serviços realizados. O estoque é baixado automaticamente e o valor total calculado.',
     targetSelector: '[data-tutorial="os-itens"]',
@@ -382,7 +382,7 @@ export const tutorialSteps: TutorialStep[] = [
     id: 'config-usuarios',
     title: 'Usuários do Sistema',
     description:
-      'Cadastre funcionários com diferentes níveis de acesso: Admin (acesso total), Operador (sem exclusão) ou Vendedor (apenas vendas e OS).',
+      'Cadastre funcionários com diferentes níveis de acesso: Admin (acesso total), Operador (sem exclusão) ou Vendedor (apenas vendas e ordens de serviço).',
     targetSelector: '[data-tutorial="config-usuarios"]',
     page: '/configuracoes/usuarios',
     position: 'top',
@@ -402,11 +402,11 @@ export const tutorialSteps: TutorialStep[] = [
 
 export const quickTipsByPage: Record<string, { title: string; tips: string[] }> = {
   '/dashboard': {
-    title: 'Dicas do Dashboard',
+    title: 'Dicas do Painel',
     tips: [
       'Os cards superiores mostram o resumo financeiro do dia.',
       'O gráfico exibe a evolução de vendas e lucro da semana.',
-      'Clique em "Ver todas" para acessar a lista completa de vendas ou OS.',
+      'Clique em "Ver todas" para acessar a lista completa de vendas ou ordens de serviço.',
       'Alertas de estoque baixo aparecem automaticamente.',
     ],
   },
@@ -432,9 +432,9 @@ export const quickTipsByPage: Record<string, { title: string; tips: string[] }> 
   '/ordens-servico': {
     title: 'Dicas de Ordens de Serviço',
     tips: [
-      'Filtre as OS por status para encontrar rapidamente.',
-      'Cada OS pode ser visualizada, editada ou impressa.',
-      'OS com status "Finalizada" podem ser cobradas e entregues.',
+      'Filtre por status para encontrar rapidamente.',
+      'Cada ordem pode ser visualizada, editada ou impressa.',
+      'Ordens com status "Finalizada" podem ser cobradas e entregues.',
       'Use a busca para encontrar por número, cliente ou aparelho.',
     ],
   },
@@ -444,7 +444,7 @@ export const quickTipsByPage: Record<string, { title: string; tips: string[] }> 
       'Produtos com estoque abaixo do mínimo ficam destacados.',
       'Use "Entrada" para receber mercadorias (soma ao estoque).',
       'Use "Definir Estoque" para corrigir inventário (substitui o valor).',
-      'Saídas de vendas e OS são registradas automaticamente.',
+      'Saídas de vendas e ordens de serviço são registradas automaticamente.',
       'Exporte o relatório de estoque em CSV para controle.',
     ],
   },
@@ -454,7 +454,7 @@ export const quickTipsByPage: Record<string, { title: string; tips: string[] }> 
       'Cadastre clientes para associar vendas e ordens de serviço.',
       'Busque por nome, telefone ou CPF/CNPJ.',
       'O CEP preenche automaticamente cidade e estado.',
-      'Veja o histórico completo de compras e OS de cada cliente.',
+      'Veja o histórico completo de compras e ordens de serviço de cada cliente.',
     ],
   },
   '/produtos': {
@@ -472,7 +472,7 @@ export const quickTipsByPage: Record<string, { title: string; tips: string[] }> 
     tips: [
       'Cadastre todos os serviços com preço base e tempo estimado.',
       'Serviços básicos: reparos simples. Avançados: reparos complexos.',
-      'O tempo estimado ajuda a definir prazos nas OS.',
+      'O tempo estimado ajuda a definir prazos nas ordens de serviço.',
       'Serviços inativos não aparecem na lista de seleção.',
     ],
   },
