@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import {
   Smartphone,
   Wrench,
@@ -13,6 +14,15 @@ import {
   ArrowRight,
   ChevronDown,
 } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'CellFlow — Sistema para Assistência Técnica e Loja de Celular',
+  description:
+    'Sistema completo de gestão para lojas de celular e assistência técnica. Ordens de serviço, PDV, estoque, caixa, relatórios. 7 dias grátis sem cartão.',
+  alternates: {
+    canonical: 'https://cellflow.com.br',
+  },
+}
 
 export default async function HomePage({
   searchParams,

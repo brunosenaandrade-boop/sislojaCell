@@ -3,8 +3,11 @@ import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidade - CellFlow',
+  title: 'Política de Privacidade',
   description: 'Política de privacidade e proteção de dados do CellFlow. Em conformidade com a LGPD.',
+  alternates: {
+    canonical: 'https://cellflow.com.br/privacidade',
+  },
 }
 
 export default function PrivacidadePage() {

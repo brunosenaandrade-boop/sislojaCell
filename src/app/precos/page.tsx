@@ -8,8 +8,16 @@ import {
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Preços - CellFlow',
-  description: 'A partir de R$ 150/mês no cartão em 12x. Trial grátis de 7 dias sem cartão de crédito. Sistema completo para lojas de celular.',
+  title: 'Preços',
+  description: 'A partir de R$ 150/mês no cartão em 12x. Trial grátis de 7 dias sem cartão de crédito. Sistema completo para lojas de celular e assistência técnica.',
+  alternates: {
+    canonical: 'https://cellflow.com.br/precos',
+  },
+  openGraph: {
+    title: 'Preços — CellFlow',
+    description: 'A partir de R$ 150/mês no cartão em 12x. Trial grátis de 7 dias sem cartão de crédito.',
+    url: 'https://cellflow.com.br/precos',
+  },
 }
 
 export default function PrecosPage() {

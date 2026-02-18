@@ -1,16 +1,26 @@
 {
-  "name": "CellFlow",
+  "name": "CellFlow — Sistema para Assistência Técnica",
   "short_name": "CellFlow",
-  "description": "Sistema de gestão para lojas de celular e assistência técnica",
+  "description": "Sistema completo de gestão para lojas de celular e assistência técnica. Ordens de serviço, PDV, estoque, caixa e relatórios.",
   "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
+  "lang": "pt-BR",
+  "orientation": "any",
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "/icons/icon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
     }
   ]
 }

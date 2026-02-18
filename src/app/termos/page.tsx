@@ -3,8 +3,11 @@ import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Termos de Uso - CellFlow',
-  description: 'Termos de uso do CellFlow - Sistema de gestão para lojas de celular.',
+  title: 'Termos de Uso',
+  description: 'Termos de uso do CellFlow — Sistema de gestão para lojas de celular e assistência técnica.',
+  alternates: {
+    canonical: 'https://cellflow.com.br/termos',
+  },
 }
 
 export default function TermosPage() {
